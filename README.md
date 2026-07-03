@@ -12,6 +12,7 @@ Macam Google Translate, tapi untuk prompt: translate prompt mentah / kabur / roj
 - 🌐 **Sokong bahasa rojak** — input Melayu, English atau campuran; bahasa output boleh pilih (Auto / MS / EN)
 - 🕘 **Sejarah prompt + kegemaran** — disimpan dalam browser (localStorage)
 - 📋 Copy, Paste, Swap, Regenerate
+- 📱 **PWA** — boleh install ke home screen (Add to Home Screen), ada offline shell melalui service worker
 
 ## Teknikal
 
