@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="description" content="PromptCraft — macam Google Translate, tapi untuk prompt. Translate prompt mentah kepada prompt yang lebih jelas, berstruktur dan berkuasa.">
+<title>PromptCraft — Prompt Enhancement Engine</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='2' y='2' width='20' height='20' rx='5' fill='%2318181b'/%3E%3Cg stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'%3E%3Cpath d='M7 8h6'/%3E%3Cpath d='M7 12h4'/%3E%3Cpath d='M14 14l3-6 3 6'/%3E%3Cpath d='M15 13h4'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --border: #e4e4e7;
+    --border-strong: #d4d4d8;
+    --text: #18181b;
+    --text-secondary: #52525b;
+    --text-tertiary: #a1a1aa;
+    --accent: #2563eb;
+    --accent-soft: #eff6ff;
+    --accent-border: #bfdbfe;
+    --success: #16a34a;
+    --success-soft: #f0fdf4;
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
+    --danger-border: #fecaca;
+    --shadow-sm: 0 1px 2px rgba(24, 24, 27, 0.04);
+    --shadow-md: 0 1px 3px rgba(24, 24, 27, 0.06), 0 4px 12px rgba(24, 24, 27, 0.05);
+    --radius: 12px;
+    --font-display: "Space Grotesk", "Inter", -apple-system, sans-serif;
+  }
+
+  html { -webkit-text-size-adjust: 100%; overscroll-behavior: none; }
+
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  textarea, .out-text, .annot li, .hist-raw, .hist-enh {
+    user-select: text;
+    -webkit-user-select: text;
+    -webkit-touch-callout: default;
+  }
+
+  button, .chip { touch-action: manipulation; font-family: inherit; }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(720px 340px at 50% -100px, rgba(37, 99, 235, 0.08), transparent 70%);
+    pointer-events: none;
+  }
+
+  .wrap, footer { position: relative; z-index: 1; }
+
+  /* ── Top bar ── */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: saturate(180%) blur(10px);
+    -webkit-backdrop-filter: saturate(180%) blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-mark {
+    width: 28px; height: 28px;
+    background: var(--text);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .logo-mark svg { width: 16px; height: 16px; stroke: #fff; }
+  .wordmark { font-family: var(--font-display); font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  .topbar-right {
+    margin-left: auto;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    letter-spacing: 0.01em;
+  }
+
+  /* ── Layout ── */
+  .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  .hero { text-align: center; margin-bottom: 22px; }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 4.5vw, 30px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+  .hero p { color: var(--text-secondary); font-size: 14px; margin-top: 6px; }
+
+  /* ── Mode + language controls ── */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 18px;
+  }
+  .chip {
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active {
+    background: var(--text);
+    border-color: var(--text);
+    color: #fff;
+  }
+  .lang-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    color: var(--text-tertiary);
+  }
+  .lang-row select {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+
+  /* ── Dual panel ── */
+  .panels {
+    display: grid;
+    grid-template-columns: 1fr 44px 1fr;
+    gap: 0;
+    align-items: stretch;
+  }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    min-height: 260px;
+    overflow: hidden;
+  }
+  .panel-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+  .panel-head .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .dot-in { background: var(--text-tertiary); }
+  .dot-out { background: var(--accent); }
+  .panel-head .count { margin-left: auto; font-weight: 500; text-transform: none; letter-spacing: 0; }
+
+  textarea {
+    flex: 1;
+    width: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    padding: 16px;
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--text);
+    background: transparent;
+    min-height: 180px;
+  }
+  textarea::placeholder { color: var(--text-tertiary); }
+
+  .out-body { flex: 1; padding: 16px; overflow-y: auto; }
+  .out-text { white-space: pre-wrap; font-size: 15px; line-height: 1.65; }
+  .out-empty { color: var(--text-tertiary); font-size: 14px; }
+
+  .panel-foot {
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .mini-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text-secondary);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .mini-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .mini-btn:disabled { opacity: 0.45; cursor: default; }
+  .mini-btn svg { width: 13px; height: 13px; }
+  .mini-btn.copied { border-color: var(--success); color: var(--success); background: var(--success-soft); }
+
+  /* swap column */
+  .swap-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .swap-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+  }
+  .swap-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); transform: rotate(180deg); }
+  .swap-btn:disabled { opacity: 0.4; cursor: default; }
+  .swap-btn svg { width: 15px; height: 15px; }
+
+  /* ── Enhance button ── */
+  .action-row { display: flex; justify-content: center; margin-top: 20px; }
+  .enhance-btn {
+    font-family: var(--font-display);
+    font-size: 15.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    background: var(--text);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 42px;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .enhance-btn:hover:not(:disabled) { background: #000; transform: translateY(-1px); }
+  .enhance-btn:disabled { opacity: 0.55; cursor: default; transform: none; }
+  .enhance-btn svg { width: 16px; height: 16px; }
+
+  /* ── Loading / error ── */
+  .loading {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 18px;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+  .loading.show { display: flex; }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border-strong);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error {
+    display: none;
+    margin: 18px auto 0;
+    max-width: 560px;
+    background: var(--danger-soft);
+    border: 1px solid var(--danger-border);
+    color: var(--danger);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 13.5px;
+    text-align: center;
+  }
+  .error.show { display: block; }
+
+  /* ── Annotation ── */
+  .annot {
+    display: none;
+    margin-top: 22px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+  }
+  .annot.show { display: block; }
+  .annot h3 {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .annot ul { list-style: none; }
+  .annot li {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    padding: 3px 0 3px 22px;
+    position: relative;
+  }
+  .annot li::before { content: "✅"; position: absolute; left: 0; font-size: 11px; top: 5px; }
+
+  /* ── History ── */
+  .hist-section { margin-top: 40px; }
+  .hist-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .hist-head h2 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .hist-head .clear-hist {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 12.5px;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .hist-head .clear-hist:hover { color: var(--danger); }
+  .hist-empty { color: var(--text-tertiary); font-size: 13.5px; }
+  .hist-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  .hist-item:hover { border-color: var(--accent); }
+  .hist-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .hist-mode {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 6px;
+    padding: 2px 8px;
+  }
+  .hist-time { font-size: 11.5px; color: var(--text-tertiary); }
+  .fav-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--text-tertiary);
+    line-height: 1;
+    padding: 2px;
+  }
+  .fav-btn.faved { color: #f59e0b; }
+  .hist-raw {
+    font-size: 13.5px;
+    color: var(--text);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .hist-enh {
+    font-size: 12.5px;
+    color: var(--text-tertiary);
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-top: 2px;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 12.5px;
+    padding: 0 20px 40px;
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 720px) {
+    .panels { grid-template-columns: 1fr; }
+    .swap-col { padding: 8px 0; }
+    .swap-btn svg { transform: rotate(90deg); }
+    textarea { min-height: 140px; }
+    .panel { min-height: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 8h6"/><path d="M7 12h4"/><path d="M14 15l3-7 3 7"/><path d="M15 13.5h4"/>
+      </svg>
+    </div>
+    <span class="wordmark">PromptCraft</span>
+    <span class="topbar-right">Prompt Enhancement Engine</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <h1>Prompt mentah masuk, <em>prompt power</em> keluar.</h1>
+    <p>Macam Google Translate — tapi ia translate niat kabur kau kepada arahan yang jelas &amp; berstruktur. Rojak pun boleh.</p>
+  </div>
+
+  <div class="controls" id="modes">
+    <button class="chip active" data-mode="general">🌐 General</button>
+    <button class="chip" data-mode="coding">💻 Coding</button>
+    <button class="chip" data-mode="creative">✍️ Creative</button>
+    <button class="chip" data-mode="business">📊 Business</button>
+    <button class="chip" data-mode="image">🎨 Image-Gen</button>
+    <button class="chip" data-mode="academic">🎓 Academic</button>
+  </div>
+
+  <div class="lang-row">
+    <span>Bahasa output:</span>
+    <select id="outLang">
+      <option value="auto" selected>Auto (ikut input)</option>
+      <option value="ms">Bahasa Melayu</option>
+      <option value="en">English</option>
+    </select>
+  </div>
+
+  <div class="panels">
+    <div class="panel">
+      <div class="panel-head"><span class="dot dot-in"></span>Prompt Asal<span class="count" id="charCount"></span></div>
+      <textarea id="input" placeholder="Taip atau paste prompt mentah kau kat sini…" maxlength="4000"></textarea>
+      <div class="panel-foot">
+        <button class="mini-btn" id="clearBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          Clear
+        </button>
+        <button class="mini-btn" id="pasteBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/></svg>
+          Paste
+        </button>
+      </div>
+    </div>
+
+    <div class="swap-col">
+      <button class="swap-btn" id="swapBtn" title="Guna output sebagai input baru" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3L4 7l4 4"/><path d="M4 7h16"/><path d="M16 21l4-4-4-4"/><path d="M20 17H4"/></svg>
+      </button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><span class="dot dot-out"></span>Prompt Enhanced</div>
+      <div class="out-body">
+        <div class="out-text" id="output"><span class="out-empty">Hasil enhancement akan keluar kat sini…</span></div>
+      </div>
+      <div class="panel-foot">
+        <button class="mini-btn" id="copyBtn" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+        <button class="mini-btn" id="regenBtn" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M21 8a9 9 0 10.5 4"/></svg>
+          Regenerate
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="enhance-btn" id="enhanceBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8a2 2 0 001.3 1.3L21 12l-5.8 1.9a2 2 0 00-1.3 1.3L12 21l-1.9-5.8a2 2 0 00-1.3-1.3L3 12l5.8-1.9a2 2 0 001.3-1.3L12 3z"/></svg>
+      Enhance
+    </button>
+  </div>
+
+  <div class="loading" id="loading"><div class="spinner"></div><span id="loadingText">Meng-upgrade prompt kau…</span></div>
+  <div class="error" id="error"></div>
+
+  <div class="annot" id="annot">
+    <h3>Apa yang berubah</h3>
+    <ul id="annotList"></ul>
+  </div>
+
+  <div class="hist-section">
+    <div class="hist-head">
+      <h2>Sejarah Prompt</h2>
+      <button class="clear-hist" id="clearHist">Padam semua</button>
+    </div>
+    <div id="histList"></div>
+  </div>
+
+</div>
+
+<footer>PromptCraft — translate niat kabur kepada arahan power. Satu prompt satu masa.</footer>
+
+<script>
+const PROXY_URL = "https://muhasabah-app.vercel.app/api/gemini";
+const HIST_KEY = "promptcraft_history";
+const HIST_MAX = 20;
+
+const input = document.getElementById("input");
+const output = document.getElementById("output");
+const enhanceBtn = document.getElementById("enhanceBtn");
+const copyBtn = document.getElementById("copyBtn");
+const regenBtn = document.getElementById("regenBtn");
+const swapBtn = document.getElementById("swapBtn");
+const clearBtn = document.getElementById("clearBtn");
+const pasteBtn = document.getElementById("pasteBtn");
+const loading = document.getElementById("loading");
+const loadingText = document.getElementById("loadingText");
+const errorBox = document.getElementById("error");
+const annot = document.getElementById("annot");
+const annotList = document.getElementById("annotList");
+const charCount = document.getElementById("charCount");
+const histList = document.getElementById("histList");
+const outLangSel = document.getElementById("outLang");
+
+let currentMode = "general";
+let lastEnhanced = "";
+let retryTimer = null;
+
+/* ── Mode chips ── */
+document.querySelectorAll("#modes .chip").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    document.querySelectorAll("#modes .chip").forEach((c) => c.classList.remove("active"));
+    chip.classList.add("active");
+    currentMode = chip.dataset.mode;
+  });
+});
+
+/* ── Input helpers ── */
+input.addEventListener("input", () => {
+  charCount.textContent = input.value.length ? input.value.length + " / 4000" : "";
+});
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); enhance(); }
+});
+clearBtn.addEventListener("click", () => {
+  input.value = "";
+  charCount.textContent = "";
+  input.focus();
+});
+pasteBtn.addEventListener("click", async () => {
+  try {
+    const t = await navigator.clipboard.readText();
+    if (t) { input.value = t.slice(0, 4000); input.dispatchEvent(new Event("input")); }
+  } catch { input.focus(); }
+});
+swapBtn.addEventListener("click", () => {
+  if (!lastEnhanced) return;
+  input.value = lastEnhanced.slice(0, 4000);
+  input.dispatchEvent(new Event("input"));
+  setOutput("");
+  annot.classList.remove("show");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+copyBtn.addEventListener("click", async () => {
+  if (!lastEnhanced) return;
+  try {
+    await navigator.clipboard.writeText(lastEnhanced);
+    copyBtn.classList.add("copied");
+    copyBtn.lastChild.textContent = "Copied!";
+    setTimeout(() => {
+      copyBtn.classList.remove("copied");
+      copyBtn.lastChild.textContent = "Copy";
+    }, 1500);
+  } catch {}
+});
+regenBtn.addEventListener("click", () => enhance());
+enhanceBtn.addEventListener("click", () => enhance());
+
+/* Cycle example prompts through the placeholder while the field is idle */
+const PH_EXAMPLES = [
+  "tulis email mintak cuti",
+  "buat aku landing page cantik",
+  "explain blockchain macam aku budak 10 tahun",
+  "gambar kucing angkasawan",
+];
+if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  let phWord = 0, phLen = 0, phDeleting = false;
+  (function typePlaceholder() {
+    let delay = phDeleting ? 28 : 65;
+    if (document.activeElement !== input && !input.value) {
+      const word = PH_EXAMPLES[phWord];
+      phLen += phDeleting ? -1 : 1;
+      input.placeholder = word.slice(0, phLen);
+      if (!phDeleting && phLen === word.length) { phDeleting = true; delay = 1600; }
+      else if (phDeleting && phLen === 0) { phDeleting = false; phWord = (phWord + 1) % PH_EXAMPLES.length; delay = 350; }
+    }
+    setTimeout(typePlaceholder, delay);
+  })();
+  input.addEventListener("focus", () => { input.placeholder = "Taip atau paste prompt mentah kau kat sini…"; });
+}
+
+/* ── Prompt engine ── */
+const MODE_GUIDE = {
+  general: "General purpose — any everyday task for an AI assistant.",
+  coding: "Coding / technical — the enhanced prompt should specify language/framework, expected behaviour, inputs/outputs, edge cases, and ask for code with brief explanation.",
+  creative: "Creative writing — the enhanced prompt should specify tone, style, audience, length, and point of view.",
+  business: "Business / professional writing — the enhanced prompt should specify audience, formality, purpose, format (email/report/proposal), and desired length.",
+  image: "Image generation (Midjourney/DALL-E style) — the enhanced prompt should be a rich visual description: subject, style, composition, lighting, mood, camera/art details.",
+  academic: "Academic / research — the enhanced prompt should specify scope, depth, citation expectations, structure, and target academic level.",
+};
+
+function buildPrompt(raw, mode, lang) {
+  const langRule =
+    lang === "ms" ? "Write the ENHANCED prompt fully in Bahasa Melayu."
+    : lang === "en" ? "Write the ENHANCED prompt fully in English."
+    : "Keep the ENHANCED prompt in the same language (or natural language mix) as the original prompt.";
+  return `You are a Prompt Enhancement Engine — like Google Translate, but instead of translating between languages, you translate a rough, vague prompt into a clear, specific, well-structured prompt that gets much better results from any LLM.
+
+The user's raw prompt may be in Malay, English, or a casual Malay-English mix (bahasa rojak). Treat mixed language as first-class input.
+
+Enhancement mode: ${MODE_GUIDE[mode]}
+
+Rules:
+1. Identify the user's core intent and PRESERVE it exactly — never change what they want.
+2. Add implied but missing context (audience, purpose, situation).
+3. Specify a suitable output format (list, table, paragraphs, code, etc.).
+4. Add useful constraints (length, tone, style) only where relevant.
+5. ${langRule}
+6. Do NOT invent facts, names, numbers, or requirements the user never implied.
+7. Keep the enhanced prompt focused and under 200 words.
+
+RAW PROMPT:
+"""
+${raw}
+"""
+
+Respond in EXACTLY this format, nothing else before or after:
+===ENHANCED===
+(the enhanced prompt only — ready to copy-paste into any AI)
+===CHANGES===
+- (3 to 5 short bullets, written in casual Bahasa Melayu, each describing one thing you added or clarified, e.g. "Ditambah: format output (bullet list)")`;
+}
+
+function parseResponse(raw) {
+  const enhMatch = raw.match(/===ENHANCED===\s*([\s\S]*?)\s*===CHANGES===/i);
+  const chgMatch = raw.match(/===CHANGES===\s*([\s\S]*)$/i);
+  let enhanced = enhMatch ? enhMatch[1].trim() : "";
+  if (!enhanced && !/===ENHANCED===/i.test(raw)) enhanced = raw.trim();
+  const changes = chgMatch
+    ? chgMatch[1].split("\n").map((l) => l.replace(/^\s*[-•*]\s*/, "").trim()).filter(Boolean).slice(0, 6)
+    : [];
+  return { enhanced, changes };
+}
+
+function setOutput(text) {
+  lastEnhanced = text;
+  if (text) {
+    output.textContent = text;
+    copyBtn.disabled = false;
+    regenBtn.disabled = false;
+    swapBtn.disabled = false;
+  } else {
+    output.innerHTML = '<span class="out-empty">Hasil enhancement akan keluar kat sini…</span>';
+    copyBtn.disabled = true;
+    regenBtn.disabled = true;
+    swapBtn.disabled = true;
+  }
+}
+
+async function enhance(attempt = 0) {
+  const raw = input.value.trim();
+  if (!raw) { input.focus(); return; }
+  if (attempt === 0) {
+    if (enhanceBtn.disabled) return;
+    clearTimeout(retryTimer);
+  }
+
+  enhanceBtn.disabled = true;
+  errorBox.classList.remove("show");
+  annot.classList.remove("show");
+  loadingText.textContent = "Meng-upgrade prompt kau…";
+  loading.classList.add("show");
+
+  try {
+    const res = await fetch(PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: buildPrompt(raw, currentMode, outLangSel.value) }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || data.error);
+
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const { enhanced, changes } = parseResponse(text);
+    if (!enhanced) throw new Error("Respons tak lengkap. Cuba sekali lagi.");
+
+    setOutput(enhanced);
+    if (changes.length) {
+      annotList.innerHTML = "";
+      changes.forEach((c) => {
+        const li = document.createElement("li");
+        li.textContent = c;
+        annotList.appendChild(li);
+      });
+      annot.classList.add("show");
+    }
+    saveHistory({ raw, enhanced, mode: currentMode, ts: Date.now(), fav: false });
+  } catch (e) {
+    const msg = e && e.message ? String(e.message) : String(e);
+    const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|retry in/i.test(msg);
+    if (isQuota && attempt < 1) {
+      let wait = Math.ceil(parseFloat((msg.match(/retry in ([\d.]+)/i) || [])[1]) || 30);
+      wait = Math.min(Math.max(wait, 3), 60);
+      startRetryCountdown(wait, attempt);
+      return; // countdown keeps the loading state and retries by itself
+    }
+    errorBox.textContent = isQuota
+      ? "Ramai orang tengah guna sekarang — tunggu seminit, lepas tu cuba lagi ya."
+      : "Ada masalah: " + msg;
+    errorBox.classList.add("show");
+    loading.classList.remove("show");
+    enhanceBtn.disabled = false;
+    return;
+  }
+  loading.classList.remove("show");
+  enhanceBtn.disabled = false;
+}
+
+function startRetryCountdown(secondsLeft, attempt) {
+  if (secondsLeft <= 0) { enhance(attempt + 1); return; }
+  loadingText.textContent = "Ramai orang tengah guna — cuba semula dalam " + secondsLeft + "s";
+  retryTimer = setTimeout(() => startRetryCountdown(secondsLeft - 1, attempt), 1000);
+}
+
+/* ── History (localStorage) ── */
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch { return []; }
+}
+function persistHistory(items) {
+  try { localStorage.setItem(HIST_KEY, JSON.stringify(items)); } catch {}
+}
+function saveHistory(item) {
+  let items = loadHistory();
+  items.unshift(item);
+  // keep favourites, trim the rest to HIST_MAX total
+  const favs = items.filter((i) => i.fav);
+  const rest = items.filter((i) => !i.fav).slice(0, Math.max(HIST_MAX - favs.length, 5));
+  items = [...favs, ...rest].sort((a, b) => b.ts - a.ts);
+  persistHistory(items);
+  renderHistory();
+}
+function timeAgo(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return "baru tadi";
+  if (s < 3600) return Math.floor(s / 60) + " min lalu";
+  if (s < 86400) return Math.floor(s / 3600) + " jam lalu";
+  return Math.floor(s / 86400) + " hari lalu";
+}
+const MODE_LABEL = { general: "General", coding: "Coding", creative: "Creative", business: "Business", image: "Image-Gen", academic: "Academic" };
+
+function renderHistory() {
+  const items = loadHistory().sort((a, b) => (b.fav - a.fav) || (b.ts - a.ts));
+  histList.innerHTML = "";
+  if (!items.length) {
+    histList.innerHTML = '<div class="hist-empty">Belum ada sejarah. Prompt yang kau enhance akan disimpan kat sini (dalam browser kau je).</div>';
+    return;
+  }
+  items.forEach((item) => {
+    const div = document.createElement("div");
+    div.className = "hist-item";
+    const top = document.createElement("div");
+    top.className = "hist-top";
+    const mode = document.createElement("span");
+    mode.className = "hist-mode";
+    mode.textContent = MODE_LABEL[item.mode] || item.mode;
+    const time = document.createElement("span");
+    time.className = "hist-time";
+    time.textContent = timeAgo(item.ts);
+    const fav = document.createElement("button");
+    fav.className = "fav-btn" + (item.fav ? " faved" : "");
+    fav.textContent = item.fav ? "★" : "☆";
+    fav.title = item.fav ? "Buang dari kegemaran" : "Tanda kegemaran";
+    fav.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const all = loadHistory();
+      const target = all.find((i) => i.ts === item.ts);
+      if (target) { target.fav = !target.fav; persistHistory(all); renderHistory(); }
+    });
+    top.append(mode, time, fav);
+    const rawEl = document.createElement("div");
+    rawEl.className = "hist-raw";
+    rawEl.textContent = item.raw;
+    const enhEl = document.createElement("div");
+    enhEl.className = "hist-enh";
+    enhEl.textContent = "→ " + item.enhanced;
+    div.append(top, rawEl, enhEl);
+    div.addEventListener("click", () => {
+      input.value = item.raw.slice(0, 4000);
+      input.dispatchEvent(new Event("input"));
+      setOutput(item.enhanced);
+      annot.classList.remove("show");
+      const chip = document.querySelector(`#modes .chip[data-mode="${item.mode}"]`);
+      if (chip) chip.click();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    histList.appendChild(div);
+  });
+}
+document.getElementById("clearHist").addEventListener("click", () => {
+  if (confirm("Padam semua sejarah prompt?")) { persistHistory([]); renderHistory(); }
+});
+renderHistory();
+
+/* iOS Safari ignores user-scalable=no in the browser, so block pinch and
+   double-tap zoom by hand; standalone (home screen) mode honours the meta. */
+document.addEventListener("gesturestart", (e) => e.preventDefault());
+let lastTouch = 0;
+document.addEventListener("touchend", (e) => {
+  const now = Date.now();
+  if (now - lastTouch < 320 && !["TEXTAREA", "INPUT", "SELECT", "BUTTON"].includes(e.target.tagName)) e.preventDefault();
+  lastTouch = now;
+}, { passive: false });
+</script>
+</body>
+</html>
