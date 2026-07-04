@@ -39,7 +39,8 @@
     --font-hand: "Caveat", cursive;
   }
 
-  html { -webkit-text-size-adjust: 100%; overscroll-behavior: none; }
+  html { -webkit-text-size-adjust: 100%; overscroll-behavior: none; overflow-x: clip; }
+  body { overflow-x: clip; }
 
   body {
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -188,12 +189,15 @@
   }
   .lang-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
+    row-gap: 6px;
     margin-bottom: 20px;
     font-size: 13px;
     color: var(--text-tertiary);
   }
+  .lang-row span:not(:first-child) { margin-left: 6px; }
   .lang-row select {
     font-family: inherit;
     font-size: 13px;
@@ -582,6 +586,11 @@
       <option value="ms">Bahasa Melayu</option>
       <option value="en">English</option>
     </select>
+    <span>gaya respons:</span>
+    <select id="styleSel">
+      <option value="standard" selected>Standard (arahan jelas)</option>
+      <option value="santai">Santai KL (borak-borak)</option>
+    </select>
   </div>
 
   <div class="panels">
@@ -673,6 +682,7 @@ const annotList = document.getElementById("annotList");
 const charCount = document.getElementById("charCount");
 const histList = document.getElementById("histList");
 const outLangSel = document.getElementById("outLang");
+const styleSel = document.getElementById("styleSel");
 
 let currentMode = "general";
 let lastEnhanced = "";
@@ -764,21 +774,32 @@ const MODE_GUIDE = {
   academic: "Academic / research — the enhanced prompt should specify scope, depth, citation expectations, structure, and target academic level.",
 };
 
-function buildPrompt(raw, mode, lang) {
+function buildPrompt(raw, mode, lang, style) {
   const langRule =
     lang === "ms" ? "Write the ENHANCED prompt fully in Bahasa Melayu."
     : lang === "en" ? "Write the ENHANCED prompt fully in English."
     : "Keep the ENHANCED prompt in the same language (or natural language mix) as the original prompt.";
+  const santaiBlock = style === "santai" ? `
+
+Response style: SANTAI / CONVERSATIONAL. This is important — the ENHANCED prompt must explicitly instruct the target AI to:
+- reply in a relaxed, conversational, friend-to-friend tone — macam borak dengan kawan baik kat mamak — NOT a rigid, structured, instruction-manual answer
+- use natural, everyday colloquial Bahasa Melayu as actually spoken in Kuala Lumpur / Semenanjung Malaysia: partikel like "lah", "kan", "je", "kot", "eh", "tau"; pronouns aku/kau (or saya/awak if the context is more polite); light Malay-English code-switching only where it genuinely sounds natural
+- strictly avoid textbook/formal Malay ("anda", "sila", "walau bagaimanapun", "adalah merupakan"), avoid Indonesian vocabulary, and avoid stiff numbered lists or headings unless truly necessary
+- the Malay must still be excellent and grammatically sound underneath — natural and santai, never broken or awkward
+Write the ENHANCED prompt itself in that same santai KL register too (while keeping the actual request crystal clear).` : "";
+  const formatRule = style === "santai"
+    ? "3. Shape the expected response as a flowing conversation (paragraphs, macam berbual) — only suggest lists/tables/code when the task genuinely needs them."
+    : "3. Specify a suitable output format (list, table, paragraphs, code, etc.).";
   return `You are a Prompt Enhancement Engine — like Google Translate, but instead of translating between languages, you translate a rough, vague prompt into a clear, specific, well-structured prompt that gets much better results from any LLM.
 
 The user's raw prompt may be in Malay, English, or a casual Malay-English mix (bahasa rojak). Treat mixed language as first-class input.
 
-Enhancement mode: ${MODE_GUIDE[mode]}
+Enhancement mode: ${MODE_GUIDE[mode]}${santaiBlock}
 
 Rules:
 1. Identify the user's core intent and PRESERVE it exactly — never change what they want.
 2. Add implied but missing context (audience, purpose, situation).
-3. Specify a suitable output format (list, table, paragraphs, code, etc.).
+${formatRule}
 4. Add useful constraints (length, tone, style) only where relevant.
 5. ${langRule}
 6. Do NOT invent facts, names, numbers, or requirements the user never implied.
@@ -907,7 +928,7 @@ async function enhance(attempt = 0) {
     const res = await fetch(PROXY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: buildPrompt(raw, currentMode, outLangSel.value) }),
+      body: JSON.stringify({ prompt: buildPrompt(raw, currentMode, outLangSel.value, styleSel.value) }),
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error.message || data.error);
@@ -929,7 +950,7 @@ async function enhance(attempt = 0) {
       });
       annot.classList.add("show");
     }
-    saveHistory({ raw, enhanced, mode: currentMode, ts: Date.now(), fav: false });
+    saveHistory({ raw, enhanced, mode: currentMode, style: styleSel.value, ts: Date.now(), fav: false });
     if (!localStorage.getItem("promptcraft_bursted")) {
       try { localStorage.setItem("promptcraft_bursted", "1"); } catch {}
       if (!matchMedia("(prefers-reduced-motion: reduce)").matches) sparkleBurst();
@@ -1004,7 +1025,7 @@ function renderHistory() {
     top.className = "hist-top";
     const mode = document.createElement("span");
     mode.className = "hist-mode";
-    mode.textContent = MODE_LABEL[item.mode] || item.mode;
+    mode.textContent = (MODE_LABEL[item.mode] || item.mode) + (item.style === "santai" ? " · santai" : "");
     const time = document.createElement("span");
     time.className = "hist-time";
     time.textContent = timeAgo(item.ts);
@@ -1033,6 +1054,7 @@ function renderHistory() {
       input.dispatchEvent(new Event("input"));
       setOutput(item.enhanced);
       annot.classList.remove("show");
+      styleSel.value = item.style === "santai" ? "santai" : "standard";
       const chip = document.querySelector(`#modes .chip[data-mode="${item.mode}"]`);
       if (chip) chip.click();
       window.scrollTo({ top: 0, behavior: "smooth" });
