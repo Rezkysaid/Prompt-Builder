@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#faf6ef">
 <meta name="description" content="PromptCraft — macam Google Translate, tapi untuk prompt. Translate prompt mentah kepada prompt yang lebih jelas, berstruktur dan berkuasa.">
-<title>PromptCraft — Prompt Enhancement Engine</title>
+<title>PromptCraft — prompt kau, tapi power</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,30 +14,29 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,600;1,9..144,700&family=Inter:wght@400;500;600&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   :root {
-    --bg: #fafafa;
-    --surface: #ffffff;
-    --border: #e4e4e7;
-    --border-strong: #d4d4d8;
-    --text: #18181b;
-    --text-secondary: #52525b;
-    --text-tertiary: #a1a1aa;
-    --accent: #2563eb;
-    --accent-soft: #eff6ff;
-    --accent-border: #bfdbfe;
-    --success: #16a34a;
-    --success-soft: #f0fdf4;
-    --danger: #dc2626;
-    --danger-soft: #fef2f2;
-    --danger-border: #fecaca;
-    --shadow-sm: 0 1px 2px rgba(24, 24, 27, 0.04);
-    --shadow-md: 0 1px 3px rgba(24, 24, 27, 0.06), 0 4px 12px rgba(24, 24, 27, 0.05);
-    --radius: 12px;
-    --font-display: "Space Grotesk", "Inter", -apple-system, sans-serif;
+    --bg: #faf6ef;
+    --surface: #fffdf8;
+    --border: #e8dfcd;
+    --border-strong: #d3c6ab;
+    --ink: #23252e;
+    --text: #23252e;
+    --text-secondary: #6b6455;
+    --text-tertiary: #a89e88;
+    --accent: #d9552f;
+    --accent-soft: #f9ece3;
+    --accent-border: #ecc9b6;
+    --danger: #b3402a;
+    --danger-soft: #f8e7e1;
+    --danger-border: #e8c0b2;
+    --shadow-sm: 0 1px 2px rgba(60, 50, 30, 0.05);
+    --shadow-md: 0 1px 3px rgba(60, 50, 30, 0.06), 0 5px 14px rgba(60, 50, 30, 0.06);
+    --font-display: "Fraunces", Georgia, serif;
+    --font-hand: "Caveat", cursive;
   }
 
   html { -webkit-text-size-adjust: 100%; overscroll-behavior: none; }
@@ -66,78 +65,88 @@
 
   button, .chip { touch-action: manipulation; font-family: inherit; }
 
+  /* warm light from the top, like a desk lamp */
   body::before {
     content: "";
     position: fixed;
     inset: 0;
-    background: radial-gradient(720px 340px at 50% -100px, rgba(37, 99, 235, 0.08), transparent 70%);
+    background: radial-gradient(700px 340px at 30% -120px, rgba(217, 85, 47, 0.07), transparent 70%);
     pointer-events: none;
+    z-index: 0;
+  }
+  /* paper grain */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
   }
 
-  .wrap, footer { position: relative; z-index: 1; }
+  .wrap, footer, .topbar { position: relative; z-index: 1; }
 
   /* ── Top bar ── */
   .topbar {
     position: sticky;
     top: 0;
     z-index: 10;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: saturate(180%) blur(10px);
-    -webkit-backdrop-filter: saturate(180%) blur(10px);
+    background: rgba(250, 246, 239, 0.88);
+    backdrop-filter: saturate(160%) blur(10px);
+    -webkit-backdrop-filter: saturate(160%) blur(10px);
     border-bottom: 1px solid var(--border);
   }
   .topbar-inner {
-    max-width: 960px;
+    max-width: 980px;
     margin: 0 auto;
-    padding: 14px 24px;
+    padding: 13px 24px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 9px;
   }
-  .logo-mark {
-    width: 28px; height: 28px;
-    background: linear-gradient(135deg, #1d4ed8, #2563eb 55%, #7c3aed);
-    border-radius: 7px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+  .logo-mark { width: 26px; height: 26px; flex-shrink: 0; color: var(--accent); }
+  .logo-mark svg { width: 100%; height: 100%; }
+  .wordmark {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
   }
-  .logo-mark svg { width: 16px; height: 16px; stroke: #fff; }
-  .wordmark { font-family: var(--font-display); font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
   .topbar-right {
     margin-left: auto;
-    font-size: 12.5px;
-    font-weight: 500;
+    font-family: var(--font-hand);
+    font-size: 17px;
     color: var(--text-tertiary);
-    letter-spacing: 0.01em;
+    transform: rotate(-1.2deg);
   }
 
   /* ── Layout ── */
-  .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 60px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 34px 20px 60px; }
 
-  .hero { text-align: center; margin-bottom: 26px; }
+  .hero { margin-bottom: 30px; padding-left: 4px; }
   .hero h1 {
     font-family: var(--font-display);
-    font-size: clamp(28px, 6vw, 48px);
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    line-height: 1.15;
-    text-transform: uppercase;
-    background: linear-gradient(94deg, var(--text) 35%, var(--accent) 75%, #7c3aed 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    display: inline-block;
-    position: relative;
+    font-size: clamp(34px, 6.5vw, 56px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
   }
-  .hero h1::after {
-    content: "";
-    display: block;
-    width: 56px;
-    height: 4px;
-    border-radius: 999px;
-    background: linear-gradient(90deg, var(--accent), #7c3aed);
-    margin: 12px auto 0;
+  .hero .pow {
+    font-style: italic;
+    font-weight: 700;
+    color: var(--accent);
+    position: relative;
+    white-space: nowrap;
+  }
+  .hero .pow svg {
+    position: absolute;
+    left: -2%;
+    bottom: -0.28em;
+    width: 104%;
+    height: 0.32em;
+    color: var(--accent);
+    overflow: visible;
   }
 
   /* ── Mode + language controls ── */
@@ -145,14 +154,21 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    justify-content: center;
-    margin-bottom: 18px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .controls-note {
+    font-family: var(--font-hand);
+    font-size: 17px;
+    color: var(--text-tertiary);
+    margin-right: 2px;
+    transform: rotate(-1.5deg);
   }
   .chip {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    border: 1px solid var(--border-strong);
+    border: 1.5px solid var(--border-strong);
     background: var(--surface);
     color: var(--text-secondary);
     border-radius: 999px;
@@ -163,18 +179,18 @@
     transition: all 0.15s ease;
   }
   .chip svg { width: 14px; height: 14px; flex-shrink: 0; }
-  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip:hover { border-color: var(--accent); color: var(--accent); transform: rotate(-1deg); }
   .chip.active {
-    background: var(--text);
-    border-color: var(--text);
-    color: #fff;
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--bg);
+    transform: rotate(0.5deg);
   }
   .lang-row {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 8px;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
     font-size: 13px;
     color: var(--text-tertiary);
   }
@@ -184,45 +200,49 @@
     font-weight: 500;
     color: var(--text);
     background: var(--surface);
-    border: 1px solid var(--border-strong);
+    border: 1.5px solid var(--border-strong);
     border-radius: 8px;
-    padding: 5px 10px;
+    padding: 4px 10px;
     cursor: pointer;
   }
 
-  /* ── Dual panel ── */
+  /* ── Dual panel (sengaja tak sama besar) ── */
   .panels {
     display: grid;
-    grid-template-columns: 1fr 44px 1fr;
+    grid-template-columns: 1.15fr 44px 1fr;
     gap: 0;
     align-items: stretch;
   }
   .panel {
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    border-radius: 14px 18px 15px 13px;
     box-shadow: var(--shadow-md);
     display: flex;
     flex-direction: column;
-    min-height: 260px;
+    min-height: 270px;
     overflow: hidden;
   }
+  .panel-in { transform: rotate(-0.25deg); }
+  .panel-out { transform: rotate(0.25deg); }
   .panel-head {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: 8px;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--border);
-    font-size: 12px;
+    padding: 9px 16px 7px;
+    border-bottom: 1.5px dashed var(--border);
+    font-family: var(--font-hand);
+    font-size: 19px;
     font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+  .panel-head .count {
+    margin-left: auto;
+    font-family: "Inter", sans-serif;
+    font-size: 11.5px;
+    font-weight: 500;
     color: var(--text-tertiary);
   }
-  .panel-head .dot { width: 7px; height: 7px; border-radius: 50%; }
-  .dot-in { background: var(--text-tertiary); }
-  .dot-out { background: var(--accent); }
-  .panel-head .count { margin-left: auto; font-weight: 500; text-transform: none; letter-spacing: 0; }
 
   textarea {
     flex: 1;
@@ -236,26 +256,32 @@
     line-height: 1.65;
     color: var(--text);
     background: transparent;
-    min-height: 180px;
+    min-height: 185px;
   }
   textarea::placeholder { color: var(--text-tertiary); }
 
   .out-body { flex: 1; padding: 16px; overflow-y: auto; }
   .out-text { white-space: pre-wrap; font-size: 15px; line-height: 1.65; }
+  .out-text.typing::after {
+    content: "▍";
+    color: var(--accent);
+    animation: blink 0.9s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
   .out-empty { color: var(--text-tertiary); font-size: 14px; }
 
   .panel-foot {
     display: flex;
     gap: 8px;
     padding: 10px 12px;
-    border-top: 1px solid var(--border);
+    border-top: 1.5px dashed var(--border);
     flex-wrap: wrap;
   }
   .mini-btn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    border: 1px solid var(--border-strong);
+    border: 1.5px solid var(--border-strong);
     background: var(--surface);
     color: var(--text-secondary);
     border-radius: 8px;
@@ -263,23 +289,21 @@
     font-size: 12.5px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.15s ease;
+    box-shadow: 0 2px 0 var(--border-strong);
+    transition: all 0.12s ease;
   }
-  .mini-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .mini-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); box-shadow: 0 2px 0 var(--accent-border); }
+  .mini-btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 0 0 var(--border-strong); }
   .mini-btn:disabled { opacity: 0.45; cursor: default; }
   .mini-btn svg { width: 13px; height: 13px; }
-  .mini-btn.copied { border-color: var(--success); color: var(--success); background: var(--success-soft); }
+  .mini-btn.copied { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 
   /* swap column */
-  .swap-col {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  .swap-col { display: flex; align-items: center; justify-content: center; }
   .swap-btn {
     width: 34px; height: 34px;
     border-radius: 50%;
-    border: 1px solid var(--border-strong);
+    border: 1.5px solid var(--border-strong);
     background: var(--surface);
     color: var(--text-secondary);
     cursor: pointer;
@@ -291,36 +315,54 @@
   .swap-btn:disabled { opacity: 0.4; cursor: default; }
   .swap-btn svg { width: 15px; height: 15px; }
 
-  /* ── Enhance button ── */
-  .action-row { display: flex; justify-content: center; margin-top: 20px; }
+  /* ── Enhance button (letterpress feel) ── */
+  .action-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 22px;
+    padding-left: 6px;
+  }
   .enhance-btn {
     font-family: var(--font-display);
-    font-size: 15.5px;
+    font-style: italic;
+    font-size: 17px;
     font-weight: 600;
     letter-spacing: 0.01em;
-    background: var(--text);
-    color: #fff;
+    background: var(--ink);
+    color: var(--bg);
     border: none;
-    border-radius: 12px;
-    padding: 13px 42px;
+    border-radius: 12px 14px 12px 13px;
+    padding: 13px 38px;
     cursor: pointer;
-    box-shadow: var(--shadow-md);
-    transition: all 0.15s ease;
+    box-shadow: 0 4px 0 #4a4230;
+    transition: all 0.12s ease;
     display: inline-flex;
     align-items: center;
     gap: 9px;
+    transform: rotate(-0.5deg);
   }
-  .enhance-btn:hover:not(:disabled) { background: #000; transform: translateY(-1px); }
-  .enhance-btn:disabled { opacity: 0.55; cursor: default; transform: none; }
+  .enhance-btn:hover:not(:disabled) { background: #000; }
+  .enhance-btn:active:not(:disabled) { transform: rotate(-0.5deg) translateY(3px); box-shadow: 0 1px 0 #4a4230; }
+  .enhance-btn:disabled { opacity: 0.55; cursor: default; }
   .enhance-btn svg { width: 16px; height: 16px; }
+  .action-note {
+    font-family: var(--font-hand);
+    font-size: 17px;
+    color: var(--text-tertiary);
+    transform: rotate(-2deg);
+  }
+
+  /* sparkle burst bits */
+  .spark { position: fixed; width: 13px; height: 13px; pointer-events: none; z-index: 99; }
 
   /* ── Loading / error ── */
   .loading {
     display: none;
     align-items: center;
-    justify-content: center;
     gap: 10px;
     margin-top: 18px;
+    padding-left: 8px;
     color: var(--text-secondary);
     font-size: 14px;
   }
@@ -337,36 +379,36 @@
 
   .error {
     display: none;
-    margin: 18px auto 0;
+    margin: 18px 0 0;
     max-width: 560px;
     background: var(--danger-soft);
-    border: 1px solid var(--danger-border);
+    border: 1.5px solid var(--danger-border);
     color: var(--danger);
-    border-radius: var(--radius);
+    border-radius: 12px 14px 12px 13px;
     padding: 12px 16px;
     font-size: 13.5px;
-    text-align: center;
   }
   .error.show { display: block; }
 
-  /* ── Annotation ── */
+  /* ── Annotation: komen cikgu ── */
   .annot {
     display: none;
-    margin-top: 22px;
+    margin-top: 24px;
     background: var(--accent-soft);
-    border: 1px solid var(--accent-border);
-    border-radius: var(--radius);
-    padding: 14px 18px;
+    border: 1.5px dashed var(--accent-border);
+    border-radius: 14px 16px 13px 15px;
+    padding: 13px 18px 15px;
+    transform: rotate(-0.3deg);
   }
   .annot.show { display: block; }
   .annot h3 {
-    font-family: var(--font-display);
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    font-family: var(--font-hand);
+    font-size: 21px;
+    font-weight: 700;
     color: var(--accent);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
+    transform: rotate(-0.8deg);
+    display: inline-block;
   }
   .annot ul { list-style: none; }
   .annot li {
@@ -377,19 +419,15 @@
     align-items: flex-start;
     gap: 8px;
   }
-  .annot li svg { width: 14px; height: 14px; color: var(--success); flex-shrink: 0; margin-top: 4px; }
+  .annot li svg { width: 14px; height: 14px; color: var(--accent); flex-shrink: 0; margin-top: 4px; }
 
   /* ── History ── */
-  .hist-section { margin-top: 40px; }
-  .hist-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
+  .hist-section { margin-top: 46px; }
+  .hist-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
   .hist-head h2 {
     font-family: var(--font-display);
-    font-size: 16px;
+    font-style: italic;
+    font-size: 21px;
     font-weight: 600;
     letter-spacing: -0.01em;
   }
@@ -397,24 +435,32 @@
     margin-left: auto;
     background: none;
     border: none;
+    font-family: var(--font-hand);
     color: var(--text-tertiary);
-    font-size: 12.5px;
+    font-size: 16px;
     cursor: pointer;
     text-decoration: underline;
   }
   .hist-head .clear-hist:hover { color: var(--danger); }
-  .hist-empty { color: var(--text-tertiary); font-size: 13.5px; }
+  .hist-empty {
+    font-family: var(--font-hand);
+    color: var(--text-tertiary);
+    font-size: 18px;
+    transform: rotate(-1deg);
+  }
   .hist-item {
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    border-radius: 13px 15px 12px 14px;
     box-shadow: var(--shadow-sm);
     padding: 12px 16px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     cursor: pointer;
-    transition: border-color 0.15s ease;
+    transition: all 0.15s ease;
   }
-  .hist-item:hover { border-color: var(--accent); }
+  .hist-item:nth-child(odd) { transform: rotate(-0.35deg); }
+  .hist-item:nth-child(even) { transform: rotate(0.3deg); }
+  .hist-item:hover { border-color: var(--accent); transform: rotate(0deg); }
   .hist-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
   .hist-mode {
     font-size: 11px;
@@ -438,7 +484,7 @@
     display: inline-flex;
   }
   .fav-btn svg { width: 15px; height: 15px; }
-  .fav-btn.faved { color: #f59e0b; }
+  .fav-btn.faved { color: var(--accent); }
   .hist-raw {
     font-size: 13.5px;
     color: var(--text);
@@ -458,10 +504,12 @@
   }
 
   footer {
+    font-family: var(--font-hand);
     text-align: center;
     color: var(--text-tertiary);
-    font-size: 12.5px;
+    font-size: 18px;
     padding: 0 20px 40px;
+    transform: rotate(-0.6deg);
   }
 
   /* ── Mobile ── */
@@ -469,8 +517,11 @@
     .panels { grid-template-columns: 1fr; }
     .swap-col { padding: 8px 0; }
     .swap-btn svg { transform: rotate(90deg); }
-    textarea { min-height: 140px; }
+    textarea { min-height: 145px; }
     .panel { min-height: 0; }
+    .panel-in, .panel-out { transform: none; }
+    .action-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .hero { margin-bottom: 24px; }
   }
 </style>
 </head>
@@ -479,22 +530,25 @@
 <div class="topbar">
   <div class="topbar-inner">
     <div class="logo-mark">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M5 6h7"/><path d="M5 10h4"/><path d="M15 8l1.2 3.3a1.5 1.5 0 00.9.9L20.4 13.4l-3.3 1.2a1.5 1.5 0 00-.9.9L15 18.8l-1.2-3.3a1.5 1.5 0 00-.9-.9L9.6 13.4l3.3-1.2a1.5 1.5 0 00.9-.9L15 8z"/>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+        <path d="M12 4.5 Q 11.7 12 12 19.5"/>
+        <path d="M5.5 8.2 Q 12 12 18.5 15.8"/>
+        <path d="M18.3 8 Q 12 12.2 5.7 15.9"/>
       </svg>
     </div>
-    <span class="wordmark">PromptCraft</span>
-    <span class="topbar-right">Prompt Enhancement Engine</span>
+    <span class="wordmark">promptcraft</span>
+    <span class="topbar-right">upgrade prompt, bukan magic</span>
   </div>
 </div>
 
 <div class="wrap">
 
   <div class="hero">
-    <h1>Improve Your Prompt</h1>
+    <h1>prompt kau, tapi <span class="pow">power<svg viewBox="0 0 120 12" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M3 8 Q 16 3 31 7.5 Q 46 11 61 6.5 Q 76 3 91 7 Q 104 10 117 6"/></svg></span>.</h1>
   </div>
 
   <div class="controls" id="modes">
+    <span class="controls-note">pilih genre:</span>
     <button class="chip active" data-mode="general">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
       General
@@ -522,7 +576,7 @@
   </div>
 
   <div class="lang-row">
-    <span>Bahasa output:</span>
+    <span>bahasa output:</span>
     <select id="outLang">
       <option value="auto" selected>Auto (ikut input)</option>
       <option value="ms">Bahasa Melayu</option>
@@ -531,8 +585,8 @@
   </div>
 
   <div class="panels">
-    <div class="panel">
-      <div class="panel-head"><span class="dot dot-in"></span>Prompt Asal<span class="count" id="charCount"></span></div>
+    <div class="panel panel-in">
+      <div class="panel-head">tampal prompt buruk kau sini<span class="count" id="charCount"></span></div>
       <textarea id="input" placeholder="Taip atau paste prompt mentah kau kat sini…" maxlength="4000"></textarea>
       <div class="panel-foot">
         <button class="mini-btn" id="clearBtn">
@@ -552,8 +606,8 @@
       </button>
     </div>
 
-    <div class="panel">
-      <div class="panel-head"><span class="dot dot-out"></span>Prompt Enhanced</div>
+    <div class="panel panel-out">
+      <div class="panel-head">versi power</div>
       <div class="out-body">
         <div class="out-text" id="output"><span class="out-empty">Hasil enhancement akan keluar kat sini…</span></div>
       </div>
@@ -573,29 +627,30 @@
   <div class="action-row">
     <button class="enhance-btn" id="enhanceBtn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8a2 2 0 001.3 1.3L21 12l-5.8 1.9a2 2 0 00-1.3 1.3L12 21l-1.9-5.8a2 2 0 00-1.3-1.3L3 12l5.8-1.9a2 2 0 001.3-1.3L12 3z"/></svg>
-      Enhance
+      Power-kan
     </button>
+    <span class="action-note">tekan je, biar dia buat kerja</span>
   </div>
 
-  <div class="loading" id="loading"><div class="spinner"></div><span id="loadingText">Meng-upgrade prompt kau…</span></div>
+  <div class="loading" id="loading"><div class="spinner"></div><span id="loadingText">jap, tengah gosok prompt ni…</span></div>
   <div class="error" id="error"></div>
 
   <div class="annot" id="annot">
-    <h3>Apa yang berubah</h3>
+    <h3>komen cikgu:</h3>
     <ul id="annotList"></ul>
   </div>
 
   <div class="hist-section">
     <div class="hist-head">
-      <h2>Sejarah Prompt</h2>
-      <button class="clear-hist" id="clearHist">Padam semua</button>
+      <h2>prompt lama kau</h2>
+      <button class="clear-hist" id="clearHist">buang semua</button>
     </div>
     <div id="histList"></div>
   </div>
 
 </div>
 
-<footer>PromptCraft — translate niat kabur kepada arahan power. Satu prompt satu masa.</footer>
+<footer>dibuat sambil minum kopi — satu prompt satu masa.</footer>
 
 <script>
 const PROXY_URL = "https://muhasabah-app.vercel.app/api/gemini";
@@ -622,6 +677,8 @@ const outLangSel = document.getElementById("outLang");
 let currentMode = "general";
 let lastEnhanced = "";
 let retryTimer = null;
+let typeTimer = null;
+let loadingTimer = null;
 
 /* ── Mode chips ── */
 document.querySelectorAll("#modes .chip").forEach((chip) => {
@@ -652,6 +709,7 @@ pasteBtn.addEventListener("click", async () => {
 });
 swapBtn.addEventListener("click", () => {
   if (!lastEnhanced) return;
+  clearInterval(typeTimer);
   input.value = lastEnhanced.slice(0, 4000);
   input.dispatchEvent(new Event("input"));
   setOutput("");
@@ -663,7 +721,7 @@ copyBtn.addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(lastEnhanced);
     copyBtn.classList.add("copied");
-    copyBtn.lastChild.textContent = "Copied!";
+    copyBtn.lastChild.textContent = "Dah copy!";
     setTimeout(() => {
       copyBtn.classList.remove("copied");
       copyBtn.lastChild.textContent = "Copy";
@@ -764,6 +822,73 @@ function setOutput(text) {
   }
 }
 
+/* typewriter: rasa macam ada orang menaip semula prompt kau */
+function typeOutput(text) {
+  lastEnhanced = text;
+  copyBtn.disabled = false;
+  regenBtn.disabled = false;
+  swapBtn.disabled = false;
+  clearInterval(typeTimer);
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    output.textContent = text;
+    return;
+  }
+  output.textContent = "";
+  output.classList.add("typing");
+  let i = 0;
+  const step = Math.max(1, Math.round(text.length / 110));
+  typeTimer = setInterval(() => {
+    i += step;
+    output.textContent = text.slice(0, i);
+    if (i >= text.length) {
+      clearInterval(typeTimer);
+      output.textContent = text;
+      output.classList.remove("typing");
+    }
+  }, 16);
+}
+
+/* loading text yang bersuara manusia */
+const LOADING_PHRASES = [
+  "jap, tengah gosok prompt ni…",
+  "tambah perasa sikit…",
+  "kemas ayat, buang yang kabur…",
+  "hmm, apa niat sebenar kau ni…",
+  "hampir siap dah ni…",
+];
+function startLoadingChatter() {
+  let i = 0;
+  loadingText.textContent = LOADING_PHRASES[0];
+  clearInterval(loadingTimer);
+  loadingTimer = setInterval(() => {
+    i = (i + 1) % LOADING_PHRASES.length;
+    loadingText.textContent = LOADING_PHRASES[i];
+  }, 1800);
+}
+function stopLoadingChatter() { clearInterval(loadingTimer); }
+
+/* sparkle burst — sekali je, masa enhancement pertama */
+function sparkleBurst() {
+  const r = enhanceBtn.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  for (let i = 0; i < 10; i++) {
+    const s = document.createElement("div");
+    s.className = "spark";
+    s.innerHTML = '<svg viewBox="0 0 24 24" fill="#d9552f"><path d="M12 2l2 7 7 3-7 3-2 7-2-7-7-3 7-3z"/></svg>';
+    s.style.left = cx + "px";
+    s.style.top = cy + "px";
+    document.body.appendChild(s);
+    const a = Math.random() * Math.PI * 2, d = 45 + Math.random() * 75;
+    s.animate(
+      [
+        { transform: "translate(-50%,-50%) scale(0.4) rotate(0deg)", opacity: 1 },
+        { transform: `translate(${Math.cos(a) * d - 7}px, ${Math.sin(a) * d - 7}px) scale(1) rotate(140deg)`, opacity: 0 },
+      ],
+      { duration: 700 + Math.random() * 300, easing: "cubic-bezier(.2,.6,.3,1)" }
+    ).onfinish = () => s.remove();
+  }
+}
+
 async function enhance(attempt = 0) {
   const raw = input.value.trim();
   if (!raw) { input.focus(); return; }
@@ -775,7 +900,7 @@ async function enhance(attempt = 0) {
   enhanceBtn.disabled = true;
   errorBox.classList.remove("show");
   annot.classList.remove("show");
-  loadingText.textContent = "Meng-upgrade prompt kau…";
+  startLoadingChatter();
   loading.classList.add("show");
 
   try {
@@ -789,9 +914,9 @@ async function enhance(attempt = 0) {
 
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
     const { enhanced, changes } = parseResponse(text);
-    if (!enhanced) throw new Error("Respons tak lengkap. Cuba sekali lagi.");
+    if (!enhanced) throw new Error("respons tak lengkap — cuba sekali lagi");
 
-    setOutput(enhanced);
+    typeOutput(enhanced);
     if (changes.length) {
       annotList.innerHTML = "";
       changes.forEach((c) => {
@@ -805,30 +930,37 @@ async function enhance(attempt = 0) {
       annot.classList.add("show");
     }
     saveHistory({ raw, enhanced, mode: currentMode, ts: Date.now(), fav: false });
+    if (!localStorage.getItem("promptcraft_bursted")) {
+      try { localStorage.setItem("promptcraft_bursted", "1"); } catch {}
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) sparkleBurst();
+    }
   } catch (e) {
     const msg = e && e.message ? String(e.message) : String(e);
     const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|retry in/i.test(msg);
     if (isQuota && attempt < 1) {
       let wait = Math.ceil(parseFloat((msg.match(/retry in ([\d.]+)/i) || [])[1]) || 30);
       wait = Math.min(Math.max(wait, 3), 60);
+      stopLoadingChatter();
       startRetryCountdown(wait, attempt);
       return; // countdown keeps the loading state and retries by itself
     }
     errorBox.textContent = isQuota
-      ? "Ramai orang tengah guna sekarang — tunggu seminit, lepas tu cuba lagi ya."
-      : "Ada masalah: " + msg;
+      ? "ramai orang tengah beratur guna sekarang — tunggu seminit, lepas tu cuba lagi ya"
+      : "alamak, ada masalah: " + msg;
     errorBox.classList.add("show");
+    stopLoadingChatter();
     loading.classList.remove("show");
     enhanceBtn.disabled = false;
     return;
   }
+  stopLoadingChatter();
   loading.classList.remove("show");
   enhanceBtn.disabled = false;
 }
 
 function startRetryCountdown(secondsLeft, attempt) {
   if (secondsLeft <= 0) { enhance(attempt + 1); return; }
-  loadingText.textContent = "Ramai orang tengah guna — cuba semula dalam " + secondsLeft + "s";
+  loadingText.textContent = "ramai orang tengah guna — aku cuba lagi dalam " + secondsLeft + "s";
   retryTimer = setTimeout(() => startRetryCountdown(secondsLeft - 1, attempt), 1000);
 }
 
@@ -862,7 +994,7 @@ function renderHistory() {
   const items = loadHistory().sort((a, b) => (b.fav - a.fav) || (b.ts - a.ts));
   histList.innerHTML = "";
   if (!items.length) {
-    histList.innerHTML = '<div class="hist-empty">Belum ada sejarah. Prompt yang kau enhance akan disimpan kat sini (dalam browser kau je).</div>';
+    histList.innerHTML = '<div class="hist-empty">takde apa lagi. power-kan satu prompt, nanti terkumpul kat sini (dalam browser kau je).</div>';
     return;
   }
   items.forEach((item) => {
@@ -895,6 +1027,8 @@ function renderHistory() {
     enhEl.textContent = "→ " + item.enhanced;
     div.append(top, rawEl, enhEl);
     div.addEventListener("click", () => {
+      clearInterval(typeTimer);
+      output.classList.remove("typing");
       input.value = item.raw.slice(0, 4000);
       input.dispatchEvent(new Event("input"));
       setOutput(item.enhanced);
@@ -907,7 +1041,7 @@ function renderHistory() {
   });
 }
 document.getElementById("clearHist").addEventListener("click", () => {
-  if (confirm("Padam semua sejarah prompt?")) { persistHistory([]); renderHistory(); }
+  if (confirm("Buang semua sejarah prompt?")) { persistHistory([]); renderHistory(); }
 });
 renderHistory();
 
