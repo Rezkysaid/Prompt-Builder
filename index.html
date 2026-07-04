@@ -711,7 +711,7 @@
   <div class="idea-section">
     <div class="idea-head">
       <h2>buntu nak sembang apa dengan AI?</h2>
-      <span class="idea-note">cabut satu kad ni</span>
+      <span class="idea-note" id="ideaNote">cabut satu kad ni</span>
     </div>
     <div class="idea-deck">
       <div class="idea-card back-2"></div>
@@ -1112,22 +1112,40 @@ const IDEAS = [
 const ideaCard = document.getElementById("ideaCard");
 const ideaCat = document.getElementById("ideaCat");
 const ideaText = document.getElementById("ideaText");
-let ideaBag = [];
+const ideaNote = document.getElementById("ideaNote");
+const ideaShuffleBtn = document.getElementById("ideaShuffle");
+const IDEA_BAG_KEY = "promptcraft_idea_bag";
 
-function nextIdea() {
-  if (!ideaBag.length) {
-    ideaBag = IDEAS.map((_, i) => i);
-    for (let i = ideaBag.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [ideaBag[i], ideaBag[j]] = [ideaBag[j], ideaBag[i]];
-    }
+let ideaBag = null;   // baki kad statik yang belum ditunjuk (kekal dalam localStorage)
+let aiIdeaMode = false; // true bila semua 36 kad statik dah habis
+let aiIdeaQueue = [];
+let ideaBusy = false;
+
+function shuffledIdeaBag() {
+  const a = IDEAS.map((_, i) => i);
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
   }
-  return IDEAS[ideaBag.pop()];
+  return a;
+}
+function persistIdeaBag() {
+  try { localStorage.setItem(IDEA_BAG_KEY, JSON.stringify(ideaBag)); } catch {}
+}
+function initIdeaBag() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(IDEA_BAG_KEY));
+    if (Array.isArray(stored)) ideaBag = stored.filter((i) => Number.isInteger(i) && i >= 0 && i < IDEAS.length);
+  } catch {}
+  if (!ideaBag) { ideaBag = shuffledIdeaBag(); persistIdeaBag(); }
+  if (!ideaBag.length) aiIdeaMode = true;
 }
 
-function showIdea(animate) {
-  const idea = nextIdea();
-  const apply = () => { ideaCat.textContent = idea.c; ideaText.textContent = idea.t; };
+function renderIdea(idea, animate) {
+  const apply = () => {
+    ideaCat.textContent = idea.ai ? idea.c + " · idea AI" : idea.c;
+    ideaText.textContent = idea.t;
+  };
   if (!animate || matchMedia("(prefers-reduced-motion: reduce)").matches) { apply(); return; }
   ideaCard.animate(
     [{ transform: "rotate(-0.4deg)", opacity: 1 }, { transform: "translateX(-16px) rotate(-2.5deg)", opacity: 0 }],
@@ -1141,14 +1159,98 @@ function showIdea(animate) {
   };
 }
 
-document.getElementById("ideaShuffle").addEventListener("click", () => showIdea(true));
+function buildIdeaPrompt() {
+  return `Kau adalah penjana kad idea untuk app PromptCraft. Hasilkan 5 idea topik perbualan/aktiviti yang segar dan menarik untuk diteroka bersama AI chatbot (Claude, ChatGPT, Gemini).
+
+Syarat:
+- Tulis dalam Bahasa Melayu santai gaya KL — boleh rojak sikit kalau natural
+- Setiap idea 1-2 ayat sahaja, terus boleh dipakai sebagai prompt
+- Topik mesti pelbagai dan tak berulang antara satu sama lain: falsafah santai, kerjaya, duit, teknologi, kesihatan, kreatif, sejarah, keluarga, makanan, travel, belajar, main-main
+- Elak topik klise macam "tulis email" atau "buat resume" — bagi yang buat orang rasa "eh bestnya nak try"
+
+Jawab TEPAT dalam format ini, 5 baris sahaja, tiada teks lain sebelum atau selepas:
+KATEGORI | idea penuh dalam satu baris`;
+}
+
+function parseIdeas(text) {
+  return text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l.includes("|"))
+    .map((l) => {
+      const parts = l.split("|");
+      return {
+        c: parts[0].replace(/^[-*\d.\s]+/, "").trim().toLowerCase(),
+        t: parts.slice(1).join("|").trim(),
+        ai: true,
+      };
+    })
+    .filter((i) => i.c && i.t)
+    .slice(0, 8);
+}
+
+async function showIdea(animate) {
+  if (ideaBusy) return;
+
+  if (!aiIdeaMode) {
+    const idea = IDEAS[ideaBag.pop()];
+    persistIdeaBag();
+    if (!ideaBag.length) {
+      aiIdeaMode = true;
+      ideaNote.textContent = "ni kad asal yang terakhir — lepas ni AI pula bagi idea";
+    }
+    renderIdea(idea, animate);
+    return;
+  }
+
+  ideaNote.textContent = "kad asal dah habis — AI pula yang bagi idea";
+  if (aiIdeaQueue.length) { renderIdea(aiIdeaQueue.pop(), animate); return; }
+
+  ideaBusy = true;
+  ideaShuffleBtn.disabled = true;
+  ideaCat.textContent = "sekejap eh";
+  ideaText.textContent = "AI tengah fikir idea baru untuk kau…";
+  try {
+    const res = await fetch(PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: buildIdeaPrompt() }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || data.error);
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const ideas = parseIdeas(text);
+    if (!ideas.length) throw new Error("format tak lepas");
+    aiIdeaQueue = ideas;
+    renderIdea(aiIdeaQueue.pop(), animate);
+  } catch {
+    // AI tak dapat sambung — kitar semula kad statik sementara
+    ideaNote.textContent = "AI tak dapat sambung — kad lama dulu sementara";
+    renderIdea(IDEAS[Math.floor(Math.random() * IDEAS.length)], animate);
+  } finally {
+    ideaBusy = false;
+    ideaShuffleBtn.disabled = false;
+  }
+}
+
+ideaShuffleBtn.addEventListener("click", () => showIdea(true));
 document.getElementById("ideaUse").addEventListener("click", () => {
+  if (ideaBusy) return;
   input.value = ideaText.textContent.slice(0, 4000);
   input.dispatchEvent(new Event("input"));
   window.scrollTo({ top: 0, behavior: "smooth" });
   input.focus();
 });
-showIdea(false);
+
+initIdeaBag();
+if (aiIdeaMode) {
+  // jangan panggil API masa page load — tunggu user tekan sendiri
+  ideaNote.textContent = "kad asal dah habis — AI pula yang bagi idea";
+  ideaCat.textContent = "mod AI";
+  ideaText.textContent = "Kau dah tengok semua 36 kad asal. Tekan \"Kad lain\" — AI akan fikirkan idea baru untuk kau.";
+} else {
+  showIdea(false);
+}
 
 /* ── History (localStorage) ── */
 function loadHistory() {
