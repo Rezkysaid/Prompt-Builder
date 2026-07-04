@@ -10,6 +10,7 @@ Macam Google Translate, tapi untuk prompt: translate prompt mentah / kabur / roj
 - 🎛️ **6 mode enhancement** — General, Coding, Creative, Business, Image-Gen, Academic
 - ✅ **Annotation** — senarai apa yang ditambah/diubah pada prompt asal (belajar sambil guna)
 - 🌐 **Sokong bahasa rojak** — input Melayu, English atau campuran; bahasa output boleh pilih (Auto / MS / EN)
+- 🎴 **Dek kad idea** — 36 topik rawak pelbagai kategori untuk diteroka dengan Claude/ChatGPT/Gemini bila buntu; satu klik terus masuk ke panel input
 - 🕘 **Sejarah prompt + kegemaran** — disimpan dalam browser (localStorage)
 - 📋 Copy, Paste, Swap, Regenerate
 - 📱 **PWA** — boleh install ke home screen (Add to Home Screen), ada offline shell melalui service worker

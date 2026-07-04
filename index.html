@@ -425,6 +425,65 @@
   }
   .annot li svg { width: 14px; height: 14px; color: var(--accent); flex-shrink: 0; margin-top: 4px; }
 
+  /* ── Idea deck: kad topik rawak ── */
+  .idea-section { margin-top: 46px; }
+  .idea-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .idea-head h2 {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 21px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .idea-note {
+    font-family: var(--font-hand);
+    font-size: 17px;
+    color: var(--text-tertiary);
+    transform: rotate(-1.4deg);
+  }
+  .idea-deck { position: relative; max-width: 620px; }
+  .idea-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px 17px 13px 16px;
+    box-shadow: var(--shadow-md);
+  }
+  .idea-card.back-1, .idea-card.back-2 {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .idea-card.back-1 { transform: rotate(1.6deg) translate(3px, 2px); }
+  .idea-card.back-2 { transform: rotate(-2.1deg) translate(-4px, 4px); background: #fdf9f1; }
+  .idea-card.main {
+    position: relative;
+    z-index: 1;
+    padding: 16px 20px 14px;
+    transform: rotate(-0.4deg);
+  }
+  .idea-cat {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 6px;
+    padding: 2px 9px;
+    margin-bottom: 8px;
+  }
+  .idea-text {
+    font-family: var(--font-display);
+    font-size: 17.5px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    min-height: 3.1em;
+  }
+  .idea-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+
   /* ── History ── */
   .hist-section { margin-top: 46px; }
   .hist-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
@@ -647,6 +706,31 @@
   <div class="annot" id="annot">
     <h3>komen cikgu:</h3>
     <ul id="annotList"></ul>
+  </div>
+
+  <div class="idea-section">
+    <div class="idea-head">
+      <h2>buntu nak sembang apa dengan AI?</h2>
+      <span class="idea-note">cabut satu kad ni</span>
+    </div>
+    <div class="idea-deck">
+      <div class="idea-card back-2"></div>
+      <div class="idea-card back-1"></div>
+      <div class="idea-card main" id="ideaCard">
+        <span class="idea-cat" id="ideaCat"></span>
+        <p class="idea-text" id="ideaText"></p>
+        <div class="idea-actions">
+          <button class="mini-btn" id="ideaShuffle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+            Kad lain
+          </button>
+          <button class="mini-btn" id="ideaUse">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14 9 9 4 4 9"/><path d="M20 20h-7a4 4 0 01-4-4V4"/></svg>
+            Guna idea ni
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="hist-section">
@@ -984,6 +1068,87 @@ function startRetryCountdown(secondsLeft, attempt) {
   loadingText.textContent = "ramai orang tengah guna — aku cuba lagi dalam " + secondsLeft + "s";
   retryTimer = setTimeout(() => startRetryCountdown(secondsLeft - 1, attempt), 1000);
 }
+
+/* ── Idea deck: topik rawak untuk diteroka dengan AI ── */
+const IDEAS = [
+  { c: "fikir-fikir", t: "Kalau semua orang dapat gaji sama tak kira kerja apa, dunia jadi lebih baik ke lebih teruk? Debat dengan AI." },
+  { c: "fikir-fikir", t: "AI boleh jadi 'kawan sebenar' ke, atau kita je yang perasan? Tanya AI sendiri — tengok apa dia jawab." },
+  { c: "fikir-fikir", t: "Kalau kau boleh hantar satu ayat je ke diri sendiri 10 tahun lepas, ayat apa? Bincang kenapa dengan AI." },
+  { c: "fikir-fikir", t: "'Busy' tu pilihan atau keadaan? Bincang dengan AI macam mana nak dapat balik masa kau." },
+  { c: "kerjaya", t: "Skill apa patut aku belajar sekarang supaya masih relevan 10 tahun lagi? Minta AI analisis ikut bidang kau." },
+  { c: "kerjaya", t: "Latih interview dengan AI — bagi dia job description, suruh dia grill kau dengan soalan susah." },
+  { c: "kerjaya", t: "Macam mana nak nego gaji tanpa rasa segan? Roleplay dengan AI — dia jadi boss kau." },
+  { c: "duit", t: "Gaji RM3k kat KL — macam mana nak survive dan masih boleh saving? Minta AI buat budget yang realistik." },
+  { c: "duit", t: "Beli rumah ke sewa je seumur hidup? Suruh AI banding dua-dua untuk situasi kau." },
+  { c: "duit", t: "Side income apa yang realistik untuk orang yang balik kerja pukul 7 malam? Brainstorm dengan AI." },
+  { c: "teknologi", t: "Kalau internet hilang seminggu satu Malaysia, apa akan jadi hari demi hari? Minta AI buat timeline." },
+  { c: "teknologi", t: "Suruh AI explain macam mana phone kau tahu lokasi kau — sampai kau faham betul-betul." },
+  { c: "teknologi", t: "Minta AI ramal macam mana rupa kerja harian kau 5 tahun lagi bila AI makin power." },
+  { c: "teknologi", t: "Suruh AI jadi 'devil's advocate': bagi pendapat kau pasal social media, biar dia lawan habis-habisan." },
+  { c: "kesihatan", t: "Reka rutin workout 20 minit yang boleh buat kat rumah tanpa equipment — suruh AI sesuaikan dengan level kau." },
+  { c: "kesihatan", t: "Kenapa susah sangat nak tidur awal? Bincang sains tidur dengan AI dan buat plan seminggu." },
+  { c: "kesihatan", t: "Cerita kat AI apa kau makan hari ni dan minta dia komen elok-elok — jangan bagi dia judge." },
+  { c: "kreatif", t: "Mula cerpen dengan ayat: 'Hujan petang tu bawa balik semua yang aku cuba lupakan.' Sambung selang-seli dengan AI." },
+  { c: "kreatif", t: "Cipta superhero Malaysia — kuasa dia based on masalah harian kita: traffic jam, cuaca panas, harga naik." },
+  { c: "kreatif", t: "Tulis lirik lagu pasal traffic jam KL dalam style band kegemaran kau — biar AI tolong rhyme." },
+  { c: "kreatif", t: "Reka menu restoran fusion Melayu-Jepun dengan AI — nama dish sekali, lagi kreatif lagi bagus." },
+  { c: "sejarah", t: "Kalau Melaka tak jatuh tahun 1511, macam mana rupa Asia Tenggara hari ni? Main sejarah alternatif dengan AI." },
+  { c: "sejarah", t: "Pilih satu benda kat dapur kau dan minta AI cerita sejarah dunia di sebaliknya — gula, kopi, atau cili." },
+  { c: "sejarah", t: "Tanya AI: apa 5 penemuan tak sengaja yang mengubah dunia? Lepas tu korek satu-satu." },
+  { c: "keluarga", t: "Macam mana nak explain kat anak 6 tahun kenapa langit biru — tanpa tipu, tanpa fizik berat? Latih dengan AI." },
+  { c: "keluarga", t: "Idea aktiviti hujung minggu dengan family yang bukan shopping mall dan bawah RM50 — brainstorm dengan AI." },
+  { c: "keluarga", t: "Roleplay: AI jadi anak remaja yang tak nak dengar cakap — latih macam mana nak berbual tanpa membebel." },
+  { c: "makanan", t: "Bagitahu AI apa bahan ada dalam peti ais kau sekarang, suruh dia reka 3 resipi malam ni." },
+  { c: "makanan", t: "Nasi lemak vs rendang: kalau satu je boleh jadi wakil Malaysia ke angkasa, mana satu? Debat serius dengan AI." },
+  { c: "travel", t: "Plan trip 3 hari bawah RM500 dalam Malaysia — suruh AI cari tempat yang bukan mainstream." },
+  { c: "travel", t: "Kalau alien datang melawat Malaysia 24 jam je, kau bawa dia pergi mana? Susun itinerary dengan AI." },
+  { c: "belajar", t: "Pilih satu topik kau selalu buat-buat faham — crypto? saham? AI? — dan suruh AI ajar dari kosong." },
+  { c: "belajar", t: "Belajar satu frasa dalam 10 bahasa berbeza untuk satu situasi (contoh: order kopi) — dengan cara sebutan sekali." },
+  { c: "main-main", t: "Suruh AI teka personaliti kau berdasarkan 5 lagu terakhir kau dengar. Lepas tu nilai berapa tepat." },
+  { c: "main-main", t: "Main 20 soalan dengan AI — dia fikir satu benda, kau teka. Lepas tu tukar giliran." },
+  { c: "main-main", t: "Bagi AI 3 emoji random dan suruh dia buat cerita pendek dari situ. Lagi pelik lagi best." },
+];
+
+const ideaCard = document.getElementById("ideaCard");
+const ideaCat = document.getElementById("ideaCat");
+const ideaText = document.getElementById("ideaText");
+let ideaBag = [];
+
+function nextIdea() {
+  if (!ideaBag.length) {
+    ideaBag = IDEAS.map((_, i) => i);
+    for (let i = ideaBag.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [ideaBag[i], ideaBag[j]] = [ideaBag[j], ideaBag[i]];
+    }
+  }
+  return IDEAS[ideaBag.pop()];
+}
+
+function showIdea(animate) {
+  const idea = nextIdea();
+  const apply = () => { ideaCat.textContent = idea.c; ideaText.textContent = idea.t; };
+  if (!animate || matchMedia("(prefers-reduced-motion: reduce)").matches) { apply(); return; }
+  ideaCard.animate(
+    [{ transform: "rotate(-0.4deg)", opacity: 1 }, { transform: "translateX(-16px) rotate(-2.5deg)", opacity: 0 }],
+    { duration: 130, easing: "ease-in" }
+  ).onfinish = () => {
+    apply();
+    ideaCard.animate(
+      [{ transform: "translateX(16px) rotate(2deg)", opacity: 0 }, { transform: "rotate(-0.4deg)", opacity: 1 }],
+      { duration: 170, easing: "ease-out" }
+    );
+  };
+}
+
+document.getElementById("ideaShuffle").addEventListener("click", () => showIdea(true));
+document.getElementById("ideaUse").addEventListener("click", () => {
+  input.value = ideaText.textContent.slice(0, 4000);
+  input.dispatchEvent(new Event("input"));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  input.focus();
+});
+showIdea(false);
 
 /* ── History (localStorage) ── */
 function loadHistory() {
