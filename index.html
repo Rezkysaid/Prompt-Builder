@@ -659,6 +659,20 @@
   }
   .fav-btn svg { width: 15px; height: 15px; }
   .fav-btn.faved { color: var(--accent); }
+  .del-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-tertiary);
+    line-height: 1;
+    padding: 2px;
+    margin-left: 2px;
+    display: inline-flex;
+    transition: color 0.15s ease, transform 0.15s ease;
+  }
+  .del-btn svg { width: 15px; height: 15px; }
+  .del-btn:hover { color: var(--danger); transform: rotate(-6deg); }
+  .del-btn.confirm { color: var(--danger); }
   .hist-raw {
     font-size: 13.5px;
     color: var(--text);
@@ -1627,7 +1641,27 @@ function renderHistory() {
       const target = all.find((i) => i.ts === item.ts);
       if (target) { target.fav = !target.fav; persistHistory(all); renderHistory(); }
     });
-    top.append(mode, time, fav);
+    const del = document.createElement("button");
+    del.className = "del-btn";
+    del.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>';
+    del.title = "Padam sejarah ni";
+    let delArmed = false, delTimer = null;
+    del.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!delArmed) {
+        delArmed = true;
+        del.classList.add("confirm");
+        del.title = "Tekan sekali lagi untuk padam";
+        delTimer = setTimeout(() => { delArmed = false; del.classList.remove("confirm"); del.title = "Padam sejarah ni"; }, 2500);
+        return;
+      }
+      clearTimeout(delTimer);
+      const all = loadHistory().filter((i) => i.ts !== item.ts);
+      persistHistory(all);
+      if (currentThreadTs === item.ts) { currentThreadTs = null; hideThread(); }
+      renderHistory();
+    });
+    top.append(mode, time, fav, del);
     const rawEl = document.createElement("div");
     rawEl.className = "hist-raw";
     rawEl.textContent = item.raw;
