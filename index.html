@@ -436,7 +436,12 @@
     font-weight: 600;
     letter-spacing: -0.01em;
   }
-  .chat-modes { display: flex; gap: 6px; }
+  .thread-note {
+    font-family: var(--font-hand);
+    font-size: 17px;
+    color: var(--text-tertiary);
+    transform: rotate(-1.2deg);
+  }
   .chat-head .clear-chat {
     margin-left: auto;
     background: none;
@@ -448,31 +453,54 @@
     text-decoration: underline;
   }
   .chat-head .clear-chat:hover { color: var(--danger); }
-  .chat-log { display: flex; flex-direction: column; gap: 10px; margin: 16px 0 14px; }
-  .bubble {
-    max-width: 78%;
-    padding: 10px 14px;
-    font-size: 14px;
-    line-height: 1.55;
-    white-space: pre-wrap;
-    overflow-wrap: break-word;
-  }
-  .bubble.user {
-    align-self: flex-end;
-    background: var(--ink);
-    color: var(--bg);
-    border-radius: 15px 13px 4px 14px;
-    transform: rotate(0.3deg);
-  }
-  .bubble.ai {
-    align-self: flex-start;
+  .thread-list { display: flex; flex-direction: column; gap: 0; margin: 16px 0 14px; }
+  .thread-card {
+    position: relative;
     background: var(--surface);
     border: 1.5px solid var(--border);
-    border-radius: 13px 15px 14px 4px;
-    transform: rotate(-0.3deg);
+    border-radius: 13px 16px 13px 15px;
+    box-shadow: var(--shadow-sm);
+    padding: 12px 16px 13px;
   }
-  .bubble.ai.err { border-color: var(--danger-border); color: var(--danger); background: var(--danger-soft); }
-  .bubble.typing { color: var(--text-tertiary); font-style: italic; }
+  .thread-card:nth-child(odd) { transform: rotate(-0.25deg); }
+  .thread-card:nth-child(even) { transform: rotate(0.25deg); }
+  .thread-card.err { border-color: var(--danger-border); background: var(--danger-soft); color: var(--danger); font-size: 13.5px; }
+  .thread-card.pending { color: var(--text-tertiary); font-style: italic; font-size: 14px; }
+  .thread-connector {
+    width: 2px;
+    height: 18px;
+    margin-left: 34px;
+    background: repeating-linear-gradient(to bottom, var(--border-strong) 0 4px, transparent 4px 8px);
+    flex-shrink: 0;
+  }
+  .thread-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .thread-num {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 6px;
+    padding: 2px 9px;
+  }
+  .thread-top .mini-btn { margin-left: auto; }
+  .thread-text {
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    user-select: text;
+    -webkit-user-select: text;
+    -webkit-touch-callout: default;
+  }
+  .thread-meta {
+    font-family: var(--font-hand);
+    font-size: 15.5px;
+    color: var(--text-tertiary);
+    margin-top: 7px;
+    transform: rotate(-0.4deg);
+  }
   .chat-input-row { display: flex; gap: 8px; align-items: flex-end; }
   #chatInput {
     flex: 1;
@@ -772,8 +800,8 @@
           Regenerate
         </button>
         <button class="mini-btn" id="sembangBtn" disabled>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
-          Sembang
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 10 20 15 15 20"/><path d="M4 4v7a4 4 0 004 4h12"/></svg>
+          Follow-up
         </button>
       </div>
     </div>
@@ -797,23 +825,14 @@
 
   <div class="chat-section" id="chatSection">
     <div class="chat-head">
-      <h2>sambung borak</h2>
-      <div class="chat-modes">
-        <button class="chip chat-mode active" data-cmode="refine">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
-          Refine prompt
-        </button>
-        <button class="chip chat-mode" data-cmode="chat">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
-          Sembang guna prompt
-        </button>
-      </div>
-      <button class="clear-chat" id="clearChat">padam borak</button>
+      <h2>nak tanya follow-up kat AI tu?</h2>
+      <span class="thread-note">prompt 1 buka chat — yang seterusnya sambung dalam chat yang sama</span>
+      <button class="clear-chat" id="clearChat">reset thread</button>
     </div>
-    <div class="chat-log" id="chatLog"></div>
+    <div class="thread-list" id="threadList"></div>
     <div class="chat-input-row">
-      <textarea id="chatInput" rows="1" placeholder="nak ubah apa? contoh: buat lagi pendek, tukar nada formal…"></textarea>
-      <button class="chat-send" id="chatSend">Hantar</button>
+      <textarea id="chatInput" rows="1" placeholder="apa soalan follow-up kau? taip kasar je — contoh: lepas tu suruh dia buatkan jadual…"></textarea>
+      <button class="chat-send" id="chatSend">Craft follow-up</button>
     </div>
   </div>
 
@@ -878,7 +897,6 @@ const outLangSel = document.getElementById("outLang");
 const styleSel = document.getElementById("styleSel");
 const sembangBtn = document.getElementById("sembangBtn");
 const chatSection = document.getElementById("chatSection");
-const chatLog = document.getElementById("chatLog");
 const chatInput = document.getElementById("chatInput");
 const chatSendBtn = document.getElementById("chatSend");
 
@@ -1040,7 +1058,7 @@ function setOutput(text) {
     regenBtn.disabled = true;
     swapBtn.disabled = true;
     sembangBtn.disabled = true;
-    hideChat();
+    hideThread();
   }
 }
 
@@ -1156,7 +1174,7 @@ async function enhance(attempt = 0) {
     typeOutput(enhanced);
     renderAnnot(changes);
     saveHistory({ raw, enhanced, mode: currentMode, style: styleSel.value, ts: Date.now(), fav: false });
-    showChat(true);
+    startThread();
     if (!localStorage.getItem("promptcraft_bursted")) {
       try { localStorage.setItem("promptcraft_bursted", "1"); } catch {}
       if (!matchMedia("(prefers-reduced-motion: reduce)").matches) sparkleBurst();
@@ -1191,163 +1209,154 @@ function startRetryCountdown(secondsLeft, attempt) {
   retryTimer = setTimeout(() => startRetryCountdown(secondsLeft - 1, attempt), 1000);
 }
 
-/* ── Sambung borak: refine prompt + sembang berkonteks ── */
-let chatMode = "refine";
-let chatBusy = false;
-let chatTranscript = []; // mod sembang: {role: "user"|"assistant", text}
-let refineLog = [];      // mod refine: arahan-arahan sebelum ini
+/* ── Thread follow-up: craft prompt sambungan untuk chat yang sama kat AI tools ── */
+const threadList = document.getElementById("threadList");
+let threadPrompts = []; // [{n, text, meta}] — prompt 1 = pembuka, seterusnya follow-up
+let threadBusy = false;
 
-const CHAT_PLACEHOLDER = {
-  refine: "nak ubah apa? contoh: buat lagi pendek, tukar nada formal…",
-  chat: "taip mesej kau — AI ingat perbualan sebelum ni…",
-};
-
-function addBubble(role, text) {
-  const d = document.createElement("div");
-  d.className = "bubble " + role;
-  d.textContent = text;
-  chatLog.appendChild(d);
-  d.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  return d;
+function copyBtnEl(getText) {
+  const b = document.createElement("button");
+  b.className = "mini-btn";
+  b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy';
+  b.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(getText());
+      b.classList.add("copied");
+      b.lastChild.textContent = "Dah copy!";
+      setTimeout(() => { b.classList.remove("copied"); b.lastChild.textContent = "Copy"; }, 1500);
+    } catch {}
+  });
+  return b;
 }
 
-function showChat(reset) {
+function renderThread() {
+  threadList.innerHTML = "";
+  threadPrompts.forEach((p, i) => {
+    if (i > 0) {
+      const conn = document.createElement("div");
+      conn.className = "thread-connector";
+      threadList.appendChild(conn);
+    }
+    const card = document.createElement("div");
+    card.className = "thread-card";
+    const top = document.createElement("div");
+    top.className = "thread-top";
+    const num = document.createElement("span");
+    num.className = "thread-num";
+    num.textContent = "prompt " + p.n + (p.n === 1 ? " · pembuka chat" : " · follow-up");
+    top.appendChild(num);
+    top.appendChild(copyBtnEl(() => p.text));
+    const text = document.createElement("p");
+    text.className = "thread-text";
+    text.textContent = p.text;
+    card.append(top, text);
+    if (p.meta) {
+      const meta = document.createElement("div");
+      meta.className = "thread-meta";
+      meta.textContent = p.meta;
+      card.appendChild(meta);
+    }
+    threadList.appendChild(card);
+  });
+}
+
+function startThread() {
+  if (!lastEnhanced) return;
+  threadPrompts = [{ n: 1, text: lastEnhanced, meta: "paste ni sebagai mesej pertama dalam chat baru" }];
   chatSection.classList.add("show");
-  if (reset) {
-    chatLog.innerHTML = "";
-    chatTranscript = [];
-    refineLog = [];
-    switchChatMode("refine");
-    addBubble("ai", "prompt dah siap. nak aku ubah apa-apa lagi? taip je kat bawah. atau tukar ke \"Sembang guna prompt\" untuk terus test dia kat sini — aku ingat perbualan kita sepanjang sesi ni.");
-  }
+  renderThread();
 }
-function hideChat() {
+function hideThread() {
   chatSection.classList.remove("show");
-  chatLog.innerHTML = "";
-  chatTranscript = [];
-  refineLog = [];
+  threadPrompts = [];
+  threadList.innerHTML = "";
 }
 
-function switchChatMode(mode) {
-  chatMode = mode;
-  document.querySelectorAll(".chat-mode").forEach((c) => c.classList.toggle("active", c.dataset.cmode === mode));
-  chatInput.placeholder = CHAT_PLACEHOLDER[mode];
-  if (mode === "chat" && !chatTranscript.length && lastEnhanced) seedChatWithPrompt();
-}
-document.querySelectorAll(".chat-mode").forEach((c) => {
-  c.addEventListener("click", () => { if (!chatBusy) switchChatMode(c.dataset.cmode); });
-});
-
-function seedChatWithPrompt() {
-  const seed = lastEnhanced;
-  addBubble("user", seed);
-  processChat(seed, true);
-}
-
-function buildRefinePrompt(instruction) {
+function buildFollowupPrompt(rawIntent) {
   const langRule =
-    outLangSel.value === "ms" ? "Keep the enhanced prompt fully in Bahasa Melayu."
-    : outLangSel.value === "en" ? "Keep the enhanced prompt fully in English."
-    : "Keep the enhanced prompt in the same language (or natural mix) it is currently in.";
-  const earlier = refineLog.slice(-4).map((r) => "- " + r).join("\n");
-  return `You are a Prompt Enhancement Engine, continuing a refinement session with the user. You previously produced this enhanced prompt:
+    outLangSel.value === "ms" ? "Write the follow-up prompt fully in Bahasa Melayu."
+    : outLangSel.value === "en" ? "Write the follow-up prompt fully in English."
+    : "Write the follow-up prompt in the same language (or natural mix) as the previous prompts.";
+  const styleRule = styleSel.value === "santai"
+    ? " Keep the santai KL register — the whole chat is casual, so the follow-up must sound like natural spoken Peninsular Malay too."
+    : "";
+  const priors = threadPrompts
+    .map((p) => `PROMPT ${p.n}${p.n === 1 ? " (opener)" : " (follow-up)"}:\n"""\n${p.text.slice(0, 1500)}\n"""`)
+    .join("\n\n");
+  return `You are a Prompt Enhancement Engine. The user already sent the prompts below, in order, inside ONE ongoing chat session with an AI tool (ChatGPT / Claude / Gemini), and the AI has answered each of them:
 
-CURRENT ENHANCED PROMPT:
-"""
-${lastEnhanced}
-"""
-${earlier ? "\nEarlier refinement instructions already applied:\n" + earlier + "\n" : ""}
-USER'S NEW INSTRUCTION (may be Malay, English, or rojak): "${instruction.slice(0, 1200)}"
+${priors}
 
-Rewrite the CURRENT ENHANCED PROMPT applying this new instruction. Preserve the user's original intent, do not invent facts, keep it under 200 words. ${langRule}
+Now the user wants to ask the NEXT follow-up question in that SAME chat. Their rough intent (Malay, English, or rojak): "${rawIntent.slice(0, 1200)}"
+
+Craft the next FOLLOW-UP prompt. Critical rules:
+1. It CONTINUES the conversation — the AI already has all context from the previous prompts and its own answers. Do NOT restate background, role setup, audience, or constraints already established earlier.
+2. Where helpful, anchor it to the AI's previous answer naturally (e.g. "daripada jawapan tadi…", "based on the plan you just gave…").
+3. Preserve the user's new intent exactly; only add clarity — what exactly to change, produce, or expand, plus output format ONLY if it differs from before.
+4. Follow-up prompts must be tight: under 80 words.
+5. ${langRule}${styleRule}
+6. Do NOT invent facts or requirements the user never implied.
 
 Respond in EXACTLY this format, nothing else:
 ===ENHANCED===
-(the updated prompt)
+(the follow-up prompt only)
 ===CHANGES===
-- (2 to 4 short bullets in casual Bahasa Melayu describing what you just changed)`;
+- (2 to 3 short bullets in casual Bahasa Melayu: apa yang di-anchor pada chat sebelum, apa yang diperjelaskan)`;
 }
 
-function buildChatPrompt(newMsg) {
-  const styleRule = styleSel.value === "santai"
-    ? "Gaya jawapan WAJIB santai — borak macam kawan baik kat mamak KL: bahasa Melayu kolokial semenanjung yang natural tapi gramatis (partikel lah/kan/je/kot, aku-kau), code-switching English sikit-sikit kalau natural, JANGAN guna bahasa buku teks (anda/sila) dan elak senarai bernombor kecuali betul-betul perlu."
-    : "Jawab dengan jelas, mesra dan tersusun. Ikut bahasa yang user guna (Melayu, English, atau rojak).";
-  const transcript = chatTranscript
-    .slice(-10)
-    .map((m) => (m.role === "user" ? "User" : "Assistant") + ": " + m.text.slice(0, 1500))
-    .join("\n\n");
-  return `You are a helpful AI assistant inside the PromptCraft app, in the middle of an ongoing conversation with the user. ${styleRule}
-Keep replies under ~250 words unless the user clearly asks for more. This is a CONTINUING conversation — never restart it, never introduce yourself again, just reply naturally to the latest message with full memory of the transcript below.
-
-CONVERSATION SO FAR:
-${transcript || "(belum ada — ini mesej pertama)"}
-
-User: ${newMsg.slice(0, 2000)}
-
-Reply with the Assistant's next message ONLY — no "Assistant:" prefix, no code fences around the whole reply.`;
-}
-
-async function processChat(userText, isSeed) {
-  chatBusy = true;
+async function craftFollowup() {
+  const rawIntent = chatInput.value.trim();
+  if (!rawIntent || threadBusy) return;
+  if (!threadPrompts.length) { startThread(); }
+  threadBusy = true;
   chatSendBtn.disabled = true;
-  const typing = addBubble("ai", chatMode === "refine" ? "jap, tengah ubah…" : "AI tengah taip…");
-  typing.classList.add("typing");
+  chatInput.value = "";
+  chatInput.style.height = "";
+  const pending = document.createElement("div");
+  pending.className = "thread-card pending";
+  pending.textContent = "jap, tengah craft follow-up untuk: “" + rawIntent.slice(0, 80) + "…”";
+  const conn = document.createElement("div");
+  conn.className = "thread-connector";
+  threadList.append(conn, pending);
+  pending.scrollIntoView({ behavior: "smooth", block: "nearest" });
   try {
-    const promptStr = chatMode === "refine" ? buildRefinePrompt(userText) : buildChatPrompt(userText);
     const res = await fetch(PROXY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: promptStr }),
+      body: JSON.stringify({ prompt: buildFollowupPrompt(rawIntent) }),
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error.message || data.error);
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    if (!text.trim()) throw new Error("respons kosong");
-
-    typing.classList.remove("typing");
-    if (chatMode === "refine") {
-      const { enhanced, changes } = parseResponse(text);
-      if (!enhanced) throw new Error("respons tak lengkap");
-      typeOutput(enhanced);
-      renderAnnot(changes);
-      refineLog.push(userText.slice(0, 300));
-      typing.textContent = "dah update — tengok panel \"versi power\" kat atas." + (changes.length ? " yang aku ubah: " + changes.join(" · ") : "");
-    } else {
-      const reply = text.trim();
-      chatTranscript.push({ role: "user", text: userText });
-      chatTranscript.push({ role: "assistant", text: reply });
-      typing.textContent = reply;
-    }
+    const { enhanced, changes } = parseResponse(text);
+    if (!enhanced) throw new Error("respons tak lengkap — cuba sekali lagi");
+    threadPrompts.push({
+      n: threadPrompts.length + 1,
+      text: enhanced,
+      meta: changes.length ? changes.join(" · ") : "",
+    });
+    renderThread();
+    threadList.lastElementChild.scrollIntoView({ behavior: "smooth", block: "nearest" });
   } catch (e) {
     const msg = e && e.message ? String(e.message) : String(e);
     const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|retry in/i.test(msg);
-    typing.classList.remove("typing");
-    typing.classList.add("err");
-    typing.textContent = isQuota
-      ? "ramai orang tengah guna — tunggu sekejap, lepas tu hantar balik mesej kau ya"
-      : "alamak, tak dapat sambung: " + msg + " — cuba hantar sekali lagi";
-    if (isSeed) chatTranscript = [];
-  } finally {
-    chatBusy = false;
+    pending.classList.remove("pending");
+    pending.classList.add("err");
+    pending.textContent = isQuota
+      ? "ramai orang tengah guna — tunggu sekejap, lepas tu taip balik follow-up kau ya"
+      : "alamak, tak jadi: " + msg;
+    chatInput.value = rawIntent; // jangan hilangkan apa yang user taip
+    threadBusy = false;
     chatSendBtn.disabled = false;
-  }
-}
-
-function sendChatMsg() {
-  const t = chatInput.value.trim();
-  if (!t || chatBusy) return;
-  if (chatMode === "refine" && !lastEnhanced) {
-    addBubble("ai", "takde prompt untuk di-refine lagi — Power-kan satu dulu kat atas.");
     return;
   }
-  addBubble("user", t);
-  chatInput.value = "";
-  chatInput.style.height = "";
-  processChat(t, false);
+  threadBusy = false;
+  chatSendBtn.disabled = false;
 }
-chatSendBtn.addEventListener("click", sendChatMsg);
+
+chatSendBtn.addEventListener("click", craftFollowup);
 chatInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChatMsg(); }
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); craftFollowup(); }
 });
 chatInput.addEventListener("input", () => {
   chatInput.style.height = "";
@@ -1355,16 +1364,13 @@ chatInput.addEventListener("input", () => {
 });
 sembangBtn.addEventListener("click", () => {
   if (!lastEnhanced) return;
-  if (!chatSection.classList.contains("show")) showChat(true);
-  switchChatMode("chat");
+  if (!chatSection.classList.contains("show")) startThread();
   chatSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  chatInput.focus();
 });
 document.getElementById("clearChat").addEventListener("click", () => {
-  if (chatBusy) return;
-  chatLog.innerHTML = "";
-  chatTranscript = [];
-  refineLog = [];
-  addBubble("ai", "ok, kita mula borak baru — apa seterusnya?");
+  if (threadBusy) return;
+  startThread(); // reset ke prompt pembuka sahaja
 });
 
 /* ── Idea deck: topik rawak untuk diteroka dengan AI ── */
@@ -1619,7 +1625,7 @@ function renderHistory() {
       input.dispatchEvent(new Event("input"));
       setOutput(item.enhanced);
       annot.classList.remove("show");
-      showChat(true);
+      startThread();
       styleSel.value = item.style === "santai" ? "santai" : "standard";
       const chip = document.querySelector(`#modes .chip[data-mode="${item.mode}"]`);
       if (chip) chip.click();

@@ -13,7 +13,7 @@ Macam Google Translate, tapi untuk prompt: translate prompt mentah / kabur / roj
 - 🎴 **Dek kad idea** — 36 topik rawak pelbagai kategori untuk diteroka dengan Claude/ChatGPT/Gemini bila buntu; satu klik terus masuk ke panel input. Bila semua 36 habis, AI pula jana idea baru secara automatik (batch 5 seklik untuk jimat API)
 - 🕘 **Sejarah prompt + kegemaran** — disimpan dalam browser (localStorage)
 - 📋 Copy, Paste, Swap, Regenerate
-- 💬 **Sambung borak** — selepas enhance, boleh refine prompt melalui perbualan ("buat lagi pendek") ATAU terus sembang dengan AI guna prompt tu, dengan memori konteks penuh sepanjang sesi
+- 🧵 **Thread follow-up** — prompt pertama untuk buka chat; lepas tu taip niat follow-up secara kasar dan PromptCraft craft prompt seterusnya yang bersambung dengan yang sebelumnya (tak ulang konteks, merujuk jawapan AI tadi) — sedia untuk paste dalam chat yang sama kat ChatGPT/Claude/Gemini
 - 📱 **PWA** — boleh install ke home screen (Add to Home Screen), ada offline shell melalui service worker
 
 ## Teknikal
