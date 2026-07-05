@@ -1173,7 +1173,9 @@ async function enhance(attempt = 0) {
 
     typeOutput(enhanced);
     renderAnnot(changes);
-    saveHistory({ raw, enhanced, mode: currentMode, style: styleSel.value, ts: Date.now(), fav: false });
+    const histTs = Date.now();
+    saveHistory({ raw, enhanced, mode: currentMode, style: styleSel.value, ts: histTs, fav: false });
+    currentThreadTs = histTs;
     startThread();
     if (!localStorage.getItem("promptcraft_bursted")) {
       try { localStorage.setItem("promptcraft_bursted", "1"); } catch {}
@@ -1213,6 +1215,18 @@ function startRetryCountdown(secondsLeft, attempt) {
 const threadList = document.getElementById("threadList");
 let threadPrompts = []; // [{n, text, meta}] — prompt 1 = pembuka, seterusnya follow-up
 let threadBusy = false;
+let currentThreadTs = null; // ts item sejarah yang thread ni milik dia
+
+function persistThreadToHistory() {
+  if (!currentThreadTs) return;
+  const all = loadHistory();
+  const target = all.find((i) => i.ts === currentThreadTs);
+  if (!target) return;
+  if (threadPrompts.length > 1) target.thread = threadPrompts;
+  else delete target.thread;
+  persistHistory(all);
+  renderHistory();
+}
 
 function copyBtnEl(getText) {
   const b = document.createElement("button");
@@ -1336,6 +1350,7 @@ async function craftFollowup() {
       meta: changes.length ? changes.join(" · ") : "",
     });
     renderThread();
+    persistThreadToHistory();
     threadList.lastElementChild.scrollIntoView({ behavior: "smooth", block: "nearest" });
   } catch (e) {
     const msg = e && e.message ? String(e.message) : String(e);
@@ -1371,6 +1386,7 @@ sembangBtn.addEventListener("click", () => {
 document.getElementById("clearChat").addEventListener("click", () => {
   if (threadBusy) return;
   startThread(); // reset ke prompt pembuka sahaja
+  persistThreadToHistory();
 });
 
 /* ── Idea deck: topik rawak untuk diteroka dengan AI ── */
@@ -1599,7 +1615,8 @@ function renderHistory() {
     mode.textContent = (MODE_LABEL[item.mode] || item.mode) + (item.style === "santai" ? " · santai" : "");
     const time = document.createElement("span");
     time.className = "hist-time";
-    time.textContent = timeAgo(item.ts);
+    const fuCount = item.thread && item.thread.length > 1 ? item.thread.length - 1 : 0;
+    time.textContent = timeAgo(item.ts) + (fuCount ? " · " + fuCount + " follow-up" : "");
     const fav = document.createElement("button");
     fav.className = "fav-btn" + (item.fav ? " faved" : "");
     fav.innerHTML = '<svg viewBox="0 0 24 24" fill="' + (item.fav ? "currentColor" : "none") + '" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
@@ -1625,7 +1642,15 @@ function renderHistory() {
       input.dispatchEvent(new Event("input"));
       setOutput(item.enhanced);
       annot.classList.remove("show");
-      startThread();
+      currentThreadTs = item.ts;
+      if (item.thread && item.thread.length > 1) {
+        // pulihkan seluruh thread — boleh terus craft follow-up dengan konteks sama
+        threadPrompts = item.thread.map((p) => ({ ...p }));
+        chatSection.classList.add("show");
+        renderThread();
+      } else {
+        startThread();
+      }
       styleSel.value = item.style === "santai" ? "santai" : "standard";
       const chip = document.querySelector(`#modes .chip[data-mode="${item.mode}"]`);
       if (chip) chip.click();
