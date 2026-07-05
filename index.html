@@ -425,6 +425,89 @@
   }
   .annot li svg { width: 14px; height: 14px; color: var(--accent); flex-shrink: 0; margin-top: 4px; }
 
+  /* ── Chat: sambung borak ── */
+  .chat-section { margin-top: 46px; display: none; }
+  .chat-section.show { display: block; }
+  .chat-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+  .chat-head h2 {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 21px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .chat-modes { display: flex; gap: 6px; }
+  .chat-head .clear-chat {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-family: var(--font-hand);
+    color: var(--text-tertiary);
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .chat-head .clear-chat:hover { color: var(--danger); }
+  .chat-log { display: flex; flex-direction: column; gap: 10px; margin: 16px 0 14px; }
+  .bubble {
+    max-width: 78%;
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+  }
+  .bubble.user {
+    align-self: flex-end;
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 15px 13px 4px 14px;
+    transform: rotate(0.3deg);
+  }
+  .bubble.ai {
+    align-self: flex-start;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 13px 15px 14px 4px;
+    transform: rotate(-0.3deg);
+  }
+  .bubble.ai.err { border-color: var(--danger-border); color: var(--danger); background: var(--danger-soft); }
+  .bubble.typing { color: var(--text-tertiary); font-style: italic; }
+  .chat-input-row { display: flex; gap: 8px; align-items: flex-end; }
+  #chatInput {
+    flex: 1;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 12px 13px 12px 13px;
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+    background: var(--surface);
+    resize: none;
+    min-height: 44px;
+    max-height: 130px;
+    outline: none;
+  }
+  #chatInput:focus { border-color: var(--accent); }
+  .chat-send {
+    border: none;
+    background: var(--ink);
+    color: var(--bg);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 600;
+    font-size: 14.5px;
+    border-radius: 11px 13px 11px 12px;
+    padding: 12px 20px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #4a4230;
+    transition: all 0.12s ease;
+  }
+  .chat-send:hover:not(:disabled) { background: #000; }
+  .chat-send:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #4a4230; }
+  .chat-send:disabled { opacity: 0.55; cursor: default; }
+
   /* ── Idea deck: kad topik rawak ── */
   .idea-section { margin-top: 46px; }
   .idea-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
@@ -688,6 +771,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M21 8a9 9 0 10.5 4"/></svg>
           Regenerate
         </button>
+        <button class="mini-btn" id="sembangBtn" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+          Sembang
+        </button>
       </div>
     </div>
   </div>
@@ -706,6 +793,28 @@
   <div class="annot" id="annot">
     <h3>komen cikgu:</h3>
     <ul id="annotList"></ul>
+  </div>
+
+  <div class="chat-section" id="chatSection">
+    <div class="chat-head">
+      <h2>sambung borak</h2>
+      <div class="chat-modes">
+        <button class="chip chat-mode active" data-cmode="refine">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+          Refine prompt
+        </button>
+        <button class="chip chat-mode" data-cmode="chat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+          Sembang guna prompt
+        </button>
+      </div>
+      <button class="clear-chat" id="clearChat">padam borak</button>
+    </div>
+    <div class="chat-log" id="chatLog"></div>
+    <div class="chat-input-row">
+      <textarea id="chatInput" rows="1" placeholder="nak ubah apa? contoh: buat lagi pendek, tukar nada formal…"></textarea>
+      <button class="chat-send" id="chatSend">Hantar</button>
+    </div>
   </div>
 
   <div class="idea-section">
@@ -767,6 +876,11 @@ const charCount = document.getElementById("charCount");
 const histList = document.getElementById("histList");
 const outLangSel = document.getElementById("outLang");
 const styleSel = document.getElementById("styleSel");
+const sembangBtn = document.getElementById("sembangBtn");
+const chatSection = document.getElementById("chatSection");
+const chatLog = document.getElementById("chatLog");
+const chatInput = document.getElementById("chatInput");
+const chatSendBtn = document.getElementById("chatSend");
 
 let currentMode = "general";
 let lastEnhanced = "";
@@ -919,11 +1033,14 @@ function setOutput(text) {
     copyBtn.disabled = false;
     regenBtn.disabled = false;
     swapBtn.disabled = false;
+    sembangBtn.disabled = false;
   } else {
     output.innerHTML = '<span class="out-empty">Hasil enhancement akan keluar kat sini…</span>';
     copyBtn.disabled = true;
     regenBtn.disabled = true;
     swapBtn.disabled = true;
+    sembangBtn.disabled = true;
+    hideChat();
   }
 }
 
@@ -933,6 +1050,7 @@ function typeOutput(text) {
   copyBtn.disabled = false;
   regenBtn.disabled = false;
   swapBtn.disabled = false;
+  sembangBtn.disabled = false;
   clearInterval(typeTimer);
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
     output.textContent = text;
@@ -951,6 +1069,20 @@ function typeOutput(text) {
       output.classList.remove("typing");
     }
   }, 16);
+}
+
+function renderAnnot(changes) {
+  if (!changes || !changes.length) return;
+  annotList.innerHTML = "";
+  changes.forEach((c) => {
+    const li = document.createElement("li");
+    li.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+    const span = document.createElement("span");
+    span.textContent = c;
+    li.appendChild(span);
+    annotList.appendChild(li);
+  });
+  annot.classList.add("show");
 }
 
 /* loading text yang bersuara manusia */
@@ -1022,19 +1154,9 @@ async function enhance(attempt = 0) {
     if (!enhanced) throw new Error("respons tak lengkap — cuba sekali lagi");
 
     typeOutput(enhanced);
-    if (changes.length) {
-      annotList.innerHTML = "";
-      changes.forEach((c) => {
-        const li = document.createElement("li");
-        li.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
-        const span = document.createElement("span");
-        span.textContent = c;
-        li.appendChild(span);
-        annotList.appendChild(li);
-      });
-      annot.classList.add("show");
-    }
+    renderAnnot(changes);
     saveHistory({ raw, enhanced, mode: currentMode, style: styleSel.value, ts: Date.now(), fav: false });
+    showChat(true);
     if (!localStorage.getItem("promptcraft_bursted")) {
       try { localStorage.setItem("promptcraft_bursted", "1"); } catch {}
       if (!matchMedia("(prefers-reduced-motion: reduce)").matches) sparkleBurst();
@@ -1068,6 +1190,182 @@ function startRetryCountdown(secondsLeft, attempt) {
   loadingText.textContent = "ramai orang tengah guna — aku cuba lagi dalam " + secondsLeft + "s";
   retryTimer = setTimeout(() => startRetryCountdown(secondsLeft - 1, attempt), 1000);
 }
+
+/* ── Sambung borak: refine prompt + sembang berkonteks ── */
+let chatMode = "refine";
+let chatBusy = false;
+let chatTranscript = []; // mod sembang: {role: "user"|"assistant", text}
+let refineLog = [];      // mod refine: arahan-arahan sebelum ini
+
+const CHAT_PLACEHOLDER = {
+  refine: "nak ubah apa? contoh: buat lagi pendek, tukar nada formal…",
+  chat: "taip mesej kau — AI ingat perbualan sebelum ni…",
+};
+
+function addBubble(role, text) {
+  const d = document.createElement("div");
+  d.className = "bubble " + role;
+  d.textContent = text;
+  chatLog.appendChild(d);
+  d.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  return d;
+}
+
+function showChat(reset) {
+  chatSection.classList.add("show");
+  if (reset) {
+    chatLog.innerHTML = "";
+    chatTranscript = [];
+    refineLog = [];
+    switchChatMode("refine");
+    addBubble("ai", "prompt dah siap. nak aku ubah apa-apa lagi? taip je kat bawah. atau tukar ke \"Sembang guna prompt\" untuk terus test dia kat sini — aku ingat perbualan kita sepanjang sesi ni.");
+  }
+}
+function hideChat() {
+  chatSection.classList.remove("show");
+  chatLog.innerHTML = "";
+  chatTranscript = [];
+  refineLog = [];
+}
+
+function switchChatMode(mode) {
+  chatMode = mode;
+  document.querySelectorAll(".chat-mode").forEach((c) => c.classList.toggle("active", c.dataset.cmode === mode));
+  chatInput.placeholder = CHAT_PLACEHOLDER[mode];
+  if (mode === "chat" && !chatTranscript.length && lastEnhanced) seedChatWithPrompt();
+}
+document.querySelectorAll(".chat-mode").forEach((c) => {
+  c.addEventListener("click", () => { if (!chatBusy) switchChatMode(c.dataset.cmode); });
+});
+
+function seedChatWithPrompt() {
+  const seed = lastEnhanced;
+  addBubble("user", seed);
+  processChat(seed, true);
+}
+
+function buildRefinePrompt(instruction) {
+  const langRule =
+    outLangSel.value === "ms" ? "Keep the enhanced prompt fully in Bahasa Melayu."
+    : outLangSel.value === "en" ? "Keep the enhanced prompt fully in English."
+    : "Keep the enhanced prompt in the same language (or natural mix) it is currently in.";
+  const earlier = refineLog.slice(-4).map((r) => "- " + r).join("\n");
+  return `You are a Prompt Enhancement Engine, continuing a refinement session with the user. You previously produced this enhanced prompt:
+
+CURRENT ENHANCED PROMPT:
+"""
+${lastEnhanced}
+"""
+${earlier ? "\nEarlier refinement instructions already applied:\n" + earlier + "\n" : ""}
+USER'S NEW INSTRUCTION (may be Malay, English, or rojak): "${instruction.slice(0, 1200)}"
+
+Rewrite the CURRENT ENHANCED PROMPT applying this new instruction. Preserve the user's original intent, do not invent facts, keep it under 200 words. ${langRule}
+
+Respond in EXACTLY this format, nothing else:
+===ENHANCED===
+(the updated prompt)
+===CHANGES===
+- (2 to 4 short bullets in casual Bahasa Melayu describing what you just changed)`;
+}
+
+function buildChatPrompt(newMsg) {
+  const styleRule = styleSel.value === "santai"
+    ? "Gaya jawapan WAJIB santai — borak macam kawan baik kat mamak KL: bahasa Melayu kolokial semenanjung yang natural tapi gramatis (partikel lah/kan/je/kot, aku-kau), code-switching English sikit-sikit kalau natural, JANGAN guna bahasa buku teks (anda/sila) dan elak senarai bernombor kecuali betul-betul perlu."
+    : "Jawab dengan jelas, mesra dan tersusun. Ikut bahasa yang user guna (Melayu, English, atau rojak).";
+  const transcript = chatTranscript
+    .slice(-10)
+    .map((m) => (m.role === "user" ? "User" : "Assistant") + ": " + m.text.slice(0, 1500))
+    .join("\n\n");
+  return `You are a helpful AI assistant inside the PromptCraft app, in the middle of an ongoing conversation with the user. ${styleRule}
+Keep replies under ~250 words unless the user clearly asks for more. This is a CONTINUING conversation — never restart it, never introduce yourself again, just reply naturally to the latest message with full memory of the transcript below.
+
+CONVERSATION SO FAR:
+${transcript || "(belum ada — ini mesej pertama)"}
+
+User: ${newMsg.slice(0, 2000)}
+
+Reply with the Assistant's next message ONLY — no "Assistant:" prefix, no code fences around the whole reply.`;
+}
+
+async function processChat(userText, isSeed) {
+  chatBusy = true;
+  chatSendBtn.disabled = true;
+  const typing = addBubble("ai", chatMode === "refine" ? "jap, tengah ubah…" : "AI tengah taip…");
+  typing.classList.add("typing");
+  try {
+    const promptStr = chatMode === "refine" ? buildRefinePrompt(userText) : buildChatPrompt(userText);
+    const res = await fetch(PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: promptStr }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || data.error);
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    if (!text.trim()) throw new Error("respons kosong");
+
+    typing.classList.remove("typing");
+    if (chatMode === "refine") {
+      const { enhanced, changes } = parseResponse(text);
+      if (!enhanced) throw new Error("respons tak lengkap");
+      typeOutput(enhanced);
+      renderAnnot(changes);
+      refineLog.push(userText.slice(0, 300));
+      typing.textContent = "dah update — tengok panel \"versi power\" kat atas." + (changes.length ? " yang aku ubah: " + changes.join(" · ") : "");
+    } else {
+      const reply = text.trim();
+      chatTranscript.push({ role: "user", text: userText });
+      chatTranscript.push({ role: "assistant", text: reply });
+      typing.textContent = reply;
+    }
+  } catch (e) {
+    const msg = e && e.message ? String(e.message) : String(e);
+    const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|retry in/i.test(msg);
+    typing.classList.remove("typing");
+    typing.classList.add("err");
+    typing.textContent = isQuota
+      ? "ramai orang tengah guna — tunggu sekejap, lepas tu hantar balik mesej kau ya"
+      : "alamak, tak dapat sambung: " + msg + " — cuba hantar sekali lagi";
+    if (isSeed) chatTranscript = [];
+  } finally {
+    chatBusy = false;
+    chatSendBtn.disabled = false;
+  }
+}
+
+function sendChatMsg() {
+  const t = chatInput.value.trim();
+  if (!t || chatBusy) return;
+  if (chatMode === "refine" && !lastEnhanced) {
+    addBubble("ai", "takde prompt untuk di-refine lagi — Power-kan satu dulu kat atas.");
+    return;
+  }
+  addBubble("user", t);
+  chatInput.value = "";
+  chatInput.style.height = "";
+  processChat(t, false);
+}
+chatSendBtn.addEventListener("click", sendChatMsg);
+chatInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChatMsg(); }
+});
+chatInput.addEventListener("input", () => {
+  chatInput.style.height = "";
+  chatInput.style.height = Math.min(chatInput.scrollHeight, 130) + "px";
+});
+sembangBtn.addEventListener("click", () => {
+  if (!lastEnhanced) return;
+  if (!chatSection.classList.contains("show")) showChat(true);
+  switchChatMode("chat");
+  chatSection.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+document.getElementById("clearChat").addEventListener("click", () => {
+  if (chatBusy) return;
+  chatLog.innerHTML = "";
+  chatTranscript = [];
+  refineLog = [];
+  addBubble("ai", "ok, kita mula borak baru — apa seterusnya?");
+});
 
 /* ── Idea deck: topik rawak untuk diteroka dengan AI ── */
 const IDEAS = [
@@ -1321,6 +1619,7 @@ function renderHistory() {
       input.dispatchEvent(new Event("input"));
       setOutput(item.enhanced);
       annot.classList.remove("show");
+      showChat(true);
       styleSel.value = item.style === "santai" ? "santai" : "standard";
       const chip = document.querySelector(`#modes .chip[data-mode="${item.mode}"]`);
       if (chip) chip.click();
