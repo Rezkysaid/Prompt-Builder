@@ -1,4 +1,4 @@
-const CACHE = "promptcraft-v5";
+const CACHE = "promptcraft-v6";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", (e) => {

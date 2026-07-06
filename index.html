@@ -530,8 +530,8 @@
     color: var(--text);
     background: var(--surface);
     resize: none;
-    min-height: 44px;
-    max-height: 130px;
+    min-height: 96px;
+    max-height: 220px;
     outline: none;
   }
   #chatInput:focus { border-color: var(--accent); }
@@ -1399,7 +1399,7 @@ async function craftFollowup() {
       : "alamak, tak jadi: " + msg + " — soalan kau masih ada kat bawah";
     chatInput.value = rawIntent; // jangan hilangkan apa yang user taip
     chatInput.style.height = "";
-    chatInput.style.height = Math.min(chatInput.scrollHeight, 130) + "px";
+    chatInput.style.height = Math.min(chatInput.scrollHeight, 220) + "px";
     saveDraft();
     threadBusy = false;
     chatSendBtn.disabled = false;
@@ -1415,7 +1415,7 @@ chatInput.addEventListener("keydown", (e) => {
 });
 chatInput.addEventListener("input", () => {
   chatInput.style.height = "";
-  chatInput.style.height = Math.min(chatInput.scrollHeight, 130) + "px";
+  chatInput.style.height = Math.min(chatInput.scrollHeight, 220) + "px";
   saveDraft();
 });
 
@@ -1447,7 +1447,7 @@ function recallAsked() {
   recallCursor = recallCursor < 0 ? list.length - 1 : (recallCursor - 1 + list.length) % list.length;
   chatInput.value = list[recallCursor];
   chatInput.style.height = "";
-  chatInput.style.height = Math.min(chatInput.scrollHeight, 130) + "px";
+  chatInput.style.height = Math.min(chatInput.scrollHeight, 220) + "px";
   chatInput.focus();
   saveDraft();
   if (list.length > 1) {
@@ -1470,7 +1470,7 @@ function restoreDraft() {
     if (d) {
       chatInput.value = d;
       chatInput.style.height = "";
-      chatInput.style.height = Math.min(chatInput.scrollHeight, 130) + "px";
+      chatInput.style.height = Math.min(chatInput.scrollHeight, 220) + "px";
     }
   } catch {}
 }
