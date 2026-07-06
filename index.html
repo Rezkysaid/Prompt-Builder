@@ -442,8 +442,25 @@
     color: var(--text-tertiary);
     transform: rotate(-1.2deg);
   }
-  .chat-head .clear-chat {
+  .chat-head .recall-chat {
     margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--accent-soft);
+    border: 1.5px solid var(--accent-border);
+    color: var(--accent);
+    font-family: "Inter", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 4px 11px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .chat-head .recall-chat svg { width: 13px; height: 13px; }
+  .chat-head .recall-chat:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .chat-head .clear-chat {
     background: none;
     border: none;
     font-family: var(--font-hand);
@@ -841,6 +858,10 @@
     <div class="chat-head">
       <h2>nak tanya follow-up kat AI tu?</h2>
       <span class="thread-note">prompt 1 buka chat — yang seterusnya sambung dalam chat yang sama</span>
+      <button class="recall-chat" id="recallBtn" style="display:none" title="Panggil balik soalan yang pernah kau taip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 106 5.3L3 8"/><path d="M12 7v5l3 2"/></svg>
+        soalan tadi
+      </button>
       <button class="clear-chat" id="clearChat">reset thread</button>
     </div>
     <div class="thread-list" id="threadList"></div>
@@ -1336,10 +1357,12 @@ async function craftFollowup() {
   const rawIntent = chatInput.value.trim();
   if (!rawIntent || threadBusy) return;
   if (!threadPrompts.length) { startThread(); }
+  rememberAsked(rawIntent); // rakam soalan dulu — boleh recall walaupun AI high-demand/fail
   threadBusy = true;
   chatSendBtn.disabled = true;
   chatInput.value = "";
   chatInput.style.height = "";
+  clearDraft();
   const pending = document.createElement("div");
   pending.className = "thread-card pending";
   pending.textContent = "jap, tengah craft follow-up untuk: “" + rawIntent.slice(0, 80) + "…”";
@@ -1372,9 +1395,12 @@ async function craftFollowup() {
     pending.classList.remove("pending");
     pending.classList.add("err");
     pending.textContent = isQuota
-      ? "ramai orang tengah guna — tunggu sekejap, lepas tu taip balik follow-up kau ya"
-      : "alamak, tak jadi: " + msg;
+      ? "ramai orang tengah guna — soalan kau masih ada kat bawah, cuba hantar balik nanti"
+      : "alamak, tak jadi: " + msg + " — soalan kau masih ada kat bawah";
     chatInput.value = rawIntent; // jangan hilangkan apa yang user taip
+    chatInput.style.height = "";
+    chatInput.style.height = Math.min(chatInput.scrollHeight, 130) + "px";
+    saveDraft();
     threadBusy = false;
     chatSendBtn.disabled = false;
     return;
@@ -1390,7 +1416,66 @@ chatInput.addEventListener("keydown", (e) => {
 chatInput.addEventListener("input", () => {
   chatInput.style.height = "";
   chatInput.style.height = Math.min(chatInput.scrollHeight, 130) + "px";
+  saveDraft();
 });
+
+/* ── Recall: soalan yang pernah ditaip + draf yang belum dihantar ── */
+const ASKED_KEY = "promptcraft_asked";
+const DRAFT_KEY = "promptcraft_draft";
+const recallBtn = document.getElementById("recallBtn");
+let recallCursor = -1;
+
+function loadAsked() {
+  try { return JSON.parse(localStorage.getItem(ASKED_KEY)) || []; } catch { return []; }
+}
+function rememberAsked(text) {
+  const t = (text || "").trim();
+  if (!t) return;
+  const list = loadAsked().filter((x) => x !== t); // buang duplikat, letak yang paling baru di hujung
+  list.push(t);
+  try { localStorage.setItem(ASKED_KEY, JSON.stringify(list.slice(-25))); } catch {}
+  recallCursor = -1;
+  updateRecallBtn();
+}
+function updateRecallBtn() {
+  recallBtn.style.display = loadAsked().length ? "inline-flex" : "none";
+}
+function recallAsked() {
+  const list = loadAsked();
+  if (!list.length) return;
+  // cycle newest → older setiap kali tekan
+  recallCursor = recallCursor < 0 ? list.length - 1 : (recallCursor - 1 + list.length) % list.length;
+  chatInput.value = list[recallCursor];
+  chatInput.style.height = "";
+  chatInput.style.height = Math.min(chatInput.scrollHeight, 130) + "px";
+  chatInput.focus();
+  saveDraft();
+  if (list.length > 1) {
+    recallBtn.lastChild.textContent = " soalan " + (list.length - recallCursor) + "/" + list.length;
+    clearTimeout(recallBtn._t);
+    recallBtn._t = setTimeout(() => { recallBtn.lastChild.textContent = " soalan tadi"; }, 2200);
+  }
+}
+recallBtn.addEventListener("click", () => {
+  if (!chatSection.classList.contains("show") && lastEnhanced) startThread();
+  recallAsked();
+});
+
+/* draf: teks yang belum dihantar kekal walaupun app ditutup */
+function saveDraft() { try { localStorage.setItem(DRAFT_KEY, chatInput.value); } catch {} }
+function clearDraft() { try { localStorage.removeItem(DRAFT_KEY); } catch {} }
+function restoreDraft() {
+  try {
+    const d = localStorage.getItem(DRAFT_KEY);
+    if (d) {
+      chatInput.value = d;
+      chatInput.style.height = "";
+      chatInput.style.height = Math.min(chatInput.scrollHeight, 130) + "px";
+    }
+  } catch {}
+}
+updateRecallBtn();
+restoreDraft();
 sembangBtn.addEventListener("click", () => {
   if (!lastEnhanced) return;
   if (!chatSection.classList.contains("show")) startThread();
