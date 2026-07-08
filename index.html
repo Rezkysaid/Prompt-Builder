@@ -792,6 +792,11 @@
       <option value="standard" selected>Standard (arahan jelas)</option>
       <option value="santai">Santai KL (borak-borak)</option>
     </select>
+    <span>intensiti:</span>
+    <select id="intenSel">
+      <option value="power" selected>Power penuh (tambah konteks)</option>
+      <option value="kemas">Kemas je (susun ayat sahaja)</option>
+    </select>
   </div>
 
   <div class="panels">
@@ -930,6 +935,7 @@ const charCount = document.getElementById("charCount");
 const histList = document.getElementById("histList");
 const outLangSel = document.getElementById("outLang");
 const styleSel = document.getElementById("styleSel");
+const intenSel = document.getElementById("intenSel");
 const sembangBtn = document.getElementById("sembangBtn");
 const chatSection = document.getElementById("chatSection");
 const chatInput = document.getElementById("chatInput");
@@ -1025,11 +1031,40 @@ const MODE_GUIDE = {
   academic: "Academic / research — the enhanced prompt should specify scope, depth, citation expectations, structure, and target academic level.",
 };
 
-function buildPrompt(raw, mode, lang, style) {
+function buildPrompt(raw, mode, lang, style, inten) {
   const langRule =
     lang === "ms" ? "Write the ENHANCED prompt fully in Bahasa Melayu."
     : lang === "en" ? "Write the ENHANCED prompt fully in English."
     : "Keep the ENHANCED prompt in the same language (or natural language mix) as the original prompt.";
+
+  if (inten === "kemas") {
+    const santaiKemas = style === "santai"
+      ? " Keep the casual, natural spoken register — tidy does not mean formal."
+      : "";
+    return `You are a prompt tidier. Your ONLY job is to rewrite the user's raw prompt so it is neat, grammatical, and clearly phrased — WITHOUT changing or adding to its meaning.
+
+Example of the expected level of change:
+Raw: "Kenapa bumi kita ni bulat?"
+Tidied: "Kenapa bumi kita memiliki bentuk yang bulat?"
+
+Strict rules:
+1. PRESERVE the meaning, scope, and intent exactly as written. Do NOT add context, audience, purpose, output format, constraints, roles, examples, or any detail the user never wrote — the user deliberately wants the AI reading this prompt to interpret it themselves.
+2. Only fix: grammar, spelling, sentence structure, word choice, and clarity of phrasing.
+3. Keep it roughly the same length as the original — never longer than about 1.5x.
+4. ${langRule}${santaiKemas}
+5. Do NOT answer the prompt. Output the tidied prompt only.
+
+RAW PROMPT:
+"""
+${raw}
+"""
+
+Respond in EXACTLY this format, nothing else before or after:
+===ENHANCED===
+(the tidied prompt only)
+===CHANGES===
+- (1 to 3 short bullets in casual Bahasa Melayu describing what was tidied, e.g. "Dikemaskan: susunan ayat")`;
+  }
   const santaiBlock = style === "santai" ? `
 
 Response style: SANTAI / CONVERSATIONAL. This is important — the ENHANCED prompt must explicitly instruct the target AI to:
@@ -1197,7 +1232,7 @@ async function enhance(attempt = 0) {
     const res = await fetch(PROXY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: buildPrompt(raw, currentMode, outLangSel.value, styleSel.value) }),
+      body: JSON.stringify({ prompt: buildPrompt(raw, currentMode, outLangSel.value, styleSel.value, intenSel.value) }),
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error.message || data.error);
@@ -1209,7 +1244,7 @@ async function enhance(attempt = 0) {
     typeOutput(enhanced);
     renderAnnot(changes);
     const histTs = Date.now();
-    saveHistory({ raw, enhanced, mode: currentMode, style: styleSel.value, ts: histTs, fav: false });
+    saveHistory({ raw, enhanced, mode: currentMode, style: styleSel.value, inten: intenSel.value, ts: histTs, fav: false });
     currentThreadTs = histTs;
     startThread();
     if (!localStorage.getItem("promptcraft_bursted")) {
@@ -1329,6 +1364,27 @@ function buildFollowupPrompt(rawIntent) {
   const styleRule = styleSel.value === "santai"
     ? " Keep the santai KL register — the whole chat is casual, so the follow-up must sound like natural spoken Peninsular Malay too."
     : "";
+  if (intenSel.value === "kemas") {
+    return `You are a prompt tidier. The user is in an ongoing chat with an AI tool and has typed their next follow-up question below. Rewrite it so it is neat, grammatical, and clearly phrased — WITHOUT changing or adding to its meaning.
+
+Strict rules:
+1. PRESERVE the meaning, scope, and intent exactly. Do NOT add context, anchoring phrases, constraints, or any detail the user never wrote.
+2. Only fix: grammar, spelling, sentence structure, and clarity of phrasing.
+3. Keep it roughly the same length — never longer than about 1.5x.
+4. ${langRule}${styleRule}
+5. Do NOT answer the question. Output the tidied follow-up only.
+
+RAW FOLLOW-UP:
+"""
+${rawIntent.slice(0, 1200)}
+"""
+
+Respond in EXACTLY this format, nothing else:
+===ENHANCED===
+(the tidied follow-up only)
+===CHANGES===
+- (1 to 2 short bullets in casual Bahasa Melayu describing what was tidied)`;
+  }
   const priors = threadPrompts
     .map((p) => `PROMPT ${p.n}${p.n === 1 ? " (opener)" : " (follow-up)"}:\n"""\n${p.text.slice(0, 1500)}\n"""`)
     .join("\n\n");
@@ -1711,7 +1767,7 @@ function renderHistory() {
     top.className = "hist-top";
     const mode = document.createElement("span");
     mode.className = "hist-mode";
-    mode.textContent = (MODE_LABEL[item.mode] || item.mode) + (item.style === "santai" ? " · santai" : "");
+    mode.textContent = (MODE_LABEL[item.mode] || item.mode) + (item.style === "santai" ? " · santai" : "") + (item.inten === "kemas" ? " · kemas" : "");
     const time = document.createElement("span");
     time.className = "hist-time";
     const fuCount = item.thread && item.thread.length > 1 ? item.thread.length - 1 : 0;
@@ -1771,6 +1827,7 @@ function renderHistory() {
         startThread();
       }
       styleSel.value = item.style === "santai" ? "santai" : "standard";
+      intenSel.value = item.inten === "kemas" ? "kemas" : "power";
       const chip = document.querySelector(`#modes .chip[data-mode="${item.mode}"]`);
       if (chip) chip.click();
       window.scrollTo({ top: 0, behavior: "smooth" });

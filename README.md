@@ -10,6 +10,7 @@ Macam Google Translate, tapi untuk prompt: translate prompt mentah / kabur / roj
 - 🎛️ **6 mode enhancement** — General, Coding, Creative, Business, Image-Gen, Academic
 - ✅ **Annotation** — senarai apa yang ditambah/diubah pada prompt asal (belajar sambil guna)
 - 🌐 **Sokong bahasa rojak** — input Melayu, English atau campuran; bahasa output boleh pilih (Auto / MS / EN)
+- 🧹 **Intensiti: Kemas je** — pilihan untuk hanya susun ayat jadi kemas dan gramatis tanpa AI tambah konteks/format/andaian sendiri; sesuai bila kau nak AI tafsir sendiri niat prompt kau. Terpakai pada enhance utama dan follow-up sekali
 - 🎴 **Dek kad idea** — 36 topik rawak pelbagai kategori untuk diteroka dengan Claude/ChatGPT/Gemini bila buntu; satu klik terus masuk ke panel input. Bila semua 36 habis, AI pula jana idea baru secara automatik (batch 5 seklik untuk jimat API)
 - 🕘 **Sejarah prompt + kegemaran** — disimpan dalam browser (localStorage)
 - 📋 Copy, Paste, Swap, Regenerate
