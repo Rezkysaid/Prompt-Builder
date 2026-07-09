@@ -807,6 +807,7 @@
 
   /* ── Seed grower: bagi benih, AI tumbuhkan 5 prompt penuh ── */
   .seed-section { margin-top: 46px; }
+  .seed-lang-row { margin: 12px 0 12px; }
   .seed-input-row { display: flex; gap: 8px; align-items: stretch; max-width: 720px; margin-bottom: 4px; }
   #seedInput {
     flex: 1;
@@ -1123,6 +1124,14 @@
     <div class="idea-head">
       <h2>malas taip panjang? bagi benih je</h2>
       <span class="idea-note">taip frasa pendek — AI tumbuhkan jadi 5 prompt penuh</span>
+    </div>
+    <div class="lang-row seed-lang-row">
+      <span>bahasa output:</span>
+      <select id="seedLang">
+        <option value="auto" selected>Auto (ikut benih)</option>
+        <option value="ms">Bahasa Melayu</option>
+        <option value="en">English</option>
+      </select>
     </div>
     <div class="seed-input-row">
       <input type="text" id="seedInput" maxlength="200" placeholder="contoh: buat duit dengan ai">
@@ -1873,6 +1882,7 @@ document.getElementById("clearChat").addEventListener("click", () => {
 
 /* ── Seed grower: bagi benih pendek, AI tumbuhkan 5 prompt penuh ── */
 const seedInput = document.getElementById("seedInput");
+const seedLang = document.getElementById("seedLang");
 const seedGrowBtn = document.getElementById("seedGrow");
 const seedStatus = document.getElementById("seedStatus");
 const seedResults = document.getElementById("seedResults");
@@ -1880,8 +1890,8 @@ let seedBusy = false;
 
 function buildSeedPrompt(seed) {
   const langRule =
-    outLangSel.value === "ms" ? "Write every suggested prompt fully in Bahasa Melayu."
-    : outLangSel.value === "en" ? "Write every suggested prompt fully in English."
+    seedLang.value === "ms" ? "Write every suggested prompt fully in Bahasa Melayu."
+    : seedLang.value === "en" ? "Write every suggested prompt fully in English."
     : "Write the suggested prompts in the same language (or natural Malay-English mix) as the seed.";
   const styleRule = styleSel.value === "santai"
     ? " Use a relaxed, natural spoken Peninsular/KL Malay register (santai, macam borak) — but each prompt must still be clear and complete."
