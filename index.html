@@ -805,6 +805,90 @@
     transform: rotate(-0.6deg);
   }
 
+  /* ── Seed grower: bagi benih, AI tumbuhkan 5 prompt penuh ── */
+  .seed-section { margin-top: 46px; }
+  .seed-input-row { display: flex; gap: 8px; align-items: stretch; max-width: 720px; margin-bottom: 4px; }
+  #seedInput {
+    flex: 1;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 12px 13px 12px 13px;
+    padding: 11px 15px;
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--surface);
+    outline: none;
+  }
+  #seedInput:focus { border-color: var(--accent); }
+  #seedInput::placeholder { color: var(--text-tertiary); }
+  .seed-grow {
+    flex-shrink: 0;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 15px;
+    font-weight: 600;
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    border-radius: 11px 13px 11px 12px;
+    padding: 11px 24px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #4a4230;
+    transition: all 0.12s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .seed-grow svg { width: 16px; height: 16px; }
+  .seed-grow:hover:not(:disabled) { background: #000; }
+  .seed-grow:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #4a4230; }
+  .seed-grow:disabled { opacity: 0.55; cursor: default; box-shadow: 0 3px 0 #4a4230; }
+  .seed-status {
+    font-family: var(--font-hand);
+    font-size: 16.5px;
+    color: var(--text-tertiary);
+    transform: rotate(-1deg);
+    margin: 8px 0 2px 2px;
+    display: none;
+  }
+  .seed-status.show { display: block; }
+  .seed-status.err { color: var(--danger); transform: none; font-family: "Inter", sans-serif; font-size: 13.5px; }
+  .seed-results { display: none; flex-direction: column; gap: 0; margin-top: 14px; max-width: 720px; }
+  .seed-results.show { display: flex; }
+  .seed-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 13px 16px 13px 15px;
+    box-shadow: var(--shadow-sm);
+    padding: 13px 16px 13px;
+  }
+  .seed-card:not(:last-child) { margin-bottom: 11px; }
+  .seed-card:nth-child(odd) { transform: rotate(-0.3deg); }
+  .seed-card:nth-child(even) { transform: rotate(0.3deg); }
+  .seed-card:hover { border-color: var(--accent); }
+  .seed-top { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+  .seed-angle {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 6px;
+    padding: 2px 9px;
+  }
+  .seed-text {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--text);
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    user-select: text;
+    -webkit-user-select: text;
+    -webkit-touch-callout: default;
+  }
+  .seed-actions { display: flex; gap: 8px; margin-top: 11px; flex-wrap: wrap; }
+
   /* ── Animasi (hanya bila user tak set reduced-motion) ── */
   @media (prefers-reduced-motion: no-preference) {
     @keyframes fadeUp {
@@ -1033,6 +1117,22 @@
       <textarea id="chatInput" rows="1" placeholder="tulis prompt je…"></textarea>
       <button class="chat-send" id="chatSend">Craft follow-up</button>
     </div>
+  </div>
+
+  <div class="seed-section">
+    <div class="idea-head">
+      <h2>malas taip panjang? bagi benih je</h2>
+      <span class="idea-note">taip frasa pendek — AI tumbuhkan jadi 5 prompt penuh</span>
+    </div>
+    <div class="seed-input-row">
+      <input type="text" id="seedInput" maxlength="200" placeholder="contoh: buat duit dengan ai">
+      <button class="seed-grow" id="seedGrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C12 8 9 5 4 5c0 5 3 7 8 7z"/><path d="M12 14c0-3.5 3-6.5 8-6.5 0 4.5-3 6.5-8 6.5z"/></svg>
+        Tumbuhkan
+      </button>
+    </div>
+    <div class="seed-status" id="seedStatus"></div>
+    <div class="seed-results" id="seedResults"></div>
   </div>
 
   <div class="wizard-section">
@@ -1771,6 +1871,132 @@ document.getElementById("clearChat").addEventListener("click", () => {
   persistThreadToHistory();
 });
 
+/* ── Seed grower: bagi benih pendek, AI tumbuhkan 5 prompt penuh ── */
+const seedInput = document.getElementById("seedInput");
+const seedGrowBtn = document.getElementById("seedGrow");
+const seedStatus = document.getElementById("seedStatus");
+const seedResults = document.getElementById("seedResults");
+let seedBusy = false;
+
+function buildSeedPrompt(seed) {
+  const langRule =
+    outLangSel.value === "ms" ? "Write every suggested prompt fully in Bahasa Melayu."
+    : outLangSel.value === "en" ? "Write every suggested prompt fully in English."
+    : "Write the suggested prompts in the same language (or natural Malay-English mix) as the seed.";
+  const styleRule = styleSel.value === "santai"
+    ? " Use a relaxed, natural spoken Peninsular/KL Malay register (santai, macam borak) — but each prompt must still be clear and complete."
+    : "";
+  return `You are a Prompt Seed Grower. The user gives you a SHORT, rough seed — a few words or a vague phrase — and you grow it into 5 different, fully-formed prompts they can paste straight into an AI tool (ChatGPT / Claude / Gemini).
+
+Think of it like a seed growing into a tree: the seed is tiny and unclear, but you interpret the likely intents behind it and expand each into a complete, well-structured prompt — with implied context, a clear goal, and a suitable output format.
+
+The 5 prompts must take DISTINCT angles / interpretations of the seed (e.g. different goals, audiences, or use-cases), so the user has a real range to choose from. Do NOT just reword the same prompt 5 times.
+
+Rules:
+- Each prompt: 30 to 70 words, self-contained and ready to use as-is.
+- Preserve the spirit of the seed; you may add reasonable context, but do NOT drift into an unrelated topic.
+- ${langRule}${styleRule}
+- Give each one a SHORT angle label (2-4 words) describing its take.
+
+SEED:
+"""
+${seed.slice(0, 200)}
+"""
+
+Respond with EXACTLY 5 lines, nothing else before or after. Each line in this format (single line, no line breaks inside a prompt):
+ANGLE LABEL ::: the full prompt`;
+}
+
+function parseSeeds(text) {
+  return text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => l.replace(/^\s*(?:\d+[.)]|[-*•])\s*/, "")) // buang penomboran
+    .map((l) => {
+      const idx = l.indexOf(":::");
+      if (idx === -1) return null;
+      const angle = l.slice(0, idx).replace(/\*\*/g, "").trim();
+      const prompt = l.slice(idx + 3).replace(/^\s*["']|["']\s*$/g, "").trim();
+      if (!prompt || prompt.length < 15) return null;
+      return { angle: angle || "cadangan", prompt };
+    })
+    .filter(Boolean)
+    .slice(0, 5);
+}
+
+function renderSeeds(seeds) {
+  seedResults.innerHTML = "";
+  seeds.forEach((s) => {
+    const card = document.createElement("div");
+    card.className = "seed-card";
+    const top = document.createElement("div");
+    top.className = "seed-top";
+    const angle = document.createElement("span");
+    angle.className = "seed-angle";
+    angle.textContent = s.angle;
+    top.appendChild(angle);
+    const txt = document.createElement("p");
+    txt.className = "seed-text";
+    txt.textContent = s.prompt;
+    const actions = document.createElement("div");
+    actions.className = "seed-actions";
+    actions.appendChild(copyBtnEl(() => s.prompt));
+    const use = document.createElement("button");
+    use.className = "mini-btn";
+    use.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14 9 9 4 4 9"/><path d="M20 20h-7a4 4 0 01-4-4V4"/></svg>Guna ni';
+    use.addEventListener("click", () => {
+      input.value = s.prompt.slice(0, 4000);
+      input.dispatchEvent(new Event("input"));
+      annot.classList.remove("show");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    actions.append(use);
+    card.append(top, txt, actions);
+    seedResults.appendChild(card);
+  });
+  seedResults.classList.add("show");
+}
+
+async function growSeed() {
+  const seed = seedInput.value.trim();
+  if (!seed) { seedInput.focus(); return; }
+  if (seedBusy) return;
+  seedBusy = true;
+  seedGrowBtn.disabled = true;
+  seedStatus.className = "seed-status show";
+  seedStatus.textContent = "AI tengah tumbuhkan benih kau jadi 5 prompt…";
+  try {
+    const res = await fetch(PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: buildSeedPrompt(seed) }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || data.error);
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const seeds = parseSeeds(text);
+    if (!seeds.length) throw new Error("tak dapat baca cadangan — cuba sekali lagi");
+    renderSeeds(seeds);
+    seedStatus.className = "seed-status show";
+    seedStatus.textContent = "pilih satu, copy atau tekan \"Guna ni\" untuk power-kan lagi";
+  } catch (e) {
+    const msg = e && e.message ? String(e.message) : String(e);
+    const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|retry in|high demand/i.test(msg);
+    seedStatus.className = "seed-status show err";
+    seedStatus.textContent = isQuota
+      ? "ramai orang tengah guna — benih kau masih ada kat atas, cuba tumbuhkan balik nanti"
+      : "alamak, tak jadi: " + msg;
+  } finally {
+    seedBusy = false;
+    seedGrowBtn.disabled = false;
+  }
+}
+seedGrowBtn.addEventListener("click", growSeed);
+seedInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); growSeed(); }
+});
+
 /* ── Wizard: bina prompt permulaan untuk yang blank ── */
 const wizState = { goal: null, obj: null, tone: null };
 const wizBuildBtn = document.getElementById("wizBuild");
@@ -2149,7 +2375,7 @@ document.addEventListener("touchend", (e) => {
 
 /* seksyen bawah muncul lembut bila scroll sampai */
 (function scrollReveal() {
-  const targets = document.querySelectorAll(".wizard-section, .idea-section, .hist-section, footer");
+  const targets = document.querySelectorAll(".seed-section, .wizard-section, .idea-section, .hist-section, footer");
   if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const io = new IntersectionObserver((entries) => {
     entries.forEach((en) => {
