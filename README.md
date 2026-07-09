@@ -12,7 +12,6 @@ Macam Google Translate, tapi untuk prompt: translate prompt mentah / kabur / roj
 - 🌐 **Sokong bahasa rojak** — input Melayu, English atau campuran; bahasa output boleh pilih (Auto / MS / EN)
 - 🧹 **Intensiti: Kemas je** — pilihan untuk hanya susun ayat jadi kemas dan gramatis tanpa AI tambah konteks/format/andaian sendiri; sesuai bila kau nak AI tafsir sendiri niat prompt kau. Terpakai pada enhance utama dan follow-up sekali
 - 🌱 **Seed grower** — malas taip panjang? Bagi frasa pendek/kasar (contoh: "buat duit dengan ai") dan AI tumbuhkan jadi 5 cadangan prompt penuh dengan angle berbeza, siap boleh copy atau terus "Guna ni" untuk power-kan lagi
-- 🧭 **Wizard "blank tak tahu nak mula?"** — untuk yang stress tak tahu macam mana nak interact dengan AI: jawab 4 soalan klik-klik (nak tolong apa, pasal apa, apa hasil akhir, gaya bahasa) dan app bina prompt permulaan secara automatik — termasuk arahan supaya AI tanya soalan dulu sebelum jawab. Tiada kos API
 - 🎴 **Dek kad idea** — 36 topik rawak pelbagai kategori untuk diteroka dengan Claude/ChatGPT/Gemini bila buntu; satu klik terus masuk ke panel input. Bila semua 36 habis, AI pula jana idea baru secara automatik (batch 5 seklik untuk jimat API)
 - 🕘 **Sejarah prompt + kegemaran** — disimpan dalam browser (localStorage)
 - 📋 Copy, Paste, Swap, Regenerate
