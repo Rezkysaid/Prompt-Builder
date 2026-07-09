@@ -805,6 +805,73 @@
     transform: rotate(-0.6deg);
   }
 
+  /* ── Animasi (hanya bila user tak set reduced-motion) ── */
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.95) translateY(8px); }
+      65% { transform: scale(1.015); }
+      100% { opacity: 1; transform: none; }
+    }
+    @keyframes drawLine { from { stroke-dashoffset: 200; } to { stroke-dashoffset: 0; } }
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(0); }
+      30% { transform: rotate(-10deg); }
+      70% { transform: rotate(7deg); }
+    }
+    @keyframes twinkle {
+      0%, 100% { transform: scale(1) rotate(0); }
+      50% { transform: scale(1.28) rotate(22deg); }
+    }
+    @keyframes borderFlash {
+      0% { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(217, 85, 47, 0.14); }
+      100% { border-color: var(--border); box-shadow: var(--shadow-md); }
+    }
+
+    /* masuk page: elemen utama naik satu-satu */
+    .topbar-inner { animation: fadeUp 0.45s ease-out backwards; }
+    .hero { animation: fadeUp 0.5s ease-out 0.08s backwards; }
+    .controls { animation: fadeUp 0.5s ease-out 0.16s backwards; }
+    .lang-row { animation: fadeUp 0.5s ease-out 0.22s backwards; }
+    .panels { animation: fadeUp 0.55s ease-out 0.28s backwards; }
+    .action-row { animation: fadeUp 0.55s ease-out 0.36s backwards; }
+
+    /* squiggle bawah "power" melukis sendiri */
+    .hero .pow svg path {
+      stroke-dasharray: 200;
+      animation: drawLine 0.8s ease-out 0.7s backwards;
+    }
+
+    /* logo goyang sikit masa masuk & bila hover */
+    .logo-mark svg { animation: wiggle 0.7s ease 1s backwards; }
+    .logo-mark:hover svg { animation: wiggle 0.5s ease; }
+
+    /* sparkle butang Power-kan berkelip bila hover */
+    .enhance-btn:hover:not(:disabled) svg { animation: twinkle 0.7s ease infinite; }
+
+    /* seksyen bawah muncul bila scroll sampai */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.55s ease, transform 0.55s ease; }
+    .reveal.in-view { opacity: 1; transform: none; }
+
+    /* kandungan baru pop masuk */
+    .chat-section.show { animation: popIn 0.4s ease-out; }
+    .thread-card { animation: popIn 0.3s ease-out backwards; }
+    .annot.show { animation: popIn 0.35s ease-out; }
+    .hist-item { animation: popIn 0.3s ease-out backwards; }
+    .hist-item:nth-child(2) { animation-delay: 0.05s; }
+    .hist-item:nth-child(3) { animation-delay: 0.1s; }
+    .hist-item:nth-child(4) { animation-delay: 0.15s; }
+
+    /* panel output berkilau bila hasil baru masuk */
+    .panel-out.flash { animation: borderFlash 0.9s ease-out; }
+
+    /* butang copy melantun bila berjaya */
+    .mini-btn.copied svg { animation: twinkle 0.4s ease; }
+  }
+
   /* ── Mobile ── */
   @media (max-width: 720px) {
     .panels { grid-template-columns: 1fr; }
@@ -1271,12 +1338,16 @@ function setOutput(text) {
 }
 
 /* typewriter: rasa macam ada orang menaip semula prompt kau */
+const panelOut = document.querySelector(".panel-out");
 function typeOutput(text) {
   lastEnhanced = text;
   copyBtn.disabled = false;
   regenBtn.disabled = false;
   swapBtn.disabled = false;
   sembangBtn.disabled = false;
+  panelOut.classList.remove("flash");
+  void panelOut.offsetWidth; // restart animasi flash
+  panelOut.classList.add("flash");
   clearInterval(typeTimer);
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
     output.textContent = text;
@@ -2057,6 +2128,18 @@ document.addEventListener("touchend", (e) => {
   if (now - lastTouch < 320 && !["TEXTAREA", "INPUT", "SELECT", "BUTTON"].includes(e.target.tagName)) e.preventDefault();
   lastTouch = now;
 }, { passive: false });
+
+/* seksyen bawah muncul lembut bila scroll sampai */
+(function scrollReveal() {
+  const targets = document.querySelectorAll(".wizard-section, .idea-section, .hist-section, footer");
+  if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((en) => {
+      if (en.isIntersecting) { en.target.classList.add("in-view"); io.unobserve(en.target); }
+    });
+  }, { threshold: 0.12 });
+  targets.forEach((t) => { t.classList.add("reveal"); io.observe(t); });
+})();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
