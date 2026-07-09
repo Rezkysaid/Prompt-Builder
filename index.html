@@ -553,6 +553,94 @@
   .chat-send:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #4a4230; }
   .chat-send:disabled { opacity: 0.55; cursor: default; }
 
+  /* ── Wizard: bantu yang blank nak mula macam mana ── */
+  .wizard-section { margin-top: 46px; }
+  .wizard-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 15px 13px 16px 14px;
+    box-shadow: var(--shadow-md);
+    padding: 18px 20px 16px;
+    max-width: 720px;
+    transform: rotate(0.2deg);
+  }
+  .wiz-step { margin-bottom: 18px; }
+  .wiz-q {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 16.5px;
+    font-weight: 600;
+    margin-bottom: 9px;
+  }
+  .wiz-num {
+    flex-shrink: 0;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-family: "Inter", sans-serif;
+    font-style: normal;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-4deg) translateY(3px);
+  }
+  .wiz-optional {
+    font-family: var(--font-hand);
+    font-style: normal;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text-tertiary);
+  }
+  .wiz-opts { display: flex; flex-wrap: wrap; gap: 7px; }
+  .wiz-opts .chip { font-size: 12.5px; padding: 5px 13px; }
+  #wizTopic {
+    width: 100%;
+    max-width: 420px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 10px 11px 10px 11px;
+    padding: 8px 13px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface);
+    outline: none;
+  }
+  #wizTopic:focus { border-color: var(--accent); }
+  .wiz-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+  .wiz-build {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 15px;
+    font-weight: 600;
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    border-radius: 11px 13px 11px 12px;
+    padding: 11px 26px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #4a4230;
+    transition: all 0.12s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .wiz-build svg { width: 15px; height: 15px; }
+  .wiz-build:hover:not(:disabled) { background: #000; }
+  .wiz-build:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #4a4230; }
+  .wiz-build:disabled { opacity: 0.45; cursor: default; box-shadow: 0 3px 0 #4a4230; }
+  .wiz-hint {
+    font-family: var(--font-hand);
+    font-size: 16.5px;
+    color: var(--text-tertiary);
+    transform: rotate(-1.3deg);
+  }
+
   /* ── Idea deck: kad topik rawak ── */
   .idea-section { margin-top: 46px; }
   .idea-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
@@ -873,6 +961,56 @@
     <div class="chat-input-row">
       <textarea id="chatInput" rows="1" placeholder="tulis prompt je…"></textarea>
       <button class="chat-send" id="chatSend">Craft follow-up</button>
+    </div>
+  </div>
+
+  <div class="wizard-section">
+    <div class="idea-head">
+      <h2>blank tak tahu nak mula macam mana?</h2>
+      <span class="idea-note">relaks — jawab 4 soalan ni je, kita bina sama-sama</span>
+    </div>
+    <div class="wizard-card">
+      <div class="wiz-step">
+        <div class="wiz-q"><span class="wiz-num">1</span> Kau nak AI tolong apa sebenarnya?</div>
+        <div class="wiz-opts" id="wizGoal">
+          <button class="chip" data-v="build">Bina / buat sesuatu</button>
+          <button class="chip" data-v="learn">Belajar / faham sesuatu</button>
+          <button class="chip" data-v="solve">Selesaikan masalah</button>
+          <button class="chip" data-v="idea">Cari idea</button>
+          <button class="chip" data-v="write">Tulis sesuatu</button>
+          <button class="chip" data-v="chat">Saja nak borak / fikir</button>
+        </div>
+      </div>
+      <div class="wiz-step">
+        <div class="wiz-q"><span class="wiz-num">2</span> Pasal apa? <span class="wiz-optional">— taip ringkas je, tak wajib pun</span></div>
+        <input type="text" id="wizTopic" maxlength="120" placeholder="contoh: app tracking duit belanja, saham, resepi diet…">
+      </div>
+      <div class="wiz-step">
+        <div class="wiz-q"><span class="wiz-num">3</span> Di hujungnya nanti, apa yang kau nak dapat?</div>
+        <div class="wiz-opts" id="wizObj">
+          <button class="chip" data-v="understand">Faham dengan jelas</button>
+          <button class="chip" data-v="plan">Plan langkah demi langkah</button>
+          <button class="chip" data-v="draft">Draf siap boleh terus guna</button>
+          <button class="chip" data-v="list">Senarai idea / pilihan</button>
+          <button class="chip" data-v="decide">Cadangan untuk buat keputusan</button>
+        </div>
+      </div>
+      <div class="wiz-step">
+        <div class="wiz-q"><span class="wiz-num">4</span> Gaya bahasa macam mana kau selesa?</div>
+        <div class="wiz-opts" id="wizTone">
+          <button class="chip" data-v="santai">Santai macam kawan</button>
+          <button class="chip" data-v="simple">Simple, senang faham</button>
+          <button class="chip" data-v="formal">Formal &amp; profesional</button>
+          <button class="chip" data-v="technical">Detail &amp; teknikal</button>
+        </div>
+      </div>
+      <div class="wiz-foot">
+        <button class="wiz-build" id="wizBuild" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8a2 2 0 001.3 1.3L21 12l-5.8 1.9a2 2 0 00-1.3 1.3L12 21l-1.9-5.8a2 2 0 00-1.3-1.3L3 12l5.8-1.9a2 2 0 001.3-1.3L12 3z"/></svg>
+          Bina prompt aku
+        </button>
+        <span class="wiz-hint" id="wizHint">jawab soalan 1, 3 dan 4 dulu…</span>
+      </div>
     </div>
   </div>
 
@@ -1542,6 +1680,76 @@ document.getElementById("clearChat").addEventListener("click", () => {
   if (threadBusy) return;
   startThread(); // reset ke prompt pembuka sahaja
   persistThreadToHistory();
+});
+
+/* ── Wizard: bina prompt permulaan untuk yang blank ── */
+const wizState = { goal: null, obj: null, tone: null };
+const wizBuildBtn = document.getElementById("wizBuild");
+const wizHint = document.getElementById("wizHint");
+const wizTopic = document.getElementById("wizTopic");
+
+const WIZ_GOAL = {
+  build: "bina sesuatu",
+  learn: "belajar dan faham betul-betul",
+  solve: "selesaikan satu masalah",
+  idea: "cari idea",
+  write: "tuliskan sesuatu",
+  chat: "borak dan fikirkan sesuatu sama-sama",
+};
+const WIZ_OBJ = {
+  understand: "aku faham benda tu dengan jelas",
+  plan: "aku dapat plan langkah demi langkah yang boleh terus aku buat",
+  draft: "aku dapat draf siap yang boleh terus aku guna",
+  list: "aku dapat senarai idea atau pilihan untuk aku timbang",
+  decide: "aku dapat cadangan yang jelas supaya senang aku buat keputusan",
+};
+const WIZ_TONE = {
+  santai: "santai macam borak dengan kawan",
+  simple: "simple dan senang faham, macam explain kat orang baru belajar",
+  formal: "formal dan profesional",
+  technical: "detail dan teknikal",
+};
+
+["wizGoal", "wizObj", "wizTone"].forEach((groupId) => {
+  const key = groupId === "wizGoal" ? "goal" : groupId === "wizObj" ? "obj" : "tone";
+  document.querySelectorAll("#" + groupId + " .chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll("#" + groupId + " .chip").forEach((c) => c.classList.remove("active"));
+      chip.classList.add("active");
+      wizState[key] = chip.dataset.v;
+      updateWizBtn();
+    });
+  });
+});
+
+function updateWizBtn() {
+  const ready = wizState.goal && wizState.obj && wizState.tone;
+  wizBuildBtn.disabled = !ready;
+  if (ready) {
+    wizHint.textContent = "siap — tekan je!";
+  } else {
+    const missing = [];
+    if (!wizState.goal) missing.push("1");
+    if (!wizState.obj) missing.push("3");
+    if (!wizState.tone) missing.push("4");
+    wizHint.textContent = "jawab soalan " + missing.join(", ") + " dulu…";
+  }
+}
+
+wizBuildBtn.addEventListener("click", () => {
+  if (wizBuildBtn.disabled) return;
+  const topic = wizTopic.value.trim();
+  const prompt =
+    "Aku nak " + WIZ_GOAL[wizState.goal] + (topic ? " pasal " + topic : "") + ". " +
+    "Hasil akhir yang aku nak: " + WIZ_OBJ[wizState.obj] + ". " +
+    "Aku tak berapa pasti macam mana nak mula, so sebelum kau jawab panjang, tanya aku dulu 2-3 soalan penting supaya kau faham situasi aku. " +
+    "Gaya bahasa: " + WIZ_TONE[wizState.tone] + ".";
+  input.value = prompt.slice(0, 4000);
+  input.dispatchEvent(new Event("input"));
+  styleSel.value = wizState.tone === "santai" ? "santai" : "standard";
+  annot.classList.remove("show");
+  wizHint.textContent = "dah masuk kat panel atas — tekan Power-kan!";
+  window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
 /* ── Idea deck: topik rawak untuk diteroka dengan AI ── */
