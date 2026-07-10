@@ -655,70 +655,149 @@
     .mic-btn.recording svg { animation: micPulse 1s ease-in-out infinite; }
   }
 
-  /* ── Starter: cadangan permulaan ayat (bila kotak kosong) ── */
-  .starter-row {
+  /* ── Guide: bantu mula nulis (bila kotak kosong) ── */
+  .guide-open {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 7px;
+    gap: 9px;
     margin: 0 16px 12px;
-  }
-  .starter-row[hidden] { display: none; }
-  .starter-label {
+    padding: 10px 14px;
+    width: calc(100% - 32px);
     font-family: var(--font-hand);
-    font-size: 15.5px;
-    color: var(--text-tertiary);
-    flex-shrink: 0;
-  }
-  .starter-chips { display: contents; }
-  .starter-chip {
-    font-family: inherit;
-    font-size: 12.5px;
-    font-weight: 500;
+    font-size: 16.5px;
     color: var(--accent);
     background: var(--accent-soft);
-    border: 1.5px solid var(--accent-border);
-    border-radius: 999px;
-    padding: 4px 11px;
+    border: 1.5px dashed var(--accent-border);
+    border-radius: 12px 14px 11px 13px;
     cursor: pointer;
-    transition: all 0.14s ease;
+    text-align: left;
+    transition: background 0.15s ease, border-color 0.15s ease;
   }
-  .starter-chip:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .starter-chip:active { transform: scale(0.95); }
-  .starter-shuffle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px; height: 26px;
-    border-radius: 50%;
+  .guide-open[hidden] { display: none; }
+  .guide-open svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .guide-open:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .guide-overlay {
+    position: fixed; inset: 0; z-index: 60;
+    display: flex; align-items: center; justify-content: center;
+    padding: 18px;
+    background: rgba(30, 22, 14, 0.42);
+    backdrop-filter: blur(2px);
+  }
+  .guide-overlay[hidden] { display: none; }
+  .guide-card {
+    position: relative;
+    width: 100%; max-width: 480px;
+    max-height: 88vh; overflow-y: auto;
+    background: var(--bg);
     border: 1.5px solid var(--border-strong);
+    border-radius: 20px 22px 19px 21px;
+    box-shadow: 0 18px 50px rgba(30, 22, 14, 0.28);
+    padding: 22px 20px 20px;
+  }
+  .guide-close {
+    position: absolute; top: 13px; right: 13px;
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 1.5px solid var(--border-strong);
+    background: var(--surface); color: var(--text-secondary);
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+  }
+  .guide-close svg { width: 15px; height: 15px; }
+  .guide-close:hover { border-color: var(--accent); color: var(--accent); }
+  .guide-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 22px;
+    color: var(--text);
+    margin: 0 34px 14px 2px;
+  }
+  .guide-tabs { display: flex; gap: 7px; margin-bottom: 16px; }
+  .guide-tab {
+    font-family: var(--font-hand);
+    font-size: 15.5px;
+    padding: 7px 15px;
+    border-radius: 999px;
+    border: 1.5px solid var(--border);
     background: var(--surface);
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.15s ease;
   }
-  .starter-shuffle svg { width: 13px; height: 13px; }
-  .starter-shuffle:hover { border-color: var(--accent); color: var(--accent); transform: rotate(-25deg); }
-  .starter-ai {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-family: inherit;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--bg);
-    background: var(--ink);
-    border: 1.5px solid var(--ink);
-    border-radius: 999px;
-    padding: 4px 11px;
-    cursor: pointer;
-    transition: all 0.14s ease;
+  .guide-tab.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .guide-view[hidden] { display: none; }
+  .guide-sub { font-size: 13px; color: var(--text-tertiary); line-height: 1.5; margin-bottom: 14px; }
+
+  /* Mad Libs */
+  .ml-step { margin-bottom: 12px; }
+  .ml-lead { font-family: var(--font-hand); font-size: 16px; color: var(--text-secondary); display: block; margin-bottom: 6px; }
+  .ml-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ml-chip {
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    color: var(--accent); background: var(--accent-soft);
+    border: 1.5px solid var(--accent-border); border-radius: 999px;
+    padding: 5px 12px; cursor: pointer; transition: all 0.14s ease;
   }
-  .starter-ai[hidden] { display: none; }
-  .starter-ai svg { width: 12px; height: 12px; }
-  .starter-ai:hover:not(:disabled) { background: #000; }
-  .starter-ai:disabled { opacity: 0.55; cursor: default; }
-  .starter-chip.ai { border-style: dashed; }
+  .ml-chip:hover { border-color: var(--accent); }
+  .ml-chip.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .ml-topic {
+    width: 100%;
+    font-family: inherit; font-size: 14.5px;
+    padding: 10px 13px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 11px 13px 11px 12px;
+    background: var(--surface); color: var(--text);
+  }
+  .ml-topic:focus { outline: none; border-color: var(--accent); }
+  .ml-preview {
+    min-height: 20px;
+    margin: 16px 0 14px;
+    padding: 13px 15px;
+    background: var(--accent-soft);
+    border: 1.5px dashed var(--accent-border);
+    border-radius: 12px 14px 11px 13px;
+    font-family: var(--font-hand);
+    font-size: 17px; line-height: 1.5; color: var(--text);
+  }
+  .ml-preview:empty::before { content: "…ayat kau akan terbentuk kat sini"; color: var(--text-tertiary); }
+  .ml-preview b { color: var(--accent); font-weight: 700; }
+
+  .guide-use {
+    width: 100%;
+    font-family: var(--font-hand); font-size: 17px;
+    padding: 11px; border-radius: 12px 14px 11px 13px;
+    border: 1.5px solid var(--ink); background: var(--ink); color: var(--bg);
+    cursor: pointer; transition: opacity 0.15s ease, transform 0.1s ease;
+  }
+  .guide-use:hover:not(:disabled) { background: #000; }
+  .guide-use:active:not(:disabled) { transform: translateY(1px); }
+  .guide-use:disabled { opacity: 0.4; cursor: default; }
+
+  /* Merepek */
+  .merepek-box {
+    width: 100%; min-height: 130px; resize: none;
+    font-family: inherit; font-size: 14.5px; line-height: 1.55;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 12px 14px 11px 13px;
+    background: var(--surface); color: var(--text);
+  }
+  .merepek-box:focus { outline: none; border-color: var(--accent); }
+  .merepek-actions { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+  .merepek-actions .guide-use { flex: 1; }
+  .merepek-loading { display: flex; align-items: center; gap: 9px; margin-top: 14px; font-size: 13.5px; color: var(--text-secondary); }
+  .merepek-loading[hidden] { display: none; }
+  .merepek-result[hidden], .merepek-err[hidden] { display: none; }
+  .merepek-out {
+    margin-top: 14px; padding: 13px 15px;
+    background: var(--accent-soft);
+    border: 1.5px dashed var(--accent-border);
+    border-radius: 12px 14px 11px 13px;
+    font-size: 14.5px; line-height: 1.6; color: var(--text); white-space: pre-wrap;
+  }
+  .merepek-result-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .merepek-result-actions .guide-use { flex: 1; }
+  .merepek-result-actions .mini-btn { flex-shrink: 0; }
+  .merepek-err { margin-top: 12px; font-size: 13.5px; color: var(--danger); }
 
   /* ── Hint masa taip (dalam panel input, bawah teks) ── */
   .hint-bar {
@@ -1478,17 +1557,10 @@
     <div class="panel panel-in">
       <div class="panel-head">tampal prompt buruk kau sini<span class="count" id="charCount"></span></div>
       <textarea id="input" placeholder="Taip atau paste prompt mentah kau kat sini…" maxlength="4000"></textarea>
-      <div class="starter-row" id="starterRow" hidden>
-        <span class="starter-label">tak tau nak mula? cuba:</span>
-        <div class="starter-chips" id="starterChips"></div>
-        <button class="starter-shuffle" id="starterShuffle" title="Cadangan lain" aria-label="Cadangan lain">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
-        </button>
-        <button class="starter-ai" id="starterAiBtn" hidden title="Minta AI bagi permulaan baru">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.8a2 2 0 001.1 1.1L19.5 10l-4.8 1.6a2 2 0 00-1.1 1.1L12 17l-1.6-4.8a2 2 0 00-1.1-1.1L4.5 10l4.8-1.6a2 2 0 001.1-1.1L12 3z"/></svg>
-          AI bagi
-        </button>
-      </div>
+      <button class="guide-open" id="guideOpen" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 00-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0012 2z"/><path d="M9 21h6"/><path d="M10 18h4"/></svg>
+        <span>kepala serabut? jom aku pandu kau tulis</span>
+      </button>
       <div class="hint-bar" id="hintBar" hidden>
         <svg class="hint-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 00-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0012 2z"/></svg>
         <span id="hintText"></span>
@@ -1711,6 +1783,50 @@
 
 </div>
 
+<div class="guide-overlay" id="guideOverlay" hidden>
+  <div class="guide-card" role="dialog" aria-modal="true" aria-label="Pemandu tulis prompt">
+    <button class="guide-close" id="guideClose" title="Tutup" aria-label="Tutup">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <h2 class="guide-title">jom mula — tak payah fikir lama</h2>
+    <div class="guide-tabs">
+      <button class="guide-tab active" data-gtab="isi">isi tempat kosong</button>
+      <button class="guide-tab" data-gtab="merepek">merepek je</button>
+    </div>
+
+    <div class="guide-view" id="gvIsi">
+      <p class="guide-sub">tap-tap je, isi topik sekali — ayat siap sendiri kat bawah.</p>
+      <div class="ml-step"><span class="ml-lead">Aku nak</span><div class="ml-chips" id="mlVerb"></div></div>
+      <div class="ml-step"><input class="ml-topic" id="mlTopic" placeholder="…topik kau: cth 'side income guna AI'" maxlength="140"></div>
+      <div class="ml-step"><span class="ml-lead">untuk</span><div class="ml-chips" id="mlWho"></div></div>
+      <div class="ml-step"><span class="ml-lead">bagi dalam bentuk</span><div class="ml-chips" id="mlFormat"></div></div>
+      <div class="ml-preview" id="mlPreview"></div>
+      <button class="guide-use" id="mlUse" disabled>guna ni →</button>
+    </div>
+
+    <div class="guide-view" id="gvMerepek" hidden>
+      <p class="guide-sub">luah je apa dalam kepala — tak payah betul, tak payah teratur. AI kemaskan nanti.</p>
+      <textarea class="merepek-box" id="merepekBox" placeholder="cth: aku nak buat something pasal jual kuih online tapi tak tau nak mula camne, budget kecik, nak reach orang area aku je…" maxlength="4000"></textarea>
+      <div class="merepek-actions">
+        <button class="mini-btn" id="merepekMic" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 00-3 3v6a3 3 0 006 0V5a3 3 0 00-3-3z"/><path d="M19 10v1a7 7 0 01-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+          <span class="mrp-mic-label">Cakap</span>
+        </button>
+        <button class="guide-use" id="merepekGo" disabled>kemas jadi prompt →</button>
+      </div>
+      <div class="merepek-loading" id="merepekLoading" hidden><span class="swipe-spin"></span> AI tengah kemaskan…</div>
+      <div class="merepek-result" id="merepekResult" hidden>
+        <div class="merepek-out" id="merepekOut"></div>
+        <div class="merepek-result-actions">
+          <button class="guide-use" id="merepekUse">guna ni →</button>
+          <button class="mini-btn" id="merepekRetry">cuba lagi</button>
+        </div>
+      </div>
+      <div class="merepek-err" id="merepekErr" hidden></div>
+    </div>
+  </div>
+</div>
+
 <footer>dibuat sambil minum kopi — satu prompt satu masa.</footer>
 
 <script>
@@ -1871,109 +1987,163 @@ function updateHints() {
   hintBar.hidden = false;
 }
 
-/* ── Starter: cadangan permulaan ayat bila kotak kosong ── */
-const STARTERS = [
-  "Terangkan", "Tolong aku", "Buatkan aku", "Macam ni weh,", "Sebenarnya,",
-  "Aku nak cerita", "Boleh tak", "Aku nak tanya", "Tulis", "Ringkaskan",
-  "Cadangkan", "Aku stuck pasal", "Aku nak belajar", "Macam mana nak",
-  "Senaraikan", "Bandingkan", "Aku nak idea", "Bagi aku contoh",
-  "Analisa", "Aku ada masalah",
-];
-const starterRow = document.getElementById("starterRow");
-const starterChips = document.getElementById("starterChips");
-const starterShuffle = document.getElementById("starterShuffle");
-const starterAiBtn = document.getElementById("starterAiBtn");
-const starterLabel = starterRow.querySelector(".starter-label");
+/* ── Guide: bantu pengguna mula nulis bila kotak kosong ── */
+const guideOpen = document.getElementById("guideOpen");
+const guideOverlay = document.getElementById("guideOverlay");
+const guideClose = document.getElementById("guideClose");
 
-let starterBag = [];
-let starterShown = new Set();   // indeks statik yang dah ditunjuk
-let starterAiQueue = [];        // pembuka jana-AI yang menunggu
-let starterBusy = false;
+function openGuide() { guideOverlay.hidden = false; document.body.style.overflow = "hidden"; }
+function closeGuide() { guideOverlay.hidden = true; document.body.style.overflow = ""; }
+guideOpen.addEventListener("click", openGuide);
+guideClose.addEventListener("click", closeGuide);
+guideOverlay.addEventListener("click", (e) => { if (e.target === guideOverlay) closeGuide(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !guideOverlay.hidden) closeGuide(); });
 
-function paintStarterChips(openers, isAi) {
-  starterChips.innerHTML = "";
-  openers.forEach((op) => {
+const gviews = { isi: document.getElementById("gvIsi"), merepek: document.getElementById("gvMerepek") };
+document.querySelectorAll(".guide-tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".guide-tab").forEach((t) => t.classList.toggle("active", t === tab));
+    const name = tab.dataset.gtab;
+    Object.entries(gviews).forEach(([k, el]) => { el.hidden = k !== name; });
+  });
+});
+
+function fillInputFromGuide(text) {
+  input.value = text.slice(0, 4000);
+  input.dispatchEvent(new Event("input"));
+  closeGuide();
+  input.focus();
+  input.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+/* — Pintu 1: isi tempat kosong (Mad Libs) — */
+const ML_VERBS = ["buat", "faham", "belajar", "tulis", "rancang", "ringkaskan", "analisa", "betulkan", "cari idea", "bandingkan", "selesaikan"];
+const ML_WHO = ["diri aku sendiri", "kerja / bisnes", "pelajar", "customer", "anak / keluarga", "content sosial"];
+const ML_FORMAT = ["langkah demi langkah", "senarai pendek", "satu perenggan simple", "jadual", "contoh-contoh", "macam borak santai"];
+const mlSel = { verb: "", who: "", format: "" };
+const mlTopic = document.getElementById("mlTopic");
+const mlPreview = document.getElementById("mlPreview");
+const mlUse = document.getElementById("mlUse");
+
+function renderMlChips(container, list, key) {
+  container.innerHTML = "";
+  list.forEach((w) => {
     const b = document.createElement("button");
-    b.className = "starter-chip" + (isAi ? " ai" : "");
-    b.textContent = op.replace(/[.,\s]+$/, "") + "…";
+    b.type = "button"; b.className = "ml-chip"; b.textContent = w;
     b.addEventListener("click", () => {
-      input.value = op.replace(/\s+$/, "") + " ";
-      input.dispatchEvent(new Event("input"));
-      input.focus();
-      const n = input.value.length;
-      try { input.setSelectionRange(n, n); } catch {}
+      const already = mlSel[key] === w;
+      mlSel[key] = already ? "" : w;
+      [...container.children].forEach((c) => c.classList.toggle("on", !already && c === b));
+      updateMlPreview();
     });
-    starterChips.appendChild(b);
+    container.appendChild(b);
+  });
+}
+renderMlChips(document.getElementById("mlVerb"), ML_VERBS, "verb");
+renderMlChips(document.getElementById("mlWho"), ML_WHO, "who");
+renderMlChips(document.getElementById("mlFormat"), ML_FORMAT, "format");
+
+function buildMadlib() {
+  const topic = mlTopic.value.trim();
+  if (!mlSel.verb && !topic) return "";
+  let s = "Aku nak " + (mlSel.verb || "…");
+  if (topic) s += " " + topic;
+  if (mlSel.who) s += " untuk " + mlSel.who;
+  if (mlSel.format) s += ", bagi dalam bentuk " + mlSel.format;
+  return s + ".";
+}
+function updateMlPreview() {
+  const s = buildMadlib();
+  mlPreview.textContent = s;
+  mlUse.disabled = !(mlSel.verb && mlTopic.value.trim());
+}
+mlTopic.addEventListener("input", updateMlPreview);
+mlUse.addEventListener("click", () => { const s = buildMadlib(); if (s) fillInputFromGuide(s); });
+
+/* — Pintu 2: merepek → AI kemas — */
+const merepekBox = document.getElementById("merepekBox");
+const merepekGo = document.getElementById("merepekGo");
+const merepekLoading = document.getElementById("merepekLoading");
+const merepekResult = document.getElementById("merepekResult");
+const merepekOut = document.getElementById("merepekOut");
+const merepekUse = document.getElementById("merepekUse");
+const merepekRetry = document.getElementById("merepekRetry");
+const merepekErr = document.getElementById("merepekErr");
+let merepekBusy = false, merepekClean = "";
+
+merepekBox.addEventListener("input", () => { merepekGo.disabled = !merepekBox.value.trim(); });
+function buildMerepekPrompt(dump) {
+  const lang = outLangSel.value === "en" ? "Reply in English."
+    : outLangSel.value === "ms" ? "Balas dalam Bahasa Melayu santai."
+    : "Balas dalam bahasa yang sama macam luahan di bawah.";
+  return `Seseorang luahkan idea/niat dia secara BERSELERAK & mentah (dia stuck, tak reti nak susun ayat). Tugas kau: tukar luahan tu jadi SATU permintaan/prompt yang JELAS & ringkas untuk dia bagi kepada AI chatbot. Kekalkan maksud & butiran penting dia, JANGAN tambah benda yang dia tak sebut, jangan mengarut. ${lang} Guna ayat biasa macam cara dia sendiri akan cakap. 1-3 ayat sahaja.
+
+Output PROMPT tu je — takde tajuk, takde penerangan, takde tanda petik.
+
+LUAHAN:
+"""
+${dump.slice(0, 3500)}
+"""`;
+}
+async function merepekKemas() {
+  const dump = merepekBox.value.trim();
+  if (!dump || merepekBusy) return;
+  merepekBusy = true; merepekGo.disabled = true;
+  merepekErr.hidden = true; merepekResult.hidden = true; merepekLoading.hidden = false;
+  try {
+    const res = await fetch(PROXY_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: buildMerepekPrompt(dump) }) });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || data.error);
+    const out = (data?.candidates?.[0]?.content?.parts?.[0]?.text || "").trim().replace(/^["'“]+|["'”]+$/g, "").trim();
+    if (!out) throw new Error("kosong");
+    merepekClean = out;
+    merepekOut.textContent = out;
+    merepekResult.hidden = false;
+  } catch (e) {
+    const msg = e && e.message ? String(e.message) : String(e);
+    const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|high demand/i.test(msg);
+    merepekErr.textContent = isQuota ? "ramai orang tengah guna — cuba lagi sekejap." : "alamak, tak jadi — cuba lagi.";
+    merepekErr.hidden = false;
+  } finally {
+    merepekBusy = false; merepekGo.disabled = !merepekBox.value.trim(); merepekLoading.hidden = true;
+  }
+}
+merepekGo.addEventListener("click", merepekKemas);
+merepekUse.addEventListener("click", () => { if (merepekClean) fillInputFromGuide(merepekClean); });
+merepekRetry.addEventListener("click", () => { merepekResult.hidden = true; merepekBox.focus(); });
+
+/* — Merepek: input suara (isolated, tak kacau mic utama) — */
+const merepekMic = document.getElementById("merepekMic");
+const MRP_SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let mrpRecog = null, mrpOn = false, mrpBase = "", mrpFinal = "";
+if (MRP_SR) {
+  const mrpLabel = merepekMic.querySelector(".mrp-mic-label");
+  merepekMic.style.display = "";
+  const stopMrp = () => { mrpOn = false; if (mrpRecog) { try { mrpRecog.stop(); } catch {} } merepekMic.classList.remove("recording"); mrpLabel.textContent = "Cakap"; };
+  merepekMic.addEventListener("click", () => {
+    if (mrpOn) { stopMrp(); return; }
+    try { mrpRecog = new MRP_SR(); } catch { return; }
+    mrpRecog.lang = "ms-MY"; mrpRecog.interimResults = true; mrpRecog.continuous = true;
+    mrpBase = merepekBox.value ? merepekBox.value.replace(/\s+$/, "") + " " : "";
+    mrpFinal = "";
+    mrpRecog.onresult = (e) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const tr = e.results[i][0].transcript;
+        if (e.results[i].isFinal) mrpFinal += tr + " "; else interim += tr;
+      }
+      merepekBox.value = (mrpBase + mrpFinal + interim).slice(0, 4000);
+      merepekBox.dispatchEvent(new Event("input"));
+    };
+    mrpRecog.onend = () => { mrpOn = false; merepekMic.classList.remove("recording"); mrpLabel.textContent = "Cakap"; };
+    try { mrpRecog.start(); mrpOn = true; merepekMic.classList.add("recording"); mrpLabel.textContent = "Dengar…"; merepekBox.focus(); } catch {}
   });
 }
 
-function renderStarters() {
-  // cadangan statik — bag supaya tak berulang sampai semua dilihat
-  if (starterBag.length < 6) {
-    const idx = STARTERS.map((_, i) => i);
-    for (let i = idx.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [idx[i], idx[j]] = [idx[j], idx[i]]; }
-    starterBag = idx;
-  }
-  const pick = starterBag.splice(0, 6);
-  pick.forEach((i) => starterShown.add(i));
-  paintStarterChips(pick.map((i) => STARTERS[i]), false);
-  starterLabel.textContent = "tak tau nak mula? cuba:";
-  // bila semua cadangan biasa dah dilihat, buka pilihan minta AI
-  if (starterShown.size >= STARTERS.length) starterAiBtn.hidden = false;
-}
-starterShuffle.addEventListener("click", renderStarters);
-
-function buildStarterPrompt() {
-  const lang = outLangSel.value === "en"
-    ? "Write them in English."
-    : "Write them in casual Malaysian Malay (boleh rojak / santai gaya KL).";
-  return `Bagi cadangan PERKATAAN atau FRASA PERMULAAN untuk seseorang mula menulis arahan/prompt kepada AI. Contoh gaya: "Terangkan", "Tolong aku", "Macam ni weh,", "Sebenarnya,", "Aku nak cerita", "Boleh tak".
-
-Hasilkan 10 pembuka ayat yang PELBAGAI (formal, santai, bercerita, menyoal). Setiap satu 1 hingga 3 patah perkataan SAHAJA, ringkas, terus boleh disambung jadi ayat penuh. ${lang} Jangan ulang contoh di atas; jangan letak nombor, sempang, atau tanda petik.
-
-Jawab 10 baris sahaja — satu pembuka satu baris.`;
-}
-function parseStarters(text) {
-  return text.split("\n")
-    .map((l) => l.trim())
-    .map((l) => l.replace(/^\s*(?:\d+[.)]|[-*•])\s*/, "").replace(/^["'“]+|["'”]+$/g, "").trim())
-    .filter((l) => l && l.split(/\s+/).length <= 4 && l.length <= 28)
-    .slice(0, 12);
-}
-async function askAiStarters() {
-  if (starterBusy) return;
-  if (starterAiQueue.length >= 3) { paintStarterChips(starterAiQueue.splice(0, 6), true); starterLabel.textContent = "AI bagi permulaan:"; return; }
-  starterBusy = true;
-  starterAiBtn.disabled = true;
-  starterLabel.textContent = "AI tengah fikir permulaan…";
-  try {
-    const res = await fetch(PROXY_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: buildStarterPrompt() }),
-    });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message || data.error);
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    const ops = parseStarters(text);
-    if (!ops.length) throw new Error("kosong");
-    starterAiQueue = ops;
-    paintStarterChips(starterAiQueue.splice(0, 6), true);
-    starterLabel.textContent = "AI bagi permulaan:";
-  } catch {
-    starterLabel.textContent = "AI tak dapat sambung — cuba lagi";
-  } finally {
-    starterBusy = false;
-    starterAiBtn.disabled = false;
-  }
-}
-starterAiBtn.addEventListener("click", askAiStarters);
-
 function updateInputAssist() {
-  starterRow.hidden = input.value.trim().length > 0;
+  guideOpen.hidden = input.value.trim().length > 0;
   updateHints();
 }
-renderStarters();
 updateInputAssist();
 
 /* ── Voice input: cakap je, app transkrip jadi teks (Web Speech API) ── */
