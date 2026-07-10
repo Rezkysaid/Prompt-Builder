@@ -1064,8 +1064,8 @@
 
   <div class="mem-section">
     <button class="mem-toggle" id="memToggle" aria-expanded="false">
-      <svg class="mem-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a3 3 0 00-3 3 3 3 0 00-2 5.2A3 3 0 007 17a3 3 0 005 1 3 3 0 005-1 3 3 0 002-5.8A3 3 0 0015 6a3 3 0 00-3-3z"/><path d="M12 6v12"/></svg>
-      <span>ingatan</span>
+      <svg class="mem-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+      <span>konteks perbualan</span>
       <span class="mem-dot" id="memDot"></span>
       <svg class="mem-chevron" id="memChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
     </button>
@@ -1073,13 +1073,13 @@
       <div class="mem-collapse-inner">
         <div class="mem-body">
           <div class="mem-body-top">
-            <p class="mem-hint">Satu nota tentang apa kau tengah buat &amp; nak capai — AI guna ni supaya prompt yang diperbaiki relevan dengan matlamat kau kat AI tools lain. Tulis sekali, terpakai untuk semua.</p>
-            <label class="mem-switch" title="Aktif/matikan ingatan">
+            <p class="mem-hint">Apa kau tengah bincang dengan AI tu sekarang (ChatGPT/Claude/Gemini)? Bagitau ringkas di mana perbualan kau dah sampai — app guna ni supaya prompt yang dibuat <b>berkait &amp; sambung</b> dengan chat kau kat sana, bukan topik baru.</p>
+            <label class="mem-switch" title="Aktif/matikan konteks">
               <input type="checkbox" id="memActive">
               <span class="mem-switch-track"><span class="mem-switch-thumb"></span></span>
             </label>
           </div>
-          <textarea id="memText" class="mem-textarea" maxlength="800" placeholder="contoh: aku bina app fintech, nak jawapan ringkas…"></textarea>
+          <textarea id="memText" class="mem-textarea" maxlength="800" placeholder="contoh: kat ChatGPT aku tengah design database app fintech, dia dah bagi schema, sekarang aku nak refine bahagian auth…"></textarea>
           <span class="mem-saved" id="memSaved">disimpan ✓</span>
         </div>
       </div>
@@ -1261,7 +1261,8 @@ document.querySelectorAll("#modes .chip").forEach((chip) => {
   });
 });
 
-/* ── Ingatan: satu kotak memory yang disuntik ke output ── */
+/* ── Konteks perbualan: nota apa kau tengah bincang kat AI tools lain,
+   disuntik supaya prompt yang dibuat sambung dengan chat kau di sana ── */
 const MEM_KEY = "promptcraft_memory";
 const memToggle = document.getElementById("memToggle");
 const memCollapse = document.getElementById("memCollapse");
@@ -1299,7 +1300,11 @@ function updateMemState() {
 }
 function memoryBlock() {
   if (!(memory.active && memory.text.trim())) return "";
-  return `\n\nBACKGROUND MEMORY — the user saved this note about what they're working on and what they want to achieve (in whatever AI tool they'll paste this into). Use it so the result is relevant to their real goal and situation; weave in only what's genuinely relevant, do NOT force in unrelated bits:\n${memory.text.trim().slice(0, 1500)}`;
+  return `\n\nONGOING CONVERSATION CONTEXT — the user is in the MIDDLE of a conversation in another AI tool (ChatGPT / Claude / Gemini). This note describes what they are discussing there and where that conversation has reached right now:
+"""
+${memory.text.trim().slice(0, 1500)}
+"""
+Craft the prompt so it CONNECTS TO and CONTINUES that ongoing conversation — as the user's next message that fits naturally into the discussion, building on what was already said there (reference it where helpful). Do NOT treat the request as a brand-new, standalone topic, and do NOT restate context the other AI already has. Use only what is relevant.`;
 }
 
 function memAutoGrow() { memText.style.height = "auto"; memText.style.height = memText.scrollHeight + "px"; }
