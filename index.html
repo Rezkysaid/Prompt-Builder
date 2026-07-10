@@ -210,7 +210,7 @@
     cursor: pointer;
   }
 
-  /* ── Ingatan konteks (mini memory, 3 slot) ── */
+  /* ── Ingatan (satu kotak memory) ── */
   .mem-section { margin-bottom: 20px; }
   .mem-toggle {
     display: inline-flex;
@@ -228,23 +228,28 @@
     transition: all 0.15s ease;
   }
   .mem-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .mem-toggle.active { border-color: var(--accent-border); color: var(--accent); background: var(--accent-soft); }
   .mem-icon { width: 15px; height: 15px; }
-  .mem-chevron { width: 14px; height: 14px; transition: transform 0.2s ease; }
+  .mem-chevron { width: 14px; height: 14px; transition: transform 0.25s ease; }
   .mem-toggle[aria-expanded="true"] .mem-chevron { transform: rotate(180deg); }
-  .mem-count {
-    font-size: 11px;
-    font-weight: 600;
-    color: #fff;
+  .mem-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
     background: var(--accent);
-    border-radius: 999px;
-    min-width: 17px;
-    height: 17px;
-    padding: 0 5px;
-    display: none;
-    align-items: center;
-    justify-content: center;
+    opacity: 0;
+    transform: scale(0.4);
+    transition: opacity 0.2s ease, transform 0.2s ease;
   }
-  .mem-count.show { display: inline-flex; }
+  .mem-dot.show { opacity: 1; transform: scale(1); }
+
+  /* smooth expand/collapse via grid-rows */
+  .mem-collapse {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.32s cubic-bezier(.4, 0, .2, 1);
+  }
+  .mem-collapse.open { grid-template-rows: 1fr; }
+  .mem-collapse-inner { overflow: hidden; min-height: 0; }
   .mem-body {
     margin-top: 12px;
     max-width: 720px;
@@ -252,41 +257,69 @@
     border: 1.5px solid var(--border);
     border-radius: 14px 16px 13px 15px;
     box-shadow: var(--shadow-sm);
-    padding: 14px 16px 15px;
+    padding: 14px 16px 14px;
     transform: rotate(-0.2deg);
   }
-  .mem-hint { font-size: 12.5px; color: var(--text-tertiary); line-height: 1.5; margin-bottom: 12px; }
-  .mem-slots { display: flex; flex-direction: column; gap: 10px; }
-  .mem-slot { display: flex; align-items: flex-start; gap: 10px; }
-  .mem-check {
-    flex-shrink: 0;
-    width: 18px; height: 18px;
-    margin-top: 10px;
-    accent-color: var(--accent);
-    cursor: pointer;
-  }
-  .mem-input {
-    flex: 1;
-    min-width: 0;
+  .mem-body-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 11px; }
+  .mem-hint { flex: 1; font-size: 12.5px; color: var(--text-tertiary); line-height: 1.5; }
+  .mem-textarea {
     width: 100%;
     border: 1.5px solid var(--border-strong);
-    border-radius: 9px 10px 9px 10px;
-    padding: 9px 12px;
+    border-radius: 10px 11px 10px 11px;
+    padding: 11px 13px;
     font-family: inherit;
-    font-size: 13.5px;
-    line-height: 1.5;
+    font-size: 14px;
+    line-height: 1.6;
     color: var(--text);
     background: var(--bg);
     outline: none;
     resize: none;
-    min-height: 40px;
+    min-height: 92px;
     overflow: hidden;
     white-space: pre-wrap;
     overflow-wrap: break-word;
+    transition: border-color 0.15s ease, background 0.15s ease;
   }
-  .mem-input:focus { border-color: var(--accent); background: var(--surface); }
-  .mem-input::placeholder { color: var(--text-tertiary); }
-  .mem-slot.on .mem-input { border-color: var(--accent-border); background: var(--accent-soft); }
+  .mem-textarea:focus { border-color: var(--accent); background: var(--surface); }
+  .mem-textarea::placeholder { color: var(--text-tertiary); }
+  .mem-saved {
+    display: inline-block;
+    margin-top: 7px;
+    font-family: var(--font-hand);
+    font-size: 15px;
+    color: var(--accent);
+    opacity: 0;
+    transform: translateY(3px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .mem-saved.show { opacity: 1; transform: none; }
+
+  /* toggle switch */
+  .mem-switch { position: relative; flex-shrink: 0; cursor: pointer; display: inline-flex; }
+  .mem-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .mem-switch-track {
+    width: 40px; height: 23px;
+    border-radius: 999px;
+    background: var(--border-strong);
+    position: relative;
+    transition: background 0.2s ease;
+  }
+  .mem-switch-thumb {
+    position: absolute;
+    top: 2.5px; left: 2.5px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(60, 50, 30, 0.3);
+    transition: transform 0.22s cubic-bezier(.4, 0, .2, 1);
+  }
+  .mem-switch input:checked + .mem-switch-track { background: var(--accent); }
+  .mem-switch input:checked + .mem-switch-track .mem-switch-thumb { transform: translateX(17px); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes memPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.16); opacity: 0.72; } }
+    .mem-toggle.active .mem-icon { animation: memPulse 2.6s ease-in-out infinite; }
+  }
 
   /* ── Dual panel (sengaja tak sama besar) ── */
   .panels {
@@ -1032,13 +1065,24 @@
   <div class="mem-section">
     <button class="mem-toggle" id="memToggle" aria-expanded="false">
       <svg class="mem-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a3 3 0 00-3 3 3 3 0 00-2 5.2A3 3 0 007 17a3 3 0 005 1 3 3 0 005-1 3 3 0 002-5.8A3 3 0 0015 6a3 3 0 00-3-3z"/><path d="M12 6v12"/></svg>
-      <span>ingatan konteks</span>
-      <span class="mem-count" id="memCount"></span>
+      <span>ingatan</span>
+      <span class="mem-dot" id="memDot"></span>
       <svg class="mem-chevron" id="memChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
     </button>
-    <div class="mem-body" id="memBody" hidden>
-      <p class="mem-hint">3 nota latar belakang tentang apa kau tengah buat &amp; nak capai. AI guna ni supaya prompt yang diperbaiki relevan dengan matlamat kau kat AI tools lain. Tick untuk aktifkan.</p>
-      <div class="mem-slots" id="memSlots"></div>
+    <div class="mem-collapse" id="memCollapse">
+      <div class="mem-collapse-inner">
+        <div class="mem-body">
+          <div class="mem-body-top">
+            <p class="mem-hint">Satu nota tentang apa kau tengah buat &amp; nak capai — AI guna ni supaya prompt yang diperbaiki relevan dengan matlamat kau kat AI tools lain. Tulis sekali, terpakai untuk semua.</p>
+            <label class="mem-switch" title="Aktif/matikan ingatan">
+              <input type="checkbox" id="memActive">
+              <span class="mem-switch-track"><span class="mem-switch-thumb"></span></span>
+            </label>
+          </div>
+          <textarea id="memText" class="mem-textarea" maxlength="800" placeholder="contoh: aku tengah bina app fintech untuk pelabur muda Malaysia. Audience pelajar & first-jobber. Aku prefer jawapan ringkas, ada contoh, bahasa simple."></textarea>
+          <span class="mem-saved" id="memSaved">disimpan ✓</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1217,96 +1261,71 @@ document.querySelectorAll("#modes .chip").forEach((chip) => {
   });
 });
 
-/* ── Ingatan konteks: mini memory (3 slot) yang disuntik ke output ── */
+/* ── Ingatan: satu kotak memory yang disuntik ke output ── */
 const MEM_KEY = "promptcraft_memory";
-const MEM_MAX = 3;
 const memToggle = document.getElementById("memToggle");
-const memBody = document.getElementById("memBody");
-const memSlots = document.getElementById("memSlots");
-const memCount = document.getElementById("memCount");
+const memCollapse = document.getElementById("memCollapse");
+const memText = document.getElementById("memText");
+const memActive = document.getElementById("memActive");
+const memDot = document.getElementById("memDot");
+const memSaved = document.getElementById("memSaved");
 
 function loadMemory() {
   try {
     const m = JSON.parse(localStorage.getItem(MEM_KEY));
-    if (Array.isArray(m)) return m.slice(0, MEM_MAX).map((x) => ({ text: String(x.text || ""), active: !!x.active }));
+    if (m && typeof m === "object" && !Array.isArray(m)) {
+      return { text: String(m.text || ""), active: m.active !== false };
+    }
+    if (Array.isArray(m)) {
+      // migrate old 3-slot format → one box (join the active notes)
+      const joined = m.filter((x) => x && x.active && x.text && x.text.trim()).map((x) => x.text.trim()).join("\n");
+      return { text: joined, active: !!joined };
+    }
   } catch {}
-  return [];
+  return { text: "", active: true };
 }
 let memory = loadMemory();
-while (memory.length < MEM_MAX) memory.push({ text: "", active: false });
+memText.value = memory.text;
+memActive.checked = memory.active;
 
 function saveMemory() {
   try { localStorage.setItem(MEM_KEY, JSON.stringify(memory)); } catch {}
-  updateMemCount();
+  updateMemState();
 }
-function updateMemCount() {
-  const n = memory.filter((m) => m.active && m.text.trim()).length;
-  memCount.textContent = n;
-  memCount.classList.toggle("show", n > 0);
-}
-function activeMemory() {
-  return memory.filter((m) => m.active && m.text.trim()).map((m) => m.text.trim());
+function updateMemState() {
+  const on = memory.active && memory.text.trim().length > 0;
+  memToggle.classList.toggle("active", on);
+  memDot.classList.toggle("show", on);
 }
 function memoryBlock() {
-  const items = activeMemory();
-  if (!items.length) return "";
-  return `\n\nBACKGROUND CONTEXT — the user saved these notes about what they're working on and what they want to achieve (in whatever AI tool they'll paste this into). Use them so the result is relevant to their real goal and situation; weave in only what's genuinely relevant, do NOT force in unrelated bits:\n${items.map((t) => "- " + t.slice(0, 300)).join("\n")}`;
+  if (!(memory.active && memory.text.trim())) return "";
+  return `\n\nBACKGROUND MEMORY — the user saved this note about what they're working on and what they want to achieve (in whatever AI tool they'll paste this into). Use it so the result is relevant to their real goal and situation; weave in only what's genuinely relevant, do NOT force in unrelated bits:\n${memory.text.trim().slice(0, 1500)}`;
 }
 
-const MEM_PLACEHOLDERS = [
-  "contoh: aku tengah bina app fintech untuk pasaran Malaysia",
-  "contoh: audience aku pelajar universiti, bahasa simple",
-  "contoh: aku prefer jawapan ringkas & ada contoh",
-];
-memory.forEach((m, i) => {
-  const slot = document.createElement("div");
-  slot.className = "mem-slot" + (m.active && m.text.trim() ? " on" : "");
-  const check = document.createElement("input");
-  check.type = "checkbox";
-  check.className = "mem-check";
-  check.checked = !!m.active;
-  check.title = "Aktifkan ingatan ni";
-  const inp = document.createElement("textarea");
-  inp.className = "mem-input";
-  inp.rows = 1;
-  inp.maxLength = 300;
-  inp.value = m.text || "";
-  inp.placeholder = MEM_PLACEHOLDERS[i] || "nota konteks…";
-  const autoGrow = () => { inp.style.height = "auto"; inp.style.height = inp.scrollHeight + "px"; };
-  const sync = () => {
-    memory[i].active = check.checked;
-    slot.classList.toggle("on", check.checked && inp.value.trim().length > 0);
-    saveMemory();
-  };
-  inp.addEventListener("input", () => {
-    // auto-tick when the user first types into an empty slot
-    if (inp.value.trim() && !check.checked && !memory[i].text.trim()) check.checked = true;
-    memory[i].text = inp.value;
-    autoGrow();
-    sync();
-  });
-  check.addEventListener("change", sync);
-  slot.append(check, inp);
-  memSlots.appendChild(slot);
-  // size to fit any pre-filled text once it's in the DOM
-  requestAnimationFrame(autoGrow);
+function memAutoGrow() { memText.style.height = "auto"; memText.style.height = memText.scrollHeight + "px"; }
+let memSavedTimer = null;
+function flashSaved() {
+  memSaved.classList.add("show");
+  clearTimeout(memSavedTimer);
+  memSavedTimer = setTimeout(() => memSaved.classList.remove("show"), 1100);
+}
+
+memText.addEventListener("input", () => {
+  memory.text = memText.value;
+  memAutoGrow();
+  saveMemory();
+  flashSaved();
 });
-updateMemCount();
+memActive.addEventListener("change", () => {
+  memory.active = memActive.checked;
+  saveMemory();
+});
+updateMemState();
 
 memToggle.addEventListener("click", () => {
-  const opening = memBody.hasAttribute("hidden");
-  if (opening) {
-    memBody.removeAttribute("hidden");
-    memToggle.setAttribute("aria-expanded", "true");
-    // now visible — size each textarea to fit its text
-    memSlots.querySelectorAll(".mem-input").forEach((t) => {
-      t.style.height = "auto";
-      t.style.height = t.scrollHeight + "px";
-    });
-  } else {
-    memBody.setAttribute("hidden", "");
-    memToggle.setAttribute("aria-expanded", "false");
-  }
+  const open = memCollapse.classList.toggle("open");
+  memToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  if (open) requestAnimationFrame(memAutoGrow); // size to fit once visible
 });
 
 /* ── Input helpers ── */
