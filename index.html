@@ -617,8 +617,34 @@
     top: 5px; left: 2px;
     width: auto; height: auto;
   }
-  .digest-actions { display: flex; gap: 8px; padding-left: 2px; }
+  .digest-actions { display: flex; gap: 8px; padding-left: 2px; flex-wrap: wrap; }
   .mini-btn.speaking { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .mini-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+  /* spotlight: dim every block except the one you're reading */
+  .digest.spotlight .digest-block { opacity: 0.28; filter: blur(0.7px); cursor: pointer; transition: opacity 0.3s ease, filter 0.3s ease; }
+  .digest.spotlight .digest-block.focus { opacity: 1; filter: none; }
+
+  /* bionic reading: bold the leading letters of each word */
+  .dig-txt b { font-weight: 800; color: inherit; }
+
+  /* checklist for "apa kau kena buat" */
+  #digBuat .dig-check { display: flex; align-items: flex-start; gap: 9px; padding: 5px 0; }
+  #digBuat .dig-check::before { display: none; }
+  #digBuat .dig-info { padding-left: 2px; }
+  #digBuat .dig-info::before { display: none; }
+  .dig-box {
+    flex: none; margin-top: 1px;
+    width: 21px; height: 21px; border-radius: 6px;
+    border: 1.5px solid var(--border-strong);
+    background: var(--surface); color: transparent;
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .dig-box svg { width: 13px; height: 13px; }
+  .dig-check .dig-txt { flex: 1; }
+  .dig-check.done .dig-box { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .dig-check.done .dig-txt { text-decoration: line-through; color: var(--text-tertiary); }
 
   /* ── Voice input ── */
   .mic-btn { border-color: var(--accent-border); color: var(--accent); }
@@ -1639,6 +1665,14 @@
         <p id="digSimple"></p>
       </div>
       <div class="digest-actions">
+        <button class="mini-btn" id="digFocusBtn" title="Fokus satu bahagian" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><line x1="12" y1="1.5" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22.5"/><line x1="1.5" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22.5" y2="12"/></svg>
+          Fokus
+        </button>
+        <button class="mini-btn" id="digBionicBtn" title="Bionic reading — bold permulaan perkataan" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h7a4 4 0 010 8H6z"/><path d="M6 12h8a4 4 0 010 8H6z"/></svg>
+          Bionik
+        </button>
         <button class="mini-btn" id="digCopyBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
           Copy
@@ -3060,6 +3094,7 @@ const digBuat = document.getElementById("digBuat");
 const digSimple = document.getElementById("digSimple");
 const digSpeakBtn = document.getElementById("digSpeakBtn");
 let fahamBusy = false, speaking = false;
+let bionicOn = false, spotlightOn = false;
 
 fahamInput.addEventListener("input", () => {
   fahamCount.textContent = fahamInput.value.length ? fahamInput.value.length + " / 16000" : "";
@@ -3122,10 +3157,31 @@ async function fahamkan() {
     const out = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
     const d = parseFaham(out);
     if (!d.inti && !d.poin.length && !d.simple) throw new Error("tak dapat ringkaskan — cuba lagi");
-    digInti.textContent = d.inti || "—";
-    digPoin.innerHTML = ""; (d.poin.length ? d.poin : ["—"]).forEach((p) => { const li = document.createElement("li"); li.textContent = p; digPoin.appendChild(li); });
-    digBuat.innerHTML = ""; (d.buat.length ? d.buat : ["Takde langkah khusus — ni info je."]).forEach((p) => { const li = document.createElement("li"); li.textContent = p; digBuat.appendChild(li); });
-    digSimple.textContent = d.simple || "—";
+    digInti.classList.add("dig-txt"); digInti.dataset.raw = d.inti || "—";
+    digPoin.innerHTML = "";
+    (d.poin.length ? d.poin : ["—"]).forEach((p) => {
+      const li = document.createElement("li"); li.className = "dig-txt"; li.dataset.raw = p; digPoin.appendChild(li);
+    });
+    digBuat.innerHTML = "";
+    const hasSteps = d.buat.length > 0;
+    (hasSteps ? d.buat : ["Takde langkah khusus — ni info je."]).forEach((p) => {
+      const li = document.createElement("li");
+      if (hasSteps) {
+        li.className = "dig-check";
+        const box = document.createElement("button");
+        box.type = "button"; box.className = "dig-box"; box.setAttribute("aria-label", "tanda dah buat"); box.setAttribute("aria-pressed", "false");
+        box.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+        box.addEventListener("click", (e) => { e.stopPropagation(); li.classList.toggle("done"); box.setAttribute("aria-pressed", li.classList.contains("done") ? "true" : "false"); });
+        const span = document.createElement("span"); span.className = "dig-txt"; span.dataset.raw = p;
+        li.append(box, span);
+      } else {
+        li.className = "dig-info dig-txt"; li.dataset.raw = p;
+      }
+      digBuat.appendChild(li);
+    });
+    digSimple.classList.add("dig-txt"); digSimple.dataset.raw = d.simple || "—";
+    renderDigTxt();
+    if (spotlightOn) focusFirstBlock();
     digest.hidden = false;
     digest.scrollIntoView({ behavior: "smooth", block: "nearest" });
   } catch (e) {
@@ -3151,6 +3207,52 @@ document.getElementById("digCopyBtn").addEventListener("click", async () => {
     b.classList.add("copied"); b.lastChild.textContent = "Dah copy!";
     setTimeout(() => { b.classList.remove("copied"); b.lastChild.textContent = "Copy"; }, 1500);
   } catch {}
+});
+
+/* ── Reading aids: bionic reading + spotlight/dim focus ── */
+function escapeHtml(s) { return s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])); }
+// Bold the leading ~40% of each word so the eye anchors and skims faster.
+function bionicHTML(text) {
+  return text.split(/(\s+)/).map((tok) => {
+    if (!tok || /^\s+$/.test(tok)) return tok.replace(/\n/g, "<br>");
+    const n = Math.max(1, Math.round(tok.length * 0.4));
+    return "<b>" + escapeHtml(tok.slice(0, n)) + "</b>" + escapeHtml(tok.slice(n));
+  }).join("");
+}
+// (Re)render every digest text holder, applying bionic when the toggle is on.
+function renderDigTxt() {
+  digest.querySelectorAll(".dig-txt").forEach((el) => {
+    const raw = el.dataset.raw || "";
+    if (bionicOn) el.innerHTML = bionicHTML(raw);
+    else el.textContent = raw;
+  });
+}
+function focusFirstBlock() {
+  const blocks = digest.querySelectorAll(".digest-block");
+  blocks.forEach((b, i) => b.classList.toggle("focus", i === 0));
+}
+const digBionicBtn = document.getElementById("digBionicBtn");
+const digFocusBtn = document.getElementById("digFocusBtn");
+digBionicBtn.addEventListener("click", () => {
+  bionicOn = !bionicOn;
+  digBionicBtn.classList.toggle("active", bionicOn);
+  digBionicBtn.setAttribute("aria-pressed", bionicOn ? "true" : "false");
+  renderDigTxt();
+});
+digFocusBtn.addEventListener("click", () => {
+  spotlightOn = !spotlightOn;
+  digFocusBtn.classList.toggle("active", spotlightOn);
+  digFocusBtn.setAttribute("aria-pressed", spotlightOn ? "true" : "false");
+  digest.classList.toggle("spotlight", spotlightOn);
+  if (spotlightOn) focusFirstBlock();
+  else digest.querySelectorAll(".digest-block.focus").forEach((b) => b.classList.remove("focus"));
+});
+// In spotlight mode, tap a block to move focus onto it.
+digest.addEventListener("click", (e) => {
+  if (!spotlightOn) return;
+  const block = e.target.closest(".digest-block");
+  if (!block || !digest.contains(block)) return;
+  digest.querySelectorAll(".digest-block").forEach((b) => b.classList.toggle("focus", b === block));
 });
 
 /* TTS: dengar digest */
