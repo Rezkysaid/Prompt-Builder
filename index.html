@@ -711,55 +711,7 @@
     color: var(--text);
     margin: 0 34px 14px 2px;
   }
-  .guide-tabs { display: flex; gap: 7px; margin-bottom: 16px; }
-  .guide-tab {
-    font-family: var(--font-hand);
-    font-size: 15.5px;
-    padding: 7px 15px;
-    border-radius: 999px;
-    border: 1.5px solid var(--border);
-    background: var(--surface);
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-  .guide-tab.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-  .guide-view[hidden] { display: none; }
   .guide-sub { font-size: 13px; color: var(--text-tertiary); line-height: 1.5; margin-bottom: 14px; }
-
-  /* Mad Libs */
-  .ml-step { margin-bottom: 12px; }
-  .ml-lead { font-family: var(--font-hand); font-size: 16px; color: var(--text-secondary); display: block; margin-bottom: 6px; }
-  .ml-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .ml-chip {
-    font-family: inherit; font-size: 13px; font-weight: 500;
-    color: var(--accent); background: var(--accent-soft);
-    border: 1.5px solid var(--accent-border); border-radius: 999px;
-    padding: 5px 12px; cursor: pointer; transition: all 0.14s ease;
-  }
-  .ml-chip:hover { border-color: var(--accent); }
-  .ml-chip.on { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .ml-topic {
-    width: 100%;
-    font-family: inherit; font-size: 14.5px;
-    padding: 10px 13px;
-    border: 1.5px solid var(--border-strong);
-    border-radius: 11px 13px 11px 12px;
-    background: var(--surface); color: var(--text);
-  }
-  .ml-topic:focus { outline: none; border-color: var(--accent); }
-  .ml-preview {
-    min-height: 20px;
-    margin: 16px 0 14px;
-    padding: 13px 15px;
-    background: var(--accent-soft);
-    border: 1.5px dashed var(--accent-border);
-    border-radius: 12px 14px 11px 13px;
-    font-family: var(--font-hand);
-    font-size: 17px; line-height: 1.5; color: var(--text);
-  }
-  .ml-preview:empty::before { content: "…ayat kau akan terbentuk kat sini"; color: var(--text-tertiary); }
-  .ml-preview b { color: var(--accent); font-weight: 700; }
 
   .guide-use {
     width: 100%;
@@ -1788,24 +1740,10 @@
     <button class="guide-close" id="guideClose" title="Tutup" aria-label="Tutup">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
-    <h2 class="guide-title">jom mula — tak payah fikir lama</h2>
-    <div class="guide-tabs">
-      <button class="guide-tab active" data-gtab="isi">isi tempat kosong</button>
-      <button class="guide-tab" data-gtab="merepek">merepek je</button>
-    </div>
+    <h2 class="guide-title">merepek je — biar AI kemas</h2>
 
-    <div class="guide-view" id="gvIsi">
-      <p class="guide-sub">tap-tap je, isi topik sekali — ayat siap sendiri kat bawah.</p>
-      <div class="ml-step"><span class="ml-lead">Aku nak</span><div class="ml-chips" id="mlVerb"></div></div>
-      <div class="ml-step"><input class="ml-topic" id="mlTopic" placeholder="…topik kau: cth 'side income guna AI'" maxlength="140"></div>
-      <div class="ml-step"><span class="ml-lead">untuk</span><div class="ml-chips" id="mlWho"></div></div>
-      <div class="ml-step"><span class="ml-lead">bagi dalam bentuk</span><div class="ml-chips" id="mlFormat"></div></div>
-      <div class="ml-preview" id="mlPreview"></div>
-      <button class="guide-use" id="mlUse" disabled>guna ni →</button>
-    </div>
-
-    <div class="guide-view" id="gvMerepek" hidden>
-      <p class="guide-sub">luah je apa dalam kepala — tak payah betul, tak payah teratur. AI kemaskan nanti.</p>
+    <div class="guide-view" id="gvMerepek">
+      <p class="guide-sub">luah je apa dalam kepala — tak payah betul, tak payah teratur. Taip laju je (boleh guna suara), AI kemaskan jadi satu prompt.</p>
       <textarea class="merepek-box" id="merepekBox" placeholder="cth: aku nak buat something pasal jual kuih online tapi tak tau nak mula camne, budget kecik, nak reach orang area aku je…" maxlength="4000"></textarea>
       <div class="merepek-actions">
         <button class="mini-btn" id="merepekMic" style="display:none">
@@ -1999,15 +1937,6 @@ guideClose.addEventListener("click", closeGuide);
 guideOverlay.addEventListener("click", (e) => { if (e.target === guideOverlay) closeGuide(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !guideOverlay.hidden) closeGuide(); });
 
-const gviews = { isi: document.getElementById("gvIsi"), merepek: document.getElementById("gvMerepek") };
-document.querySelectorAll(".guide-tab").forEach((tab) => {
-  tab.addEventListener("click", () => {
-    document.querySelectorAll(".guide-tab").forEach((t) => t.classList.toggle("active", t === tab));
-    const name = tab.dataset.gtab;
-    Object.entries(gviews).forEach(([k, el]) => { el.hidden = k !== name; });
-  });
-});
-
 function fillInputFromGuide(text) {
   input.value = text.slice(0, 4000);
   input.dispatchEvent(new Event("input"));
@@ -2016,51 +1945,7 @@ function fillInputFromGuide(text) {
   input.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
-/* — Pintu 1: isi tempat kosong (Mad Libs) — */
-const ML_VERBS = ["buat", "faham", "belajar", "tulis", "rancang", "ringkaskan", "analisa", "betulkan", "cari idea", "bandingkan", "selesaikan"];
-const ML_WHO = ["diri aku sendiri", "kerja / bisnes", "pelajar", "customer", "anak / keluarga", "content sosial"];
-const ML_FORMAT = ["langkah demi langkah", "senarai pendek", "satu perenggan simple", "jadual", "contoh-contoh", "macam borak santai"];
-const mlSel = { verb: "", who: "", format: "" };
-const mlTopic = document.getElementById("mlTopic");
-const mlPreview = document.getElementById("mlPreview");
-const mlUse = document.getElementById("mlUse");
-
-function renderMlChips(container, list, key) {
-  container.innerHTML = "";
-  list.forEach((w) => {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "ml-chip"; b.textContent = w;
-    b.addEventListener("click", () => {
-      const already = mlSel[key] === w;
-      mlSel[key] = already ? "" : w;
-      [...container.children].forEach((c) => c.classList.toggle("on", !already && c === b));
-      updateMlPreview();
-    });
-    container.appendChild(b);
-  });
-}
-renderMlChips(document.getElementById("mlVerb"), ML_VERBS, "verb");
-renderMlChips(document.getElementById("mlWho"), ML_WHO, "who");
-renderMlChips(document.getElementById("mlFormat"), ML_FORMAT, "format");
-
-function buildMadlib() {
-  const topic = mlTopic.value.trim();
-  if (!mlSel.verb && !topic) return "";
-  let s = "Aku nak " + (mlSel.verb || "…");
-  if (topic) s += " " + topic;
-  if (mlSel.who) s += " untuk " + mlSel.who;
-  if (mlSel.format) s += ", bagi dalam bentuk " + mlSel.format;
-  return s + ".";
-}
-function updateMlPreview() {
-  const s = buildMadlib();
-  mlPreview.textContent = s;
-  mlUse.disabled = !(mlSel.verb && mlTopic.value.trim());
-}
-mlTopic.addEventListener("input", updateMlPreview);
-mlUse.addEventListener("click", () => { const s = buildMadlib(); if (s) fillInputFromGuide(s); });
-
-/* — Pintu 2: merepek → AI kemas — */
+/* — Merepek → AI kemas — */
 const merepekBox = document.getElementById("merepekBox");
 const merepekGo = document.getElementById("merepekGo");
 const merepekLoading = document.getElementById("merepekLoading");
