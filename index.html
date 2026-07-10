@@ -437,6 +437,31 @@
   }
   .coach-idea p { font-size: 13.5px; line-height: 1.55; color: var(--text-secondary); margin-bottom: 11px; }
   .coach-idea .mini-btn { border-color: var(--accent-border); color: var(--accent); }
+  .coach-hist { margin-top: 28px; }
+  .coach-hist-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+  .coach-hist-head h3 { font-family: var(--font-display); font-style: italic; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+  .coach-hist-item {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 13px 15px 12px 14px;
+    box-shadow: var(--shadow-sm);
+    padding: 11px 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  .coach-hist-item:nth-child(odd) { transform: rotate(-0.2deg); }
+  .coach-hist-item:hover { border-color: var(--accent); transform: none; }
+  .coach-hist-top { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+  .coach-hist-time { font-size: 11.5px; color: var(--text-tertiary); }
+  .coach-hist-tag {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 2px 8px;
+  }
+  .coach-hist-preview {
+    font-size: 13.5px; color: var(--text);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
 
   /* ── Faham Output: paste box + digest ── */
   .faham-panel {
@@ -1625,6 +1650,14 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M21 8a9 9 0 10.5 4"/></svg>
         mula semula
       </button>
+    </div>
+
+    <div class="coach-hist" id="coachHistWrap" hidden>
+      <div class="coach-hist-head">
+        <h3>sembang lama</h3>
+        <button class="clear-hist" id="coachClearHist">buang semua</button>
+      </div>
+      <div id="coachHistList"></div>
     </div>
   </div>
 
@@ -3065,17 +3098,24 @@ const coachIdeas = document.getElementById("coachIdeas");
 const coachRest = document.getElementById("coachRest");
 const coachRestText = document.getElementById("coachRestText");
 const COACH_MAX_Q = 6;
+const COACH_HIST_KEY = "promptcraft_coach_hist";
+const coachHistWrap = document.getElementById("coachHistWrap");
+const coachHistList = document.getElementById("coachHistList");
 let coachTranscript = [];
 let coachBusy = false, coachStarted = false, coachStart = 0, coachRestShown = false;
+let currentCoachId = 0, currentCoachIdeas = [];
 
 function onEnterCoach() {
   if (!coachStarted) startCoach();
+  else renderCoachHistory();
   maybeRestNudge();
 }
 function startCoach() {
   coachStarted = true;
   coachStart = Date.now();
   coachRestShown = false;
+  currentCoachId = Date.now();
+  currentCoachIdeas = [];
   coachTranscript = [];
   coachLog.innerHTML = "";
   coachIdeas.hidden = true; coachIdeas.innerHTML = "";
@@ -3083,7 +3123,82 @@ function startCoach() {
   const opener = "Jom kita fikir sama-sama — santai je, tak payah rush. Soalan pertama: dalam hidup atau kerja kau sekarang, apa SATU benda yang kau rasa 'ish, leceh betul' setiap kali kena buat?";
   addCoachBubble("coach", opener);
   coachTranscript.push({ role: "coach", text: opener });
+  renderCoachHistory();
 }
+
+/* ── Sejarah sembang Coach ── */
+function loadCoachHist() { try { return JSON.parse(localStorage.getItem(COACH_HIST_KEY)) || []; } catch { return []; } }
+function saveCoachHist(list) { try { localStorage.setItem(COACH_HIST_KEY, JSON.stringify(list.slice(0, 15))); } catch {} }
+function persistCoachSession() {
+  const hasUser = coachTranscript.some((m) => m.role === "user");
+  if (!hasUser && !currentCoachIdeas.length) return; // jangan simpan sesi kosong
+  const list = loadCoachHist().filter((s) => s.id !== currentCoachId);
+  list.unshift({ id: currentCoachId, ts: Date.now(), transcript: coachTranscript.slice(), ideas: currentCoachIdeas.slice() });
+  saveCoachHist(list);
+  renderCoachHistory();
+}
+function renderCoachHistory() {
+  const list = loadCoachHist();
+  if (!list.length) { coachHistWrap.hidden = true; return; }
+  coachHistWrap.hidden = false;
+  coachHistList.innerHTML = "";
+  list.forEach((item) => {
+    const firstUser = (item.transcript.find((m) => m.role === "user") || {}).text || (item.transcript[0] || {}).text || "sembang";
+    const div = document.createElement("div");
+    div.className = "coach-hist-item";
+    const top = document.createElement("div");
+    top.className = "coach-hist-top";
+    const time = document.createElement("span");
+    time.className = "coach-hist-time";
+    time.textContent = timeAgo(item.ts) + (currentCoachId === item.id ? " · sekarang" : "");
+    top.appendChild(time);
+    if (item.ideas && item.ideas.length) {
+      const tag = document.createElement("span");
+      tag.className = "coach-hist-tag";
+      tag.textContent = item.ideas.length + " cadangan";
+      top.appendChild(tag);
+    }
+    const del = document.createElement("button");
+    del.className = "del-btn";
+    del.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>';
+    del.title = "Padam sembang ni";
+    del.style.marginLeft = "auto";
+    let armed = false, dt = null;
+    del.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!armed) { armed = true; del.classList.add("confirm"); del.title = "Tekan sekali lagi untuk padam"; dt = setTimeout(() => { armed = false; del.classList.remove("confirm"); }, 2500); return; }
+      clearTimeout(dt);
+      saveCoachHist(loadCoachHist().filter((s) => s.id !== item.id));
+      renderCoachHistory();
+    });
+    top.appendChild(del);
+    const prev = document.createElement("div");
+    prev.className = "coach-hist-preview";
+    prev.textContent = firstUser;
+    div.append(top, prev);
+    div.addEventListener("click", () => restoreCoachSession(item));
+    coachHistList.appendChild(div);
+  });
+}
+function restoreCoachSession(item) {
+  coachStarted = true;
+  coachStart = Date.now();
+  coachRestShown = false;
+  currentCoachId = item.id;
+  currentCoachIdeas = (item.ideas || []).slice();
+  coachTranscript = item.transcript.map((m) => ({ ...m }));
+  coachLog.innerHTML = "";
+  coachTranscript.forEach((m) => addCoachBubble(m.role, m.text));
+  coachIdeas.hidden = true; coachIdeas.innerHTML = "";
+  if (currentCoachIdeas.length) renderCoachIdeas(currentCoachIdeas);
+  coachRest.hidden = true;
+  renderCoachHistory();
+  const top = document.getElementById("workCoach").getBoundingClientRect().top + window.scrollY - 16;
+  window.scrollTo({ top, behavior: "smooth" });
+}
+document.getElementById("coachClearHist").addEventListener("click", () => {
+  if (confirm("Buang semua sembang Coach?")) { saveCoachHist([]); renderCoachHistory(); }
+});
 function addCoachBubble(role, text) {
   const d = document.createElement("div");
   d.className = "coach-bubble " + role;
@@ -3169,7 +3284,8 @@ async function sendCoach(force) {
     typing.classList.remove("typing");
     typing.textContent = c.mesej || (c.suggest ? "Ni beberapa hala tuju untuk kau:" : "Cuba cerita lagi sikit?");
     coachTranscript.push({ role: "coach", text: typing.textContent });
-    if (c.suggest && c.ideas.length) renderCoachIdeas(c.ideas);
+    if (c.suggest && c.ideas.length) { currentCoachIdeas = c.ideas; renderCoachIdeas(c.ideas); }
+    persistCoachSession();
   } catch (e) {
     const msg = e && e.message ? String(e.message) : String(e);
     const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|retry in|high demand/i.test(msg);
