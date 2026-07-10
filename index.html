@@ -507,7 +507,11 @@
   .swipe-hint { position: absolute; top: 18px; font-family: var(--font-hand); font-size: 22px; font-weight: 700; opacity: 0; transition: opacity 0.1s; }
   .swipe-hint.like { right: 20px; color: var(--accent); transform: rotate(12deg); }
   .swipe-hint.skip { left: 20px; color: var(--text-tertiary); transform: rotate(-12deg); }
-  .swipe-empty { display: flex; align-items: center; justify-content: center; height: 100%; font-family: var(--font-hand); font-size: 19px; color: var(--text-tertiary); text-align: center; padding: 20px; }
+  .swipe-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; height: 100%; font-family: var(--font-hand); font-size: 19px; color: var(--text-tertiary); text-align: center; padding: 20px; }
+  .swipe-spin { width: 26px; height: 26px; border: 2.5px solid var(--border-strong); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  .swipe-empty-btn { font-family: var(--font-hand); font-size: 17px; padding: 7px 18px; border-radius: 11px 13px 11px 12px; border: 1.5px solid var(--accent-border); background: var(--accent-soft); color: var(--accent); cursor: pointer; }
+  .swipe-empty-btn.ghost { border-color: var(--border-strong); background: var(--surface); color: var(--text-secondary); }
+  .swipe-empty-btn:active { transform: translateY(1px); }
   .swipe-btns { display: flex; justify-content: center; gap: 22px; margin-top: 18px; }
   .swipe-btn {
     width: 54px; height: 54px; border-radius: 50%;
@@ -3230,28 +3234,115 @@ const swipeDeck = document.getElementById("swipeDeck");
 const swipeSaved = document.getElementById("swipeSaved");
 const swipeSavedList = document.getElementById("swipeSavedList");
 let swipeBag = [], swipeSavedArr = [], swipeStarted = false, swipeAnim = false;
+let swipeAiBusy = false, swipeAiFailed = false;
 
 function startSwipe() {
   swipeStarted = true;
   swipeSavedArr = [];
   swipeSaved.hidden = true;
   swipeSavedList.innerHTML = "";
+  swipeAiFailed = false;
   refillSwipeBag();
   renderDeck();
 }
-function refillSwipeBag() {
-  const a = SWIPE_POOL.map((_, i) => i);
+function shuffleArr(a) {
   for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-  swipeBag = a;
+  return a;
+}
+function refillSwipeBag() {
+  swipeBag = shuffleArr(SWIPE_POOL.map((_, i) => i));
+}
+// Ask the AI for fresh, non-duplicate use-case ideas so the deck never runs
+// out — the static SWIPE_POOL is just the seed.
+function buildSwipeIdeaPrompt() {
+  const avoid = SWIPE_POOL.map((x) => x.title).slice(-45).join("; ");
+  return `Kau bagi idea use-case KREATIF & praktikal untuk orang biasa guna AI chatbot (ChatGPT/Claude/Gemini/DeepSeek) dalam hidup harian, kerja, belajar, duit, kesihatan, kreatif, keluarga, hobi, dsb.
+
+Bagi 8 idea. Setiap satu mesti SEGAR & berbeza, dan JANGAN sama atau serupa dengan yang ni: ${avoid}.
+
+Bahasa Melayu santai (boleh rojak sikit), nada macam kawan cerita. Setiap idea satu baris, format TEPAT guna tanda | :
+kategori | Tajuk pendek (3-5 patah) | satu ayat pendek apa boleh buat & kenapa berguna
+
+Contoh:
+duit | Jadi financial planner peribadi | letak income & bil, AI susun pelan simpan duit realistik
+
+Bagi 8 baris je, takde apa-apa lain sebelum atau selepas.`;
+}
+function parseSwipeIdeas(text) {
+  return text.split("\n")
+    .map((l) => l.replace(/^\s*(?:\d+[.)]|[-*•]|["“])\s*/, "").trim())
+    .filter(Boolean)
+    .map((l) => {
+      const parts = l.split("|").map((s) => s.trim()).filter(Boolean);
+      if (parts.length >= 3) return { c: parts[0].toLowerCase().slice(0, 16), title: parts[1], desc: parts.slice(2).join(" ") };
+      if (parts.length === 2) return { c: "idea", title: parts[0], desc: parts[1] };
+      return null;
+    })
+    .filter((x) => x && x.title && x.desc)
+    .slice(0, 10);
+}
+async function loadMoreSwipeIdeas() {
+  if (swipeAiBusy) return [];
+  swipeAiBusy = true;
+  try {
+    const res = await fetch(PROXY_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: buildSwipeIdeaPrompt() }) });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || data.error);
+    const out = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const ideas = parseSwipeIdeas(out);
+    const seen = new Set(SWIPE_POOL.map((x) => x.title.toLowerCase()));
+    const newIdx = [];
+    ideas.forEach((it) => {
+      const key = it.title.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      newIdx.push(SWIPE_POOL.length);
+      SWIPE_POOL.push(it);
+    });
+    return newIdx;
+  } catch (e) {
+    return null; // signal failure to the caller
+  } finally {
+    swipeAiBusy = false;
+  }
+}
+// Pull more AI ideas into the bag. renderAfter=true re-renders the deck when
+// done (used when we hit an empty deck and are showing a loading card).
+async function topUpSwipe(renderAfter) {
+  if (swipeAiBusy) return;
+  const newIdx = await loadMoreSwipeIdeas();
+  if (newIdx && newIdx.length) {
+    swipeBag.push(...shuffleArr(newIdx));
+    swipeAiFailed = false;
+  } else if (newIdx === null) {
+    swipeAiFailed = true;
+  }
+  if (renderAfter || swipeAiFailed) renderDeck();
 }
 function renderDeck() {
   swipeDeck.innerHTML = "";
   if (!swipeBag.length) {
     const e = document.createElement("div");
     e.className = "swipe-empty";
-    e.textContent = "dah habis satu round — tap sini nak ulang ↻";
-    e.style.cursor = "pointer";
-    e.addEventListener("click", () => { refillSwipeBag(); renderDeck(); });
+    if (swipeAiFailed && !swipeAiBusy) {
+      // AI couldn't fetch fresh ideas — offer retry, or reshuffle the seeds.
+      const msg = document.createElement("span");
+      msg.textContent = "tak dapat idea baru sekejap ni.";
+      const retry = document.createElement("button");
+      retry.className = "swipe-empty-btn";
+      retry.textContent = "cuba lagi";
+      retry.addEventListener("click", () => { swipeAiFailed = false; renderDeck(); });
+      const old = document.createElement("button");
+      old.className = "swipe-empty-btn ghost";
+      old.textContent = "ulang idea lama";
+      old.addEventListener("click", () => { swipeAiFailed = false; refillSwipeBag(); renderDeck(); });
+      e.append(msg, retry, old);
+    } else {
+      const sp = document.createElement("span"); sp.className = "swipe-spin";
+      const tx = document.createElement("span"); tx.textContent = "jap, cari idea baru untuk kau…";
+      e.append(sp, tx);
+      if (!swipeAiBusy) topUpSwipe(true);
+    }
     swipeDeck.appendChild(e);
     return;
   }
@@ -3308,6 +3399,9 @@ function decideSwipe(idx, like) {
   }
   if (like) { swipeSavedArr.push(SWIPE_POOL[idx]); renderSwipeSaved(); }
   swipeBag.shift();
+  // Prefetch fresh AI ideas before we run dry, so the deck feels endless and
+  // the user rarely sees a loading card.
+  if (swipeBag.length <= 3 && !swipeAiBusy && !swipeAiFailed) topUpSwipe(false);
   setTimeout(() => { swipeAnim = false; renderDeck(); }, MOTION_OK ? 300 : 0);
 }
 function deleteSavedIdea(it) {
