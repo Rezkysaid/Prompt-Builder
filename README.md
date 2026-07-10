@@ -4,7 +4,14 @@ Macam Google Translate, tapi untuk prompt: translate prompt mentah / kabur / roj
 
 **Live app:** https://rezkysaid.github.io/Prompt-Builder/
 
-## Ciri-ciri
+## Dua mod (toggle atas)
+
+App ada dua kerja, tukar dengan toggle **✍️ Rangka Prompt │ 📖 Faham Output**:
+
+- **Rangka Prompt** — semua ciri di bawah: buat prompt mentah jadi power.
+- **📖 Faham Output** — malas/susah baca jawapan panjang dari ChatGPT/Claude/Gemini? Paste jawapan tu masuk sini, app ringkaskan jadi **Intinya (TL;DR) · Poin penting · Apa kau kena buat · Terang simple**, dalam BM santai yang senang telan — siap butang **Dengar** (TTS baca kuat-kuat) & Copy.
+
+## Ciri-ciri (Rangka Prompt)
 
 - 🔁 **Dual-panel macam Google Translate** — prompt asal kiri, prompt enhanced kanan
 - 🎛️ **6 mode enhancement** — General, Coding, Creative, Business, Image-Gen, Academic

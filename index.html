@@ -321,6 +321,102 @@
     .mem-toggle.active .mem-icon { animation: memPulse 2.6s ease-in-out infinite; }
   }
 
+  /* ── Mode switch (Rangka Prompt / Faham Output) ── */
+  .mode-switch {
+    display: flex;
+    gap: 6px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    padding: 4px;
+    margin: 0 auto 24px;
+    width: fit-content;
+    box-shadow: var(--shadow-sm);
+  }
+  .mode-seg {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: none;
+    background: none;
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .mode-seg svg { width: 15px; height: 15px; }
+  .mode-seg.active { background: var(--ink); color: var(--bg); box-shadow: var(--shadow-sm); }
+
+  /* ── Faham Output: paste box + digest ── */
+  .faham-panel {
+    max-width: 720px;
+    margin: 0 auto;
+    min-height: 220px;
+    transform: rotate(-0.2deg);
+  }
+  .faham-panel textarea { min-height: 200px; }
+  .digest {
+    max-width: 720px;
+    margin: 24px auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .digest[hidden] { display: none; }
+  .digest-block {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px 16px 13px 15px;
+    box-shadow: var(--shadow-sm);
+    padding: 13px 18px 15px;
+  }
+  .digest-block:nth-child(odd) { transform: rotate(-0.25deg); }
+  .digest-block:nth-child(even) { transform: rotate(0.25deg); }
+  .digest-block h3 {
+    font-family: var(--font-hand);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 7px;
+    transform: rotate(-0.6deg);
+    display: inline-block;
+  }
+  .digest-block p { font-size: 14.5px; line-height: 1.65; color: var(--text); }
+  .digest-inti { background: var(--accent-soft); border-color: var(--accent-border); border-style: dashed; }
+  .digest-inti p { font-size: 15.5px; font-weight: 500; }
+  .digest-block ul { list-style: none; }
+  .digest-block li {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--text);
+    padding: 4px 0 4px 22px;
+    position: relative;
+  }
+  .digest-block li::before {
+    content: "";
+    position: absolute;
+    left: 4px; top: 12px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  #digBuat li::before {
+    content: "✓";
+    background: none;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 13px;
+    top: 5px; left: 2px;
+    width: auto; height: auto;
+  }
+  .digest-actions { display: flex; gap: 8px; padding-left: 2px; }
+  .mini-btn.speaking { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
   /* ── Voice input ── */
   .mic-btn { border-color: var(--accent-border); color: var(--accent); }
   .mic-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
@@ -1104,6 +1200,18 @@
     <h1>prompt kau, tapi <span class="pow">power<svg viewBox="0 0 120 12" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M3 8 Q 16 3 31 7.5 Q 46 11 61 6.5 Q 76 3 91 7 Q 104 10 117 6"/></svg></span>.</h1>
   </div>
 
+  <div class="mode-switch" id="modeSwitch">
+    <button class="mode-seg active" id="segRangka">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Rangka Prompt
+    </button>
+    <button class="mode-seg" id="segFaham">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+      Faham Output
+    </button>
+  </div>
+
+  <div id="workRangka">
   <div class="controls" id="modes">
     <span class="controls-note">pilih genre:</span>
     <button class="chip active" data-mode="general">
@@ -1324,6 +1432,73 @@
       <button class="clear-hist" id="clearHist">buang semua</button>
     </div>
     <div id="histList"></div>
+  </div>
+  </div><!-- /#workRangka -->
+
+  <div id="workFaham" hidden>
+    <div class="idea-head">
+      <h2>malas baca jawapan AI yang panjang?</h2>
+      <span class="idea-note">paste kat sini — app ringkaskan supaya senang faham</span>
+    </div>
+    <div class="lang-row">
+      <span>bahasa:</span>
+      <select id="fahamLang">
+        <option value="auto" selected>Auto (ikut jawapan)</option>
+        <option value="ms">Bahasa Melayu</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+    <div class="panel faham-panel">
+      <div class="panel-head">tampal jawapan AI kau sini<span class="count" id="fahamCount"></span></div>
+      <textarea id="fahamInput" placeholder="Paste output panjang dari ChatGPT / Claude / Gemini kat sini…" maxlength="16000"></textarea>
+      <div class="panel-foot">
+        <button class="mini-btn" id="fahamPasteBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/></svg>
+          Paste
+        </button>
+        <button class="mini-btn" id="fahamClearBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          Clear
+        </button>
+      </div>
+    </div>
+    <div class="action-row">
+      <button class="enhance-btn" id="fahamBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+        Faham-kan
+      </button>
+      <span class="action-note">biar app telan-kan untuk kau</span>
+    </div>
+    <div class="loading" id="fahamLoading"><div class="spinner"></div><span id="fahamLoadingText">jap, tengah baca &amp; ringkaskan…</span></div>
+    <div class="error" id="fahamError"></div>
+    <div class="digest" id="digest" hidden>
+      <div class="digest-block digest-inti">
+        <h3>intinya</h3>
+        <p id="digInti"></p>
+      </div>
+      <div class="digest-block">
+        <h3>poin penting</h3>
+        <ul id="digPoin"></ul>
+      </div>
+      <div class="digest-block">
+        <h3>apa kau kena buat</h3>
+        <ul id="digBuat"></ul>
+      </div>
+      <div class="digest-block">
+        <h3>terang simple</h3>
+        <p id="digSimple"></p>
+      </div>
+      <div class="digest-actions">
+        <button class="mini-btn" id="digCopyBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+        <button class="mini-btn" id="digSpeakBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 010 7"/><path d="M19 5a9 9 0 010 14"/></svg>
+          Dengar
+        </button>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -2694,6 +2869,156 @@ document.addEventListener("touchend", (e) => {
   }, { threshold: 0.12 });
   targets.forEach((t) => { t.classList.add("reveal"); io.observe(t); });
 })();
+
+/* ── Mode switch: Rangka Prompt / Faham Output ── */
+const workRangka = document.getElementById("workRangka");
+const workFaham = document.getElementById("workFaham");
+const segRangka = document.getElementById("segRangka");
+const segFaham = document.getElementById("segFaham");
+function setMode(faham) {
+  workFaham.hidden = !faham;
+  workRangka.hidden = faham;
+  segFaham.classList.toggle("active", faham);
+  segRangka.classList.toggle("active", !faham);
+  if (!faham) stopSpeak();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+segRangka.addEventListener("click", () => setMode(false));
+segFaham.addEventListener("click", () => setMode(true));
+
+/* ── Faham Output: ringkaskan jawapan AI luar supaya senang faham ── */
+const fahamInput = document.getElementById("fahamInput");
+const fahamLang = document.getElementById("fahamLang");
+const fahamBtn = document.getElementById("fahamBtn");
+const fahamCount = document.getElementById("fahamCount");
+const fahamLoading = document.getElementById("fahamLoading");
+const fahamError = document.getElementById("fahamError");
+const digest = document.getElementById("digest");
+const digInti = document.getElementById("digInti");
+const digPoin = document.getElementById("digPoin");
+const digBuat = document.getElementById("digBuat");
+const digSimple = document.getElementById("digSimple");
+const digSpeakBtn = document.getElementById("digSpeakBtn");
+let fahamBusy = false, speaking = false;
+
+fahamInput.addEventListener("input", () => {
+  fahamCount.textContent = fahamInput.value.length ? fahamInput.value.length + " / 16000" : "";
+});
+document.getElementById("fahamPasteBtn").addEventListener("click", async () => {
+  try { const t = await navigator.clipboard.readText(); if (t) { fahamInput.value = t.slice(0, 16000); fahamInput.dispatchEvent(new Event("input")); } } catch { fahamInput.focus(); }
+});
+document.getElementById("fahamClearBtn").addEventListener("click", () => {
+  fahamInput.value = ""; fahamCount.textContent = ""; digest.hidden = true; stopSpeak(); fahamInput.focus();
+});
+
+function buildFahamPrompt(text) {
+  const lang = fahamLang.value === "ms" ? "Balas dalam Bahasa Melayu santai yang senang faham."
+    : fahamLang.value === "en" ? "Reply in simple, easy English."
+    : "Balas dalam bahasa yang sama macam jawapan AI di bawah, tapi versi paling simple & senang faham.";
+  return `Seseorang dapat jawapan panjang dari satu AI chatbot tapi malas / susah nak baca & faham. Tugas kau: ringkaskan supaya senang telan. ${lang} Guna ayat pendek, elak jargon.
+
+Balas TEPAT dalam format ni, tiada apa-apa lain:
+===INTI===
+(1-2 ayat je: pada asasnya jawapan tu cakap apa)
+===POIN===
+- (3 sampai 6 poin penting, ringkas satu baris satu poin)
+===BUAT===
+- (langkah / benda user patut buat berdasarkan jawapan tu. Kalau takde langkah, tulis satu baris je: "Takde langkah khusus — ni info je.")
+===SIMPLE===
+(1 perenggan pendek terangkan keseluruhan macam kat kawan yang baru belajar)
+
+JAWAPAN AI:
+"""
+${text.slice(0, 14000)}
+"""`;
+}
+function parseFaham(raw) {
+  const grab = (a, b) => {
+    const m = raw.match(new RegExp("===" + a + "===\\s*([\\s\\S]*?)\\s*(?:===" + b + "===|$)", "i"));
+    return m ? m[1].trim() : "";
+  };
+  const bullets = (s) => s.split("\n").map((l) => l.replace(/^\s*[-•*]\s*/, "").trim()).filter(Boolean);
+  return {
+    inti: grab("INTI", "POIN"),
+    poin: bullets(grab("POIN", "BUAT")),
+    buat: bullets(grab("BUAT", "SIMPLE")),
+    simple: grab("SIMPLE", "ZZZ"),
+  };
+}
+async function fahamkan() {
+  const text = fahamInput.value.trim();
+  if (!text) { fahamInput.focus(); return; }
+  if (fahamBusy) return;
+  fahamBusy = true;
+  fahamBtn.disabled = true;
+  fahamError.classList.remove("show");
+  digest.hidden = true;
+  stopSpeak();
+  fahamLoading.classList.add("show");
+  try {
+    const res = await fetch(PROXY_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: buildFahamPrompt(text) }) });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || data.error);
+    const out = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const d = parseFaham(out);
+    if (!d.inti && !d.poin.length && !d.simple) throw new Error("tak dapat ringkaskan — cuba lagi");
+    digInti.textContent = d.inti || "—";
+    digPoin.innerHTML = ""; (d.poin.length ? d.poin : ["—"]).forEach((p) => { const li = document.createElement("li"); li.textContent = p; digPoin.appendChild(li); });
+    digBuat.innerHTML = ""; (d.buat.length ? d.buat : ["Takde langkah khusus — ni info je."]).forEach((p) => { const li = document.createElement("li"); li.textContent = p; digBuat.appendChild(li); });
+    digSimple.textContent = d.simple || "—";
+    digest.hidden = false;
+    digest.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  } catch (e) {
+    const msg = e && e.message ? String(e.message) : String(e);
+    const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|retry in|high demand/i.test(msg);
+    fahamError.textContent = isQuota ? "ramai orang tengah guna — tunggu sekejap, cuba lagi ya" : "alamak, tak jadi: " + msg;
+    fahamError.classList.add("show");
+  } finally {
+    fahamBusy = false; fahamBtn.disabled = false; fahamLoading.classList.remove("show");
+  }
+}
+fahamBtn.addEventListener("click", fahamkan);
+
+function digestText() {
+  const poin = [...digPoin.querySelectorAll("li")].map((l) => "- " + l.textContent).join("\n");
+  const buat = [...digBuat.querySelectorAll("li")].map((l) => "- " + l.textContent).join("\n");
+  return `INTINYA:\n${digInti.textContent}\n\nPOIN PENTING:\n${poin}\n\nAPA KENA BUAT:\n${buat}\n\nTERANG SIMPLE:\n${digSimple.textContent}`;
+}
+document.getElementById("digCopyBtn").addEventListener("click", async () => {
+  const b = document.getElementById("digCopyBtn");
+  try {
+    await navigator.clipboard.writeText(digestText());
+    b.classList.add("copied"); b.lastChild.textContent = "Dah copy!";
+    setTimeout(() => { b.classList.remove("copied"); b.lastChild.textContent = "Copy"; }, 1500);
+  } catch {}
+});
+
+/* TTS: dengar digest */
+function stopSpeak() {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  speaking = false;
+  digSpeakBtn.classList.remove("speaking");
+  digSpeakBtn.lastChild.textContent = "Dengar";
+}
+digSpeakBtn.addEventListener("click", () => {
+  if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === "undefined") {
+    fahamError.textContent = "Browser kau tak sokong bacaan kuat.";
+    fahamError.classList.add("show"); setTimeout(() => fahamError.classList.remove("show"), 2500);
+    return;
+  }
+  if (speaking) { stopSpeak(); return; }
+  const poin = [...digPoin.querySelectorAll("li")].map((l) => l.textContent).join(". ");
+  const buat = [...digBuat.querySelectorAll("li")].map((l) => l.textContent).join(". ");
+  const spoken = `Intinya. ${digInti.textContent}. Poin penting. ${poin}. Apa kau kena buat. ${buat}. Terang simple. ${digSimple.textContent}`;
+  const u = new SpeechSynthesisUtterance(spoken);
+  u.lang = fahamLang.value === "en" ? "en-US" : "ms-MY";
+  u.onend = stopSpeak; u.onerror = stopSpeak;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+  speaking = true;
+  digSpeakBtn.classList.add("speaking");
+  digSpeakBtn.lastChild.textContent = "Stop";
+});
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
