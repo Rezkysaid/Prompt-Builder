@@ -6,16 +6,11 @@ Macam Google Translate, tapi untuk prompt: translate prompt mentah / kabur / roj
 
 ## Dua mod (toggle atas)
 
-App ada tiga kerja, tukar dengan toggle **✍️ Rangka Prompt │ 📖 Faham Output │ 🧭 Coach Socratic**:
+App ada tiga kerja, tukar dengan toggle **✍️ Rangka Prompt │ 📖 Faham Output │ 🧭 Coach**:
 
 - **Rangka Prompt** — semua ciri di bawah: buat prompt mentah jadi power.
 - **📖 Faham Output** — malas/susah baca jawapan panjang dari ChatGPT/Claude/Gemini? Paste jawapan tu masuk sini, app ringkaskan jadi **Intinya (TL;DR) · Poin penting · Apa kau kena buat · Terang simple**, dalam BM santai yang senang telan — siap butang **Dengar** (TTS baca kuat-kuat) & Copy.
-- **🧭 Coach Socratic** — ada AI power tapi tak tau nak buat apa (macam ada Lamborghini tapi tak tau nak pandu ke mana)? Coach tanya soalan reflektif satu-satu, gali sampai faham kau, lepas tu cadang 2-3 hala tuju konkrit yang kau boleh terus buat dengan AI (tap "jom mula" terus masuk Rangka Prompt). Ada butang **"cukup — bagi cadangan"** untuk skip, dan penjagaan rehat: nudge lembut kalau sesi lebih sejam + butang **"aku rasa serabut"** bila-bila. Setiap sembang auto-disimpan dalam **"sembang lama"** (localStorage) — klik untuk pulih & refer balik, padam individu.
-
-  Coach ada 3 sub-tab (cara laju vs mendalam):
-  - **Soal-jawab** — sesi Socratic yang mendalam di atas.
-  - **Pilih peranan** — tap siapa kau (pelajar/pekerja/parent/peniaga/creator…) → AI terus bagi 5 idea konkrit untuk orang macam kau, tap "jom mula" terus ke Rangka Prompt. Zero typing.
-  - **Swipe idea** — kad use-case AI satu-satu, swipe kanan (suka) / kiri (skip) macam Tinder; yang disuka masuk simpanan dengan "jom mula". Laju & main-main.
+- **🧭 Coach** — ada AI power tapi tak tau nak buat apa (macam ada Lamborghini tapi tak tau nak pandu ke mana)? Swipe kad use-case AI satu-satu macam Tinder: swipe kanan (menarik) / kiri (skip). Yang kau suka masuk simpanan bawah — tap **"jom mula dengan ni"** terus power-kan jadi prompt di Rangka Prompt, atau tap ikon **tong sampah** untuk buang idea yang tak jadi. Laju, main-main, zero typing.
 
 ## Ciri-ciri (Rangka Prompt)
 

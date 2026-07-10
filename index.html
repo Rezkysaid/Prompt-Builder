@@ -436,7 +436,23 @@
     margin-bottom: 5px;
   }
   .coach-idea p { font-size: 13.5px; line-height: 1.55; color: var(--text-secondary); margin-bottom: 11px; }
+  .idea-actions-row { display: flex; align-items: center; gap: 8px; }
+  .idea-actions-row .mini-btn { margin-right: auto; }
   .coach-idea .mini-btn { border-color: var(--accent-border); color: var(--accent); }
+  .idea-del {
+    flex: none;
+    width: 34px; height: 34px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .idea-del svg { width: 15px; height: 15px; }
+  .idea-del:hover { color: #c0392b; border-color: #c0392b; background: rgba(192,57,43,0.06); }
+  .idea-del:active { transform: translateY(1px); }
   /* coach sub-tabs */
   .coach-tabs { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 18px; }
   .coach-tab {
@@ -1391,9 +1407,9 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
       <span class="seg-label">Faham Output</span>
     </button>
-    <button class="mode-seg" id="segCoach" title="Coach Socratic" aria-label="Coach Socratic">
+    <button class="mode-seg" id="segCoach" title="Coach — swipe idea" aria-label="Coach — swipe idea">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
-      <span class="seg-label">Coach Socratic</span>
+      <span class="seg-label">Coach</span>
     </button>
   </div>
 
@@ -1690,24 +1706,10 @@
   <div id="workCoach" hidden>
     <div class="idea-head">
       <h2>ada AI power tapi tak tau nak buat apa?</h2>
-      <span class="idea-note">jom fikir sama-sama sampai kau jumpa hala tuju</span>
+      <span class="idea-note">swipe idea sampai kau jumpa yang berkenan</span>
     </div>
 
-    <div class="coach-tabs" id="coachTabs">
-      <button class="coach-tab active" data-tab="qa">Soal-jawab</button>
-      <button class="coach-tab" data-tab="role">Pilih peranan</button>
-      <button class="coach-tab" data-tab="swipe">Swipe idea</button>
-    </div>
-
-    <div id="coachRole" hidden>
-      <p class="coach-sub-note">tap je siapa kau — terus dapat 5 idea untuk orang macam kau:</p>
-      <div class="role-chips" id="roleChips"></div>
-      <div class="coach-ideas" id="roleIdeas" hidden></div>
-      <div class="loading" id="roleLoading"><div class="spinner"></div><span>AI tengah fikir idea untuk kau…</span></div>
-      <div class="error" id="roleError"></div>
-    </div>
-
-    <div id="coachSwipe" hidden>
+    <div id="coachSwipe">
       <p class="coach-sub-note">swipe kanan kalau <b>menarik</b>, kiri kalau <b>skip</b>. Yang kau suka masuk simpanan bawah.</p>
       <div class="swipe-deck" id="swipeDeck"></div>
       <div class="swipe-btns">
@@ -1723,45 +1725,6 @@
         <div class="coach-ideas" id="swipeSavedList"></div>
       </div>
     </div>
-
-    <div id="coachQA">
-    <div class="coach-rest" id="coachRest" hidden>
-      <svg class="coach-rest-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-      <p id="coachRestText"></p>
-      <button class="mini-btn" id="coachRestClose">okay, sambung</button>
-    </div>
-
-    <div class="coach-log" id="coachLog"></div>
-    <div class="coach-ideas" id="coachIdeas" hidden></div>
-
-    <div class="chat-input-row coach-input-row" id="coachInputRow">
-      <textarea id="coachInput" rows="1" placeholder="jawab jujur je…"></textarea>
-      <button class="chat-send" id="coachSend">Hantar</button>
-    </div>
-
-    <div class="coach-controls">
-      <button class="mini-btn" id="coachSuggest">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        cukup — bagi cadangan
-      </button>
-      <button class="mini-btn coach-serabut" id="coachSerabut">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/></svg>
-        aku rasa serabut
-      </button>
-      <button class="mini-btn" id="coachReset">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M21 8a9 9 0 10.5 4"/></svg>
-        mula semula
-      </button>
-    </div>
-
-    <div class="coach-hist" id="coachHistWrap" hidden>
-      <div class="coach-hist-head">
-        <h3>sembang lama</h3>
-        <button class="clear-hist" id="coachClearHist">buang semua</button>
-      </div>
-      <div id="coachHistList"></div>
-    </div>
-    </div><!-- /#coachQA -->
   </div>
 
 </div>
@@ -3193,229 +3156,9 @@ requestAnimationFrame(moveModeIndicator);
 window.addEventListener("resize", moveModeIndicator);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveModeIndicator);
 
-/* ── Coach Socratic: bantu pengguna fikir apa nak buat dengan AI ── */
-const coachLog = document.getElementById("coachLog");
-const coachInput = document.getElementById("coachInput");
-const coachSend = document.getElementById("coachSend");
-const coachIdeas = document.getElementById("coachIdeas");
-const coachRest = document.getElementById("coachRest");
-const coachRestText = document.getElementById("coachRestText");
-const COACH_MAX_Q = 6;
-const COACH_HIST_KEY = "promptcraft_coach_hist";
-const coachHistWrap = document.getElementById("coachHistWrap");
-const coachHistList = document.getElementById("coachHistList");
-let coachTranscript = [];
-let coachBusy = false, coachStarted = false, coachStart = 0, coachRestShown = false;
-let currentCoachId = 0, currentCoachIdeas = [];
-
+/* ── Coach: masuk mod → terus mula swipe deck ── */
 function onEnterCoach() {
-  if (!coachStarted) startCoach();
-  else renderCoachHistory();
-  maybeRestNudge();
-}
-function startCoach() {
-  coachStarted = true;
-  coachStart = Date.now();
-  coachRestShown = false;
-  currentCoachId = Date.now();
-  currentCoachIdeas = [];
-  coachTranscript = [];
-  coachLog.innerHTML = "";
-  coachIdeas.hidden = true; coachIdeas.innerHTML = "";
-  coachRest.hidden = true;
-  const opener = "Jom kita fikir sama-sama — santai je, tak payah rush. Soalan pertama: dalam hidup atau kerja kau sekarang, apa SATU benda yang kau rasa 'ish, leceh betul' setiap kali kena buat?";
-  addCoachBubble("coach", opener);
-  coachTranscript.push({ role: "coach", text: opener });
-  renderCoachHistory();
-}
-
-/* ── Sejarah sembang Coach ── */
-function loadCoachHist() { try { return JSON.parse(localStorage.getItem(COACH_HIST_KEY)) || []; } catch { return []; } }
-function saveCoachHist(list) { try { localStorage.setItem(COACH_HIST_KEY, JSON.stringify(list.slice(0, 15))); } catch {} }
-function persistCoachSession() {
-  const hasUser = coachTranscript.some((m) => m.role === "user");
-  if (!hasUser && !currentCoachIdeas.length) return; // jangan simpan sesi kosong
-  const list = loadCoachHist().filter((s) => s.id !== currentCoachId);
-  list.unshift({ id: currentCoachId, ts: Date.now(), transcript: coachTranscript.slice(), ideas: currentCoachIdeas.slice() });
-  saveCoachHist(list);
-  renderCoachHistory();
-}
-function renderCoachHistory() {
-  const list = loadCoachHist();
-  if (!list.length) { coachHistWrap.hidden = true; return; }
-  coachHistWrap.hidden = false;
-  coachHistList.innerHTML = "";
-  list.forEach((item) => {
-    const firstUser = (item.transcript.find((m) => m.role === "user") || {}).text || (item.transcript[0] || {}).text || "sembang";
-    const div = document.createElement("div");
-    div.className = "coach-hist-item";
-    const top = document.createElement("div");
-    top.className = "coach-hist-top";
-    const time = document.createElement("span");
-    time.className = "coach-hist-time";
-    time.textContent = timeAgo(item.ts) + (currentCoachId === item.id ? " · sekarang" : "");
-    top.appendChild(time);
-    if (item.ideas && item.ideas.length) {
-      const tag = document.createElement("span");
-      tag.className = "coach-hist-tag";
-      tag.textContent = item.ideas.length + " cadangan";
-      top.appendChild(tag);
-    }
-    const del = document.createElement("button");
-    del.className = "del-btn";
-    del.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>';
-    del.title = "Padam sembang ni";
-    del.style.marginLeft = "auto";
-    let armed = false, dt = null;
-    del.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if (!armed) { armed = true; del.classList.add("confirm"); del.title = "Tekan sekali lagi untuk padam"; dt = setTimeout(() => { armed = false; del.classList.remove("confirm"); }, 2500); return; }
-      clearTimeout(dt);
-      saveCoachHist(loadCoachHist().filter((s) => s.id !== item.id));
-      renderCoachHistory();
-    });
-    top.appendChild(del);
-    const prev = document.createElement("div");
-    prev.className = "coach-hist-preview";
-    prev.textContent = firstUser;
-    div.append(top, prev);
-    div.addEventListener("click", () => restoreCoachSession(item));
-    coachHistList.appendChild(div);
-  });
-}
-function restoreCoachSession(item) {
-  coachStarted = true;
-  coachStart = Date.now();
-  coachRestShown = false;
-  currentCoachId = item.id;
-  currentCoachIdeas = (item.ideas || []).slice();
-  coachTranscript = item.transcript.map((m) => ({ ...m }));
-  coachLog.innerHTML = "";
-  coachTranscript.forEach((m) => addCoachBubble(m.role, m.text));
-  coachIdeas.hidden = true; coachIdeas.innerHTML = "";
-  if (currentCoachIdeas.length) renderCoachIdeas(currentCoachIdeas);
-  coachRest.hidden = true;
-  renderCoachHistory();
-  const top = document.getElementById("workCoach").getBoundingClientRect().top + window.scrollY - 16;
-  window.scrollTo({ top, behavior: "smooth" });
-}
-document.getElementById("coachClearHist").addEventListener("click", () => {
-  if (confirm("Buang semua sembang Coach?")) { saveCoachHist([]); renderCoachHistory(); }
-});
-function addCoachBubble(role, text) {
-  const d = document.createElement("div");
-  d.className = "coach-bubble " + role;
-  d.textContent = text;
-  coachLog.appendChild(d);
-  d.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  return d;
-}
-function buildCoachPrompt(force) {
-  const t = coachTranscript.slice(-14).map((m) => (m.role === "coach" ? "Coach" : "User") + ": " + m.text.slice(0, 800)).join("\n");
-  const rounds = coachTranscript.filter((m) => m.role === "user").length;
-  const mustSuggest = force || rounds >= COACH_MAX_Q;
-  return `Kau "Coach Socratic" dalam app PromptCraft. Ramai orang ada akses AI power tapi tak tau nak guna untuk apa — macam ada Lamborghini tapi tak tau nak pandu ke mana. Tugas kau bantu SEORANG pengguna fikir sampai dia jumpa benda KONKRIT yang dia nak buat/terokai dengan AI.
-
-Cara kau:
-- Tanya SATU soalan reflektif pada satu masa; gali betul-betul (rutin harian dia, kerja, minat, benda menyusahkan, benda dia selalu tangguh, apa dia nak capai/jadi). Jangan cetek, jangan tanya banyak sekali gus.
-- JANGAN bagi cadangan terlalu awal — kumpul konteks dahulu.
-- Nada: santai, mesra, sabar, macam kawan tolong fikir sambil minum kopi. Bahasa Melayu santai (boleh rojak). Ringkas, 1-3 ayat sahaja.
-${mustSuggest
-  ? "- SEKARANG masa untuk bagi cadangan: berdasarkan semua yang dia kongsi, bagi 2-3 hala tuju KONKRIT & personal (bukan generik) yang dia boleh terus buat dengan AI."
-  : "- Kalau kau rasa dah cukup faham dia, kau boleh terus bagi cadangan. Kalau belum, tanya soalan seterusnya."}
-
-Perbualan setakat ni:
-${t}
-
-Balas TEPAT dalam format ni, tiada apa-apa lain sebelum atau selepas:
-===JENIS===
-${mustSuggest ? "cadangan" : "soalan"}
-===MESEJ===
-(kalau soalan: SATU soalan sahaja. kalau cadangan: satu ayat pembuka mesra)
-===IDEA===
-(hanya jika JENIS ialah cadangan; 2-3 baris. Setiap baris format: Tajuk pendek :: satu ayat kenapa ia sesuai untuk DIA & apa boleh buat dengan AI)`;
-}
-function parseCoach(raw) {
-  const grab = (a, b) => { const m = raw.match(new RegExp("===" + a + "===\\s*([\\s\\S]*?)\\s*(?:===" + b + "===|$)", "i")); return m ? m[1].trim() : ""; };
-  const jenis = grab("JENIS", "MESEJ").toLowerCase();
-  const mesej = grab("MESEJ", "IDEA");
-  const ideaRaw = grab("IDEA", "ZZZ");
-  const ideas = ideaRaw.split("\n")
-    .map((l) => l.replace(/^\s*(?:\d+[.)]|[-*•])\s*/, "").trim())
-    .filter(Boolean)
-    .map((l) => { const idx = l.indexOf("::"); return idx > -1 ? { title: l.slice(0, idx).trim(), desc: l.slice(idx + 2).replace(/^:/, "").trim() } : { title: l, desc: "" }; })
-    .slice(0, 3);
-  return { suggest: /cadangan/.test(jenis), mesej, ideas };
-}
-function renderCoachIdeas(ideas) {
-  coachIdeas.innerHTML = "";
-  ideas.forEach((it) => {
-    const card = document.createElement("div");
-    card.className = "coach-idea";
-    const h = document.createElement("h4"); h.textContent = it.title;
-    card.appendChild(h);
-    if (it.desc) { const p = document.createElement("p"); p.textContent = it.desc; card.appendChild(p); }
-    const btn = document.createElement("button");
-    btn.className = "mini-btn";
-    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>jom mula dengan ni';
-    btn.addEventListener("click", () => {
-      input.value = ("Aku nak cuba " + it.title + (it.desc ? ". " + it.desc : "")).slice(0, 4000);
-      input.dispatchEvent(new Event("input"));
-      setMode("rangka");
-    });
-    card.appendChild(btn);
-    coachIdeas.appendChild(card);
-  });
-  coachIdeas.hidden = false;
-  coachIdeas.scrollIntoView({ behavior: "smooth", block: "nearest" });
-}
-async function sendCoach(force) {
-  if (coachBusy) return;
-  const text = coachInput.value.trim();
-  if (!force && !text) { coachInput.focus(); return; }
-  if (text) { addCoachBubble("user", text); coachTranscript.push({ role: "user", text }); coachInput.value = ""; coachInput.style.height = ""; }
-  coachBusy = true; coachSend.disabled = true;
-  const typing = addCoachBubble("coach", "hmm, jap…");
-  typing.classList.add("typing");
-  maybeRestNudge();
-  try {
-    const res = await fetch(PROXY_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: buildCoachPrompt(force) }) });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message || data.error);
-    const out = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    const c = parseCoach(out);
-    typing.classList.remove("typing");
-    typing.textContent = c.mesej || (c.suggest ? "Ni beberapa hala tuju untuk kau:" : "Cuba cerita lagi sikit?");
-    coachTranscript.push({ role: "coach", text: typing.textContent });
-    if (c.suggest && c.ideas.length) { currentCoachIdeas = c.ideas; renderCoachIdeas(c.ideas); }
-    persistCoachSession();
-  } catch (e) {
-    const msg = e && e.message ? String(e.message) : String(e);
-    const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|retry in|high demand/i.test(msg);
-    typing.classList.remove("typing"); typing.classList.add("err");
-    typing.textContent = isQuota ? "ramai orang tengah guna — tunggu sekejap, cuba hantar balik." : "alamak, tak dapat sambung — cuba hantar balik.";
-    if (text) coachInput.value = text;
-  } finally {
-    coachBusy = false; coachSend.disabled = false;
-  }
-}
-coachSend.addEventListener("click", () => sendCoach(false));
-coachInput.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendCoach(false); } });
-coachInput.addEventListener("input", () => { coachInput.style.height = "auto"; coachInput.style.height = Math.min(coachInput.scrollHeight, 160) + "px"; });
-document.getElementById("coachSuggest").addEventListener("click", () => sendCoach(true));
-document.getElementById("coachReset").addEventListener("click", startCoach);
-document.getElementById("coachSerabut").addEventListener("click", () => showRest(false));
-document.getElementById("coachRestClose").addEventListener("click", () => { coachRest.hidden = true; });
-function maybeRestNudge() {
-  if (coachRestShown || !coachStart) return;
-  if (Date.now() - coachStart > 3600000) { showRest(true); coachRestShown = true; }
-}
-function showRest(auto) {
-  coachRestText.textContent = auto
-    ? "eh, dah lebih sejam kau fikir ni — rehat jap. Minum air, jalan-jalan sat. Idea terbaik selalu datang masa kau tak cari."
-    : "okay, jom rehat. Tarik nafas dalam-dalam… tak payah paksa diri. Tutup dulu pun takpe — sambung bila kau dah segar, idea takkan lari.";
-  coachRest.hidden = false;
-  coachRest.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  if (!swipeStarted) startSwipe();
 }
 
 /* ── Faham Output: ringkaskan jawapan AI luar supaya senang faham ── */
@@ -3553,11 +3296,13 @@ digSpeakBtn.addEventListener("click", () => {
 });
 
 /* ── Coach cara cepat: kad idea helper ── */
-function ideaCardEl(it) {
+function ideaCardEl(it, onDelete) {
   const card = document.createElement("div");
   card.className = "coach-idea";
   const h = document.createElement("h4"); h.textContent = it.title; card.appendChild(h);
   if (it.desc) { const p = document.createElement("p"); p.textContent = it.desc; card.appendChild(p); }
+  const row = document.createElement("div");
+  row.className = "idea-actions-row";
   const btn = document.createElement("button");
   btn.className = "mini-btn";
   btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>jom mula dengan ni';
@@ -3566,81 +3311,19 @@ function ideaCardEl(it) {
     input.dispatchEvent(new Event("input"));
     setMode("rangka");
   });
-  card.appendChild(btn);
+  row.appendChild(btn);
+  if (onDelete) {
+    const del = document.createElement("button");
+    del.className = "idea-del";
+    del.type = "button";
+    del.title = "Buang idea ni";
+    del.setAttribute("aria-label", "buang idea");
+    del.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>';
+    del.addEventListener("click", () => onDelete(it));
+    row.appendChild(del);
+  }
+  card.appendChild(row);
   return card;
-}
-
-/* ── Coach sub-tabs ── */
-const coachViews = {
-  qa: document.getElementById("coachQA"),
-  role: document.getElementById("coachRole"),
-  swipe: document.getElementById("coachSwipe"),
-};
-document.querySelectorAll("#coachTabs .coach-tab").forEach((tab) => {
-  tab.addEventListener("click", () => {
-    document.querySelectorAll("#coachTabs .coach-tab").forEach((t) => t.classList.remove("active"));
-    tab.classList.add("active");
-    const name = tab.dataset.tab;
-    Object.entries(coachViews).forEach(([k, el]) => { el.hidden = k !== name; });
-    if (name === "swipe" && !swipeStarted) startSwipe();
-    if (MOTION_OK) coachViews[name].animate([{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "none" }], { duration: 260, easing: "ease-out" });
-  });
-});
-
-/* ── Pilih peranan → 5 idea ── */
-const ROLES = ["pelajar sekolah", "pelajar universiti", "fresh grad", "pekerja pejabat", "peniaga kecil", "content creator", "freelancer", "ibu/bapa", "suri rumah", "cikgu", "jurujual", "programmer"];
-const roleChips = document.getElementById("roleChips");
-const roleIdeas = document.getElementById("roleIdeas");
-const roleLoading = document.getElementById("roleLoading");
-const roleError = document.getElementById("roleError");
-let roleBusy = false;
-const roleCache = {};
-ROLES.forEach((r) => {
-  const b = document.createElement("button");
-  b.className = "role-chip"; b.textContent = r;
-  b.addEventListener("click", () => pickRole(r, b));
-  roleChips.appendChild(b);
-});
-function buildRolePrompt(role) {
-  return `Untuk seorang ${role}, bagi 5 benda KONKRIT & praktikal yang dia boleh buat dengan AI chatbot (ChatGPT/Claude/Gemini) untuk jimat masa, selesai masalah harian, atau capai matlamat dia. Bahasa Melayu santai. Jangan generik, jangan ulang. Setiap satu satu baris, format: Tajuk pendek :: satu ayat apa & kenapa berguna untuk dia.
-
-Jawab 5 baris sahaja, tiada apa-apa lain.`;
-}
-function parseRoleIdeas(text) {
-  return text.split("\n").map((l) => l.replace(/^\s*(?:\d+[.)]|[-*•])\s*/, "").trim()).filter(Boolean)
-    .map((l) => { const i = l.indexOf("::"); return i > -1 ? { title: l.slice(0, i).trim(), desc: l.slice(i + 2).replace(/^:/, "").trim() } : { title: l, desc: "" }; })
-    .filter((x) => x.title).slice(0, 6);
-}
-function renderRoleIdeas(ideas) {
-  roleIdeas.innerHTML = "";
-  ideas.forEach((it) => roleIdeas.appendChild(ideaCardEl(it)));
-  roleIdeas.hidden = false;
-  roleIdeas.scrollIntoView({ behavior: "smooth", block: "nearest" });
-}
-async function pickRole(role, chip) {
-  if (roleBusy) return;
-  document.querySelectorAll(".role-chip").forEach((c) => c.classList.remove("active"));
-  chip.classList.add("active");
-  roleError.classList.remove("show");
-  if (roleCache[role]) { renderRoleIdeas(roleCache[role]); return; }
-  roleBusy = true;
-  roleIdeas.hidden = true;
-  roleLoading.classList.add("show");
-  try {
-    const res = await fetch(PROXY_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: buildRolePrompt(role) }) });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message || data.error);
-    const out = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    const ideas = parseRoleIdeas(out);
-    if (!ideas.length) throw new Error("kosong");
-    roleCache[role] = ideas;
-    renderRoleIdeas(ideas);
-  } catch (e) {
-    const msg = e && e.message ? String(e.message) : String(e);
-    const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|high demand/i.test(msg);
-    roleError.textContent = isQuota ? "ramai orang tengah guna — cuba lagi sekejap." : "alamak, tak jadi — cuba tap sekali lagi.";
-    roleError.classList.add("show");
-  } finally { roleBusy = false; roleLoading.classList.remove("show"); }
 }
 
 /* ── Swipe idea ── */
@@ -3748,12 +3431,16 @@ function decideSwipe(idx, like) {
   swipeBag.shift();
   setTimeout(() => { swipeAnim = false; renderDeck(); }, MOTION_OK ? 300 : 0);
 }
+function deleteSavedIdea(it) {
+  swipeSavedArr = swipeSavedArr.filter((x) => x.title !== it.title);
+  renderSwipeSaved();
+}
 function renderSwipeSaved() {
+  swipeSavedList.innerHTML = "";
   if (!swipeSavedArr.length) { swipeSaved.hidden = true; return; }
   swipeSaved.hidden = false;
-  swipeSavedList.innerHTML = "";
   const seen = new Set();
-  [...swipeSavedArr].reverse().forEach((it) => { if (seen.has(it.title)) return; seen.add(it.title); swipeSavedList.appendChild(ideaCardEl(it)); });
+  [...swipeSavedArr].reverse().forEach((it) => { if (seen.has(it.title)) return; seen.add(it.title); swipeSavedList.appendChild(ideaCardEl(it, deleteSavedIdea)); });
 }
 document.getElementById("swipeLike").addEventListener("click", () => { if (swipeBag.length) decideSwipe(swipeBag[0], true); });
 document.getElementById("swipeSkip").addEventListener("click", () => { if (swipeBag.length) decideSwipe(swipeBag[0], false); });
