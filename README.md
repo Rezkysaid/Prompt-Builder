@@ -6,11 +6,11 @@ Macam Google Translate, tapi untuk prompt: translate prompt mentah / kabur / roj
 
 ## Dua mod (toggle atas)
 
-App ada tiga kerja, tukar dengan toggle **✍️ Rangka Prompt │ 📖 Faham Output │ 🧭 Coach**:
+App ada tiga kerja, tukar dengan toggle ikon+teks **✍️ Prompt │ 📖 fahami │ 🧭 ilham**:
 
 - **Rangka Prompt** — semua ciri di bawah: buat prompt mentah jadi power.
 - **📖 Faham Output** — malas/susah baca jawapan panjang dari ChatGPT/Claude/Gemini? Paste jawapan tu masuk sini, app ringkaskan jadi **Intinya (TL;DR) · Poin penting · Apa kau kena buat · Terang simple**, dalam BM santai yang senang telan — siap butang **Dengar** (TTS baca kuat-kuat) & Copy.
-- **🧭 Coach** — ada AI power tapi tak tau nak buat apa (macam ada Lamborghini tapi tak tau nak pandu ke mana)? Swipe kad use-case AI satu-satu macam Tinder: swipe kanan (menarik) / kiri (skip). Yang kau suka masuk simpanan bawah — tap **"jom mula dengan ni"** terus power-kan jadi prompt di Rangka Prompt, atau tap ikon **tong sampah** untuk buang idea yang tak jadi. Deck **tak habis-habis**: lepas kad seed (18 idea) dah nak licin, app auto-minta idea segar dari AI di latar belakang (prefetch), jadi kau boleh swipe tanpa henti. Kalau AI tak dapat dicapai sekejap, ada butang "cuba lagi" / "ulang idea lama". Laju, main-main, zero typing.
+- **🧭 ilham** — ada AI power tapi tak tau nak buat apa (macam ada Lamborghini tapi tak tau nak pandu ke mana)? Swipe kad use-case AI satu-satu macam Tinder: swipe kanan (menarik) / kiri (skip). Yang kau suka masuk simpanan bawah — tap **"jom mula dengan ni"** terus power-kan jadi prompt di Rangka Prompt, atau tap ikon **tong sampah** untuk buang idea yang tak jadi. Deck **tak habis-habis**: lepas kad seed (18 idea) dah nak licin, app auto-minta idea segar dari AI di latar belakang (prefetch), jadi kau boleh swipe tanpa henti. Kalau AI tak dapat dicapai sekejap, ada butang "cuba lagi" / "ulang idea lama". Laju, main-main, zero typing.
 
 ## Ciri-ciri (Rangka Prompt)
 
