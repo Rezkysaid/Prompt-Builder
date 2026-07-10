@@ -437,6 +437,76 @@
   }
   .coach-idea p { font-size: 13.5px; line-height: 1.55; color: var(--text-secondary); margin-bottom: 11px; }
   .coach-idea .mini-btn { border-color: var(--accent-border); color: var(--accent); }
+  /* coach sub-tabs */
+  .coach-tabs { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 18px; }
+  .coach-tab {
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 1.5px solid var(--border-strong);
+    border-radius: 999px; padding: 7px 15px; cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .coach-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .coach-tab.active { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .coach-sub-note { font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; margin-bottom: 14px; }
+
+  /* pilih peranan */
+  .role-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .role-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 1.5px solid var(--border-strong);
+    border-radius: 999px; padding: 7px 14px; cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .role-chip:hover { border-color: var(--accent); color: var(--accent); transform: rotate(-1deg); }
+  .role-chip.active { background: var(--ink); border-color: var(--ink); color: var(--bg); transform: rotate(0.5deg); }
+
+  /* swipe deck */
+  .swipe-deck { position: relative; height: 260px; max-width: 460px; margin: 4px auto 0; }
+  .swipe-card {
+    position: absolute; inset: 0;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 20px 22px 19px 21px;
+    box-shadow: var(--shadow-md);
+    padding: 24px 22px;
+    display: flex; flex-direction: column; justify-content: center;
+    user-select: none; -webkit-user-select: none;
+    touch-action: pan-y;
+  }
+  .swipe-card.top { cursor: grab; }
+  .swipe-card.top:active { cursor: grabbing; }
+  .swipe-cat {
+    align-self: flex-start;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-soft);
+    border-radius: 6px; padding: 3px 10px; margin-bottom: 12px;
+  }
+  .swipe-card h4 { font-family: var(--font-display); font-style: italic; font-size: 22px; font-weight: 600; line-height: 1.25; margin-bottom: 10px; color: var(--text); }
+  .swipe-card p { font-size: 14.5px; line-height: 1.6; color: var(--text-secondary); }
+  .swipe-hint { position: absolute; top: 18px; font-family: var(--font-hand); font-size: 22px; font-weight: 700; opacity: 0; transition: opacity 0.1s; }
+  .swipe-hint.like { right: 20px; color: var(--accent); transform: rotate(12deg); }
+  .swipe-hint.skip { left: 20px; color: var(--text-tertiary); transform: rotate(-12deg); }
+  .swipe-empty { display: flex; align-items: center; justify-content: center; height: 100%; font-family: var(--font-hand); font-size: 19px; color: var(--text-tertiary); text-align: center; padding: 20px; }
+  .swipe-btns { display: flex; justify-content: center; gap: 22px; margin-top: 18px; }
+  .swipe-btn {
+    width: 54px; height: 54px; border-radius: 50%;
+    border: 1.5px solid var(--border-strong);
+    background: var(--surface); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-sm); transition: all 0.15s ease;
+  }
+  .swipe-btn svg { width: 24px; height: 24px; }
+  .swipe-btn.skip { color: var(--text-tertiary); }
+  .swipe-btn.skip:hover { border-color: var(--text-secondary); transform: scale(1.08); }
+  .swipe-btn.like { color: var(--accent); }
+  .swipe-btn.like:hover { border-color: var(--accent); background: var(--accent-soft); transform: scale(1.08); }
+  .swipe-saved { margin-top: 26px; }
+
   .coach-hist { margin-top: 28px; }
   .coach-hist-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
   .coach-hist-head h3 { font-family: var(--font-display); font-style: italic; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
@@ -1623,6 +1693,38 @@
       <span class="idea-note">jom fikir sama-sama sampai kau jumpa hala tuju</span>
     </div>
 
+    <div class="coach-tabs" id="coachTabs">
+      <button class="coach-tab active" data-tab="qa">Soal-jawab</button>
+      <button class="coach-tab" data-tab="role">Pilih peranan</button>
+      <button class="coach-tab" data-tab="swipe">Swipe idea</button>
+    </div>
+
+    <div id="coachRole" hidden>
+      <p class="coach-sub-note">tap je siapa kau — terus dapat 5 idea untuk orang macam kau:</p>
+      <div class="role-chips" id="roleChips"></div>
+      <div class="coach-ideas" id="roleIdeas" hidden></div>
+      <div class="loading" id="roleLoading"><div class="spinner"></div><span>AI tengah fikir idea untuk kau…</span></div>
+      <div class="error" id="roleError"></div>
+    </div>
+
+    <div id="coachSwipe" hidden>
+      <p class="coach-sub-note">swipe kanan kalau <b>menarik</b>, kiri kalau <b>skip</b>. Yang kau suka masuk simpanan bawah.</p>
+      <div class="swipe-deck" id="swipeDeck"></div>
+      <div class="swipe-btns">
+        <button class="swipe-btn skip" id="swipeSkip" aria-label="skip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+        <button class="swipe-btn like" id="swipeLike" aria-label="suka">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21s-7.5-4.9-10-9.4C.3 8.4 1.6 5 5 5c2 0 3.2 1.2 4 2.3C9.8 6.2 11 5 13 5c3.4 0 4.7 3.4 3 6.6C19.5 16.1 12 21 12 21z"/></svg>
+        </button>
+      </div>
+      <div class="swipe-saved" id="swipeSaved" hidden>
+        <div class="coach-hist-head"><h3>idea kau suka</h3></div>
+        <div class="coach-ideas" id="swipeSavedList"></div>
+      </div>
+    </div>
+
+    <div id="coachQA">
     <div class="coach-rest" id="coachRest" hidden>
       <svg class="coach-rest-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
       <p id="coachRestText"></p>
@@ -1659,6 +1761,7 @@
       </div>
       <div id="coachHistList"></div>
     </div>
+    </div><!-- /#coachQA -->
   </div>
 
 </div>
@@ -3448,6 +3551,212 @@ digSpeakBtn.addEventListener("click", () => {
   digSpeakBtn.classList.add("speaking");
   digSpeakBtn.lastChild.textContent = "Stop";
 });
+
+/* ── Coach cara cepat: kad idea helper ── */
+function ideaCardEl(it) {
+  const card = document.createElement("div");
+  card.className = "coach-idea";
+  const h = document.createElement("h4"); h.textContent = it.title; card.appendChild(h);
+  if (it.desc) { const p = document.createElement("p"); p.textContent = it.desc; card.appendChild(p); }
+  const btn = document.createElement("button");
+  btn.className = "mini-btn";
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>jom mula dengan ni';
+  btn.addEventListener("click", () => {
+    input.value = ("Aku nak cuba " + it.title + (it.desc ? ". " + it.desc : "")).slice(0, 4000);
+    input.dispatchEvent(new Event("input"));
+    setMode("rangka");
+  });
+  card.appendChild(btn);
+  return card;
+}
+
+/* ── Coach sub-tabs ── */
+const coachViews = {
+  qa: document.getElementById("coachQA"),
+  role: document.getElementById("coachRole"),
+  swipe: document.getElementById("coachSwipe"),
+};
+document.querySelectorAll("#coachTabs .coach-tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll("#coachTabs .coach-tab").forEach((t) => t.classList.remove("active"));
+    tab.classList.add("active");
+    const name = tab.dataset.tab;
+    Object.entries(coachViews).forEach(([k, el]) => { el.hidden = k !== name; });
+    if (name === "swipe" && !swipeStarted) startSwipe();
+    if (MOTION_OK) coachViews[name].animate([{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "none" }], { duration: 260, easing: "ease-out" });
+  });
+});
+
+/* ── Pilih peranan → 5 idea ── */
+const ROLES = ["pelajar sekolah", "pelajar universiti", "fresh grad", "pekerja pejabat", "peniaga kecil", "content creator", "freelancer", "ibu/bapa", "suri rumah", "cikgu", "jurujual", "programmer"];
+const roleChips = document.getElementById("roleChips");
+const roleIdeas = document.getElementById("roleIdeas");
+const roleLoading = document.getElementById("roleLoading");
+const roleError = document.getElementById("roleError");
+let roleBusy = false;
+const roleCache = {};
+ROLES.forEach((r) => {
+  const b = document.createElement("button");
+  b.className = "role-chip"; b.textContent = r;
+  b.addEventListener("click", () => pickRole(r, b));
+  roleChips.appendChild(b);
+});
+function buildRolePrompt(role) {
+  return `Untuk seorang ${role}, bagi 5 benda KONKRIT & praktikal yang dia boleh buat dengan AI chatbot (ChatGPT/Claude/Gemini) untuk jimat masa, selesai masalah harian, atau capai matlamat dia. Bahasa Melayu santai. Jangan generik, jangan ulang. Setiap satu satu baris, format: Tajuk pendek :: satu ayat apa & kenapa berguna untuk dia.
+
+Jawab 5 baris sahaja, tiada apa-apa lain.`;
+}
+function parseRoleIdeas(text) {
+  return text.split("\n").map((l) => l.replace(/^\s*(?:\d+[.)]|[-*•])\s*/, "").trim()).filter(Boolean)
+    .map((l) => { const i = l.indexOf("::"); return i > -1 ? { title: l.slice(0, i).trim(), desc: l.slice(i + 2).replace(/^:/, "").trim() } : { title: l, desc: "" }; })
+    .filter((x) => x.title).slice(0, 6);
+}
+function renderRoleIdeas(ideas) {
+  roleIdeas.innerHTML = "";
+  ideas.forEach((it) => roleIdeas.appendChild(ideaCardEl(it)));
+  roleIdeas.hidden = false;
+  roleIdeas.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+async function pickRole(role, chip) {
+  if (roleBusy) return;
+  document.querySelectorAll(".role-chip").forEach((c) => c.classList.remove("active"));
+  chip.classList.add("active");
+  roleError.classList.remove("show");
+  if (roleCache[role]) { renderRoleIdeas(roleCache[role]); return; }
+  roleBusy = true;
+  roleIdeas.hidden = true;
+  roleLoading.classList.add("show");
+  try {
+    const res = await fetch(PROXY_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: buildRolePrompt(role) }) });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || data.error);
+    const out = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const ideas = parseRoleIdeas(out);
+    if (!ideas.length) throw new Error("kosong");
+    roleCache[role] = ideas;
+    renderRoleIdeas(ideas);
+  } catch (e) {
+    const msg = e && e.message ? String(e.message) : String(e);
+    const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|high demand/i.test(msg);
+    roleError.textContent = isQuota ? "ramai orang tengah guna — cuba lagi sekejap." : "alamak, tak jadi — cuba tap sekali lagi.";
+    roleError.classList.add("show");
+  } finally { roleBusy = false; roleLoading.classList.remove("show"); }
+}
+
+/* ── Swipe idea ── */
+const SWIPE_POOL = [
+  { c: "produktiviti", title: "Jadikan AI setiausaha peribadi", desc: "suruh dia susun jadual, ingatkan tugas, draf email — kau fokus kerja penting je" },
+  { c: "belajar", title: "AI jadi tutor 24 jam", desc: "belajar apa-apa topik ikut pace kau, tanya sampai faham tanpa segan" },
+  { c: "duit", title: "Rancang bajet & saving", desc: "bagi pendapatan & perbelanjaan, AI tolong susun pelan duit realistik" },
+  { c: "kerja", title: "Auto-draf laporan & email", desc: "bagi poin je, AI tuliskan versi kemas, kau tinggal semak & hantar" },
+  { c: "kreatif", title: "Brainstorm content 30 hari", desc: "dapat kalendar idea post/video untuk sebulan dalam beberapa saat" },
+  { c: "masak", title: "Menu ikut bahan peti ais", desc: "list apa ada, AI cadang resepi malam ni tanpa perlu keluar beli" },
+  { c: "kesihatan", title: "Pelan senaman di rumah", desc: "20 minit sehari tanpa gym, disesuaikan dengan level kau" },
+  { c: "kerjaya", title: "Latih interview kerja", desc: "AI jadi interviewer, tanya soalan susah, bagi feedback jawapan kau" },
+  { c: "belajar", title: "Ringkas nota & buku teks", desc: "paste bab panjang, dapat ringkasan + soalan latihan sendiri" },
+  { c: "bisnes", title: "Validate idea side income", desc: "uji idea bisnes kau dengan AI sebagai rakan fikir yang jujur" },
+  { c: "harian", title: "Betulkan & terjemah bahasa", desc: "tulis mesej formal, cover letter, caption — tanpa risau grammar" },
+  { c: "kreatif", title: "Tulis cerita/lirik sama-sama", desc: "mula satu ayat, AI sambung — best untuk lepas tension" },
+  { c: "parenting", title: "Jawab soalan pelik anak", desc: "'kenapa langit biru?' — AI bagi jawapan simple sesuai umur dia" },
+  { c: "kerja", title: "Analisa data & buat keputusan", desc: "paste nombor/senarai, AI tolong cari corak & cadang langkah" },
+  { c: "belajar", title: "Kuasai skill baru 15 min/hari", desc: "AI susun roadmap dari sifar untuk skill kau nak belajar" },
+  { c: "santai", title: "Rancang trip bajet", desc: "bagi bajet & tarikh, dapat itinerary tempat bukan mainstream" },
+  { c: "produktiviti", title: "Pecahkan projek besar", desc: "benda yang rasa berat jadi langkah kecil yang boleh terus mula" },
+  { c: "kerjaya", title: "Upgrade resume & LinkedIn", desc: "AI tajamkan ayat achievement kau supaya nampak lebih power" },
+];
+const swipeDeck = document.getElementById("swipeDeck");
+const swipeSaved = document.getElementById("swipeSaved");
+const swipeSavedList = document.getElementById("swipeSavedList");
+let swipeBag = [], swipeSavedArr = [], swipeStarted = false, swipeAnim = false;
+
+function startSwipe() {
+  swipeStarted = true;
+  swipeSavedArr = [];
+  swipeSaved.hidden = true;
+  swipeSavedList.innerHTML = "";
+  refillSwipeBag();
+  renderDeck();
+}
+function refillSwipeBag() {
+  const a = SWIPE_POOL.map((_, i) => i);
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  swipeBag = a;
+}
+function renderDeck() {
+  swipeDeck.innerHTML = "";
+  if (!swipeBag.length) {
+    const e = document.createElement("div");
+    e.className = "swipe-empty";
+    e.textContent = "dah habis satu round — tap sini nak ulang ↻";
+    e.style.cursor = "pointer";
+    e.addEventListener("click", () => { refillSwipeBag(); renderDeck(); });
+    swipeDeck.appendChild(e);
+    return;
+  }
+  const show = swipeBag.slice(0, 3);
+  show.slice().reverse().forEach((idx, ri) => {
+    const depth = show.length - 1 - ri;
+    const item = SWIPE_POOL[idx];
+    const card = document.createElement("div");
+    card.className = "swipe-card" + (depth === 0 ? " top" : "");
+    if (depth > 0) card.style.transform = `scale(${1 - depth * 0.04}) translateY(${depth * 10}px)`;
+    card.style.zIndex = String(10 - depth);
+    const hintL = document.createElement("span"); hintL.className = "swipe-hint like"; hintL.textContent = "MENARIK ♥";
+    const hintS = document.createElement("span"); hintS.className = "swipe-hint skip"; hintS.textContent = "SKIP";
+    const cat = document.createElement("span"); cat.className = "swipe-cat"; cat.textContent = item.c;
+    const h = document.createElement("h4"); h.textContent = item.title;
+    const p = document.createElement("p"); p.textContent = item.desc;
+    card.append(hintL, hintS, cat, h, p);
+    if (depth === 0) attachSwipeDrag(card, idx);
+    swipeDeck.appendChild(card);
+  });
+}
+function attachSwipeDrag(card, idx) {
+  let sx = 0, dx = 0, dragging = false;
+  const likeH = card.querySelector(".swipe-hint.like");
+  const skipH = card.querySelector(".swipe-hint.skip");
+  card.addEventListener("pointerdown", (e) => { dragging = true; sx = e.clientX; card.style.transition = "none"; try { card.setPointerCapture(e.pointerId); } catch {} });
+  card.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    dx = e.clientX - sx;
+    card.style.transform = `translateX(${dx}px) rotate(${dx * 0.05}deg)`;
+    likeH.style.opacity = dx > 20 ? Math.min(dx / 90, 1) : 0;
+    skipH.style.opacity = dx < -20 ? Math.min(-dx / 90, 1) : 0;
+  });
+  const end = () => {
+    if (!dragging) return;
+    dragging = false;
+    card.style.transition = "transform 0.3s ease";
+    if (dx > 90) decideSwipe(idx, true);
+    else if (dx < -90) decideSwipe(idx, false);
+    else { card.style.transform = ""; likeH.style.opacity = 0; skipH.style.opacity = 0; }
+  };
+  card.addEventListener("pointerup", end);
+  card.addEventListener("pointercancel", end);
+}
+function decideSwipe(idx, like) {
+  if (swipeAnim || !swipeBag.length) return;
+  swipeAnim = true;
+  const top = swipeDeck.querySelector(".swipe-card.top");
+  if (top) {
+    const dir = like ? 1 : -1;
+    top.style.transition = "transform 0.35s ease, opacity 0.35s ease";
+    top.style.transform = `translateX(${dir * 620}px) rotate(${dir * 22}deg)`;
+    top.style.opacity = "0";
+  }
+  if (like) { swipeSavedArr.push(SWIPE_POOL[idx]); renderSwipeSaved(); }
+  swipeBag.shift();
+  setTimeout(() => { swipeAnim = false; renderDeck(); }, MOTION_OK ? 300 : 0);
+}
+function renderSwipeSaved() {
+  if (!swipeSavedArr.length) { swipeSaved.hidden = true; return; }
+  swipeSaved.hidden = false;
+  swipeSavedList.innerHTML = "";
+  const seen = new Set();
+  [...swipeSavedArr].reverse().forEach((it) => { if (seen.has(it.title)) return; seen.add(it.title); swipeSavedList.appendChild(ideaCardEl(it)); });
+}
+document.getElementById("swipeLike").addEventListener("click", () => { if (swipeBag.length) decideSwipe(swipeBag[0], true); });
+document.getElementById("swipeSkip").addEventListener("click", () => { if (swipeBag.length) decideSwipe(swipeBag[0], false); });
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
