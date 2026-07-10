@@ -256,25 +256,33 @@
     transform: rotate(-0.2deg);
   }
   .mem-hint { font-size: 12.5px; color: var(--text-tertiary); line-height: 1.5; margin-bottom: 12px; }
-  .mem-slots { display: flex; flex-direction: column; gap: 9px; }
-  .mem-slot { display: flex; align-items: center; gap: 10px; }
+  .mem-slots { display: flex; flex-direction: column; gap: 10px; }
+  .mem-slot { display: flex; align-items: flex-start; gap: 10px; }
   .mem-check {
     flex-shrink: 0;
     width: 18px; height: 18px;
+    margin-top: 10px;
     accent-color: var(--accent);
     cursor: pointer;
   }
   .mem-input {
     flex: 1;
     min-width: 0;
+    width: 100%;
     border: 1.5px solid var(--border-strong);
     border-radius: 9px 10px 9px 10px;
-    padding: 8px 12px;
+    padding: 9px 12px;
     font-family: inherit;
     font-size: 13.5px;
+    line-height: 1.5;
     color: var(--text);
     background: var(--bg);
     outline: none;
+    resize: none;
+    min-height: 40px;
+    overflow: hidden;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
   }
   .mem-input:focus { border-color: var(--accent); background: var(--surface); }
   .mem-input::placeholder { color: var(--text-tertiary); }
@@ -1258,12 +1266,13 @@ memory.forEach((m, i) => {
   check.className = "mem-check";
   check.checked = !!m.active;
   check.title = "Aktifkan ingatan ni";
-  const inp = document.createElement("input");
-  inp.type = "text";
+  const inp = document.createElement("textarea");
   inp.className = "mem-input";
+  inp.rows = 1;
   inp.maxLength = 300;
   inp.value = m.text || "";
   inp.placeholder = MEM_PLACEHOLDERS[i] || "nota konteks…";
+  const autoGrow = () => { inp.style.height = "auto"; inp.style.height = inp.scrollHeight + "px"; };
   const sync = () => {
     memory[i].active = check.checked;
     slot.classList.toggle("on", check.checked && inp.value.trim().length > 0);
@@ -1273,18 +1282,31 @@ memory.forEach((m, i) => {
     // auto-tick when the user first types into an empty slot
     if (inp.value.trim() && !check.checked && !memory[i].text.trim()) check.checked = true;
     memory[i].text = inp.value;
+    autoGrow();
     sync();
   });
   check.addEventListener("change", sync);
   slot.append(check, inp);
   memSlots.appendChild(slot);
+  // size to fit any pre-filled text once it's in the DOM
+  requestAnimationFrame(autoGrow);
 });
 updateMemCount();
 
 memToggle.addEventListener("click", () => {
   const opening = memBody.hasAttribute("hidden");
-  if (opening) { memBody.removeAttribute("hidden"); memToggle.setAttribute("aria-expanded", "true"); }
-  else { memBody.setAttribute("hidden", ""); memToggle.setAttribute("aria-expanded", "false"); }
+  if (opening) {
+    memBody.removeAttribute("hidden");
+    memToggle.setAttribute("aria-expanded", "true");
+    // now visible — size each textarea to fit its text
+    memSlots.querySelectorAll(".mem-input").forEach((t) => {
+      t.style.height = "auto";
+      t.style.height = t.scrollHeight + "px";
+    });
+  } else {
+    memBody.setAttribute("hidden", "");
+    memToggle.setAttribute("aria-expanded", "false");
+  }
 });
 
 /* ── Input helpers ── */
