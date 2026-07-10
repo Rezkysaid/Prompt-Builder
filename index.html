@@ -210,6 +210,76 @@
     cursor: pointer;
   }
 
+  /* ── Ingatan konteks (mini memory, 3 slot) ── */
+  .mem-section { margin-bottom: 20px; }
+  .mem-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--surface);
+    border: 1.5px solid var(--border-strong);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .mem-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .mem-icon { width: 15px; height: 15px; }
+  .mem-chevron { width: 14px; height: 14px; transition: transform 0.2s ease; }
+  .mem-toggle[aria-expanded="true"] .mem-chevron { transform: rotate(180deg); }
+  .mem-count {
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--accent);
+    border-radius: 999px;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 5px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .mem-count.show { display: inline-flex; }
+  .mem-body {
+    margin-top: 12px;
+    max-width: 720px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px 16px 13px 15px;
+    box-shadow: var(--shadow-sm);
+    padding: 14px 16px 15px;
+    transform: rotate(-0.2deg);
+  }
+  .mem-hint { font-size: 12.5px; color: var(--text-tertiary); line-height: 1.5; margin-bottom: 12px; }
+  .mem-slots { display: flex; flex-direction: column; gap: 9px; }
+  .mem-slot { display: flex; align-items: center; gap: 10px; }
+  .mem-check {
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  .mem-input {
+    flex: 1;
+    min-width: 0;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 9px 10px 9px 10px;
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--text);
+    background: var(--bg);
+    outline: none;
+  }
+  .mem-input:focus { border-color: var(--accent); background: var(--surface); }
+  .mem-input::placeholder { color: var(--text-tertiary); }
+  .mem-slot.on .mem-input { border-color: var(--accent-border); background: var(--accent-soft); }
+
   /* ── Dual panel (sengaja tak sama besar) ── */
   .panels {
     display: grid;
@@ -951,6 +1021,19 @@
     </select>
   </div>
 
+  <div class="mem-section">
+    <button class="mem-toggle" id="memToggle" aria-expanded="false">
+      <svg class="mem-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a3 3 0 00-3 3 3 3 0 00-2 5.2A3 3 0 007 17a3 3 0 005 1 3 3 0 005-1 3 3 0 002-5.8A3 3 0 0015 6a3 3 0 00-3-3z"/><path d="M12 6v12"/></svg>
+      <span>ingatan konteks</span>
+      <span class="mem-count" id="memCount"></span>
+      <svg class="mem-chevron" id="memChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="mem-body" id="memBody" hidden>
+      <p class="mem-hint">3 nota latar belakang tentang apa kau tengah buat &amp; nak capai. AI guna ni supaya prompt yang diperbaiki relevan dengan matlamat kau kat AI tools lain. Tick untuk aktifkan.</p>
+      <div class="mem-slots" id="memSlots"></div>
+    </div>
+  </div>
+
   <div class="panels">
     <div class="panel panel-in">
       <div class="panel-head">tampal prompt buruk kau sini<span class="count" id="charCount"></span></div>
@@ -1124,6 +1207,84 @@ document.querySelectorAll("#modes .chip").forEach((chip) => {
     chip.classList.add("active");
     currentMode = chip.dataset.mode;
   });
+});
+
+/* ── Ingatan konteks: mini memory (3 slot) yang disuntik ke output ── */
+const MEM_KEY = "promptcraft_memory";
+const MEM_MAX = 3;
+const memToggle = document.getElementById("memToggle");
+const memBody = document.getElementById("memBody");
+const memSlots = document.getElementById("memSlots");
+const memCount = document.getElementById("memCount");
+
+function loadMemory() {
+  try {
+    const m = JSON.parse(localStorage.getItem(MEM_KEY));
+    if (Array.isArray(m)) return m.slice(0, MEM_MAX).map((x) => ({ text: String(x.text || ""), active: !!x.active }));
+  } catch {}
+  return [];
+}
+let memory = loadMemory();
+while (memory.length < MEM_MAX) memory.push({ text: "", active: false });
+
+function saveMemory() {
+  try { localStorage.setItem(MEM_KEY, JSON.stringify(memory)); } catch {}
+  updateMemCount();
+}
+function updateMemCount() {
+  const n = memory.filter((m) => m.active && m.text.trim()).length;
+  memCount.textContent = n;
+  memCount.classList.toggle("show", n > 0);
+}
+function activeMemory() {
+  return memory.filter((m) => m.active && m.text.trim()).map((m) => m.text.trim());
+}
+function memoryBlock() {
+  const items = activeMemory();
+  if (!items.length) return "";
+  return `\n\nBACKGROUND CONTEXT — the user saved these notes about what they're working on and what they want to achieve (in whatever AI tool they'll paste this into). Use them so the result is relevant to their real goal and situation; weave in only what's genuinely relevant, do NOT force in unrelated bits:\n${items.map((t) => "- " + t.slice(0, 300)).join("\n")}`;
+}
+
+const MEM_PLACEHOLDERS = [
+  "contoh: aku tengah bina app fintech untuk pasaran Malaysia",
+  "contoh: audience aku pelajar universiti, bahasa simple",
+  "contoh: aku prefer jawapan ringkas & ada contoh",
+];
+memory.forEach((m, i) => {
+  const slot = document.createElement("div");
+  slot.className = "mem-slot" + (m.active && m.text.trim() ? " on" : "");
+  const check = document.createElement("input");
+  check.type = "checkbox";
+  check.className = "mem-check";
+  check.checked = !!m.active;
+  check.title = "Aktifkan ingatan ni";
+  const inp = document.createElement("input");
+  inp.type = "text";
+  inp.className = "mem-input";
+  inp.maxLength = 300;
+  inp.value = m.text || "";
+  inp.placeholder = MEM_PLACEHOLDERS[i] || "nota konteks…";
+  const sync = () => {
+    memory[i].active = check.checked;
+    slot.classList.toggle("on", check.checked && inp.value.trim().length > 0);
+    saveMemory();
+  };
+  inp.addEventListener("input", () => {
+    // auto-tick when the user first types into an empty slot
+    if (inp.value.trim() && !check.checked && !memory[i].text.trim()) check.checked = true;
+    memory[i].text = inp.value;
+    sync();
+  });
+  check.addEventListener("change", sync);
+  slot.append(check, inp);
+  memSlots.appendChild(slot);
+});
+updateMemCount();
+
+memToggle.addEventListener("click", () => {
+  const opening = memBody.hasAttribute("hidden");
+  if (opening) { memBody.removeAttribute("hidden"); memToggle.setAttribute("aria-expanded", "true"); }
+  else { memBody.setAttribute("hidden", ""); memToggle.setAttribute("aria-expanded", "false"); }
 });
 
 /* ── Input helpers ── */
@@ -1324,7 +1485,7 @@ A REFERENCE IMAGE is attached to this request. Study it carefully — it shows w
 
 The user's raw prompt may be in Malay, English, or a casual Malay-English mix (bahasa rojak). Treat mixed language as first-class input.
 
-Enhancement mode: ${MODE_GUIDE[mode]}${santaiBlock}${imgBlock}
+Enhancement mode: ${MODE_GUIDE[mode]}${santaiBlock}${imgBlock}${memoryBlock()}
 
 Rules:
 1. Identify the user's core intent and PRESERVE it exactly — never change what they want.
@@ -1644,7 +1805,7 @@ Respond in EXACTLY this format, nothing else:
 
 ${priors}
 
-Now the user wants to ask the NEXT follow-up question in that SAME chat. Their rough intent (Malay, English, or rojak): "${rawIntent.slice(0, 1200)}"
+Now the user wants to ask the NEXT follow-up question in that SAME chat. Their rough intent (Malay, English, or rojak): "${rawIntent.slice(0, 1200)}"${memoryBlock()}
 
 Craft the next FOLLOW-UP prompt. Critical rules:
 1. It CONTINUES the conversation — the AI already has all context from the previous prompts and its own answers. Do NOT restate background, role setup, audience, or constraints already established earlier.
@@ -1822,7 +1983,7 @@ Rules:
 - Each prompt: 30 to 70 words, self-contained and ready to use as-is.
 - Preserve the spirit of the seed; you may add reasonable context, but do NOT drift into an unrelated topic.
 - ${langRule}${styleRule}
-- Give each one a SHORT angle label (2-4 words) describing its take.
+- Give each one a SHORT angle label (2-4 words) describing its take.${memoryBlock()}
 
 SEED:
 """
