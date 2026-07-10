@@ -18,6 +18,7 @@ Macam Google Translate, tapi untuk prompt: translate prompt mentah / kabur / roj
 - 🌱 **Seed grower** — malas taip panjang? Bagi frasa pendek/kasar (contoh: "buat duit dengan ai") dan AI tumbuhkan jadi 5 cadangan prompt penuh dengan angle berbeza, siap boleh copy atau terus "Guna ni" untuk power-kan lagi
 - 🕘 **Sejarah prompt + kegemaran** — disimpan dalam browser (localStorage)
 - 📋 Copy, Paste, Swap, Regenerate
+- 🖼️ **Kongsi as image** — export prompt yang dah diperbaiki jadi kad gambar cantik berbrand (logo + tagline app) terus dari canvas; guna Web Share API kat mobile (share ke mana-mana app) atau download PNG kat desktop
 - 🧵 **Thread follow-up** — prompt pertama untuk buka chat; lepas tu taip niat follow-up secara kasar dan PromptCraft craft prompt seterusnya yang bersambung dengan yang sebelumnya (tak ulang konteks, merujuk jawapan AI tadi) — sedia untuk paste dalam chat yang sama kat ChatGPT/Claude/Gemini. Seluruh thread disimpan dalam sejarah: klik balik item tu bila-bila dan sambung craft follow-up dengan konteks yang sama
 - ↺ **Panggil balik soalan** — teks yang kau taip dalam kotak follow-up auto-simpan (kekal walaupun AI high-demand/limit atau app ditutup); butang "soalan tadi" munculkan balik soalan yang pernah kau taip supaya tak lupa apa yang pernah diajukan
 - 📱 **PWA** — boleh install ke home screen (Add to Home Screen), ada offline shell melalui service worker
