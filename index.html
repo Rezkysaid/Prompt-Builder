@@ -330,6 +330,51 @@
     .mic-btn.recording svg { animation: micPulse 1s ease-in-out infinite; }
   }
 
+  /* ── Starter: cadangan permulaan ayat (bila kotak kosong) ── */
+  .starter-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin: 0 16px 12px;
+  }
+  .starter-row[hidden] { display: none; }
+  .starter-label {
+    font-family: var(--font-hand);
+    font-size: 15.5px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+  .starter-chips { display: contents; }
+  .starter-chip {
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1.5px solid var(--accent-border);
+    border-radius: 999px;
+    padding: 4px 11px;
+    cursor: pointer;
+    transition: all 0.14s ease;
+  }
+  .starter-chip:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .starter-chip:active { transform: scale(0.95); }
+  .starter-shuffle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .starter-shuffle svg { width: 13px; height: 13px; }
+  .starter-shuffle:hover { border-color: var(--accent); color: var(--accent); transform: rotate(-25deg); }
+
   /* ── Hint masa taip (dalam panel input, bawah teks) ── */
   .hint-bar {
     display: flex;
@@ -1125,6 +1170,13 @@
         </button>
       </div>
       <input type="file" id="imgFile" accept="image/*" hidden>
+      <div class="starter-row" id="starterRow" hidden>
+        <span class="starter-label">tak tau nak mula? cuba:</span>
+        <div class="starter-chips" id="starterChips"></div>
+        <button class="starter-shuffle" id="starterShuffle" title="Cadangan lain" aria-label="Cadangan lain">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+        </button>
+      </div>
       <div class="hint-bar" id="hintBar" hidden>
         <svg class="hint-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 00-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0012 2z"/></svg>
         <span id="hintText"></span>
@@ -1372,7 +1424,7 @@ memToggle.addEventListener("click", () => {
 /* ── Input helpers ── */
 input.addEventListener("input", () => {
   charCount.textContent = input.value.length ? input.value.length + " / 4000" : "";
-  updateHints();
+  updateInputAssist();
 });
 
 /* ── Hint masa taip: nudge lembut apa yang kurang ── */
@@ -1398,6 +1450,45 @@ function updateHints() {
   }
   hintBar.hidden = false;
 }
+
+/* ── Starter: cadangan permulaan ayat bila kotak kosong ── */
+const STARTERS = [
+  "Terangkan", "Tolong aku", "Buatkan aku", "Macam ni weh,", "Sebenarnya,",
+  "Aku nak cerita", "Boleh tak", "Aku nak tanya", "Tulis", "Ringkaskan",
+  "Cadangkan", "Aku stuck pasal", "Aku nak belajar", "Macam mana nak",
+  "Senaraikan", "Bandingkan", "Aku nak idea", "Bagi aku contoh",
+  "Analisa", "Aku ada masalah",
+];
+const starterRow = document.getElementById("starterRow");
+const starterChips = document.getElementById("starterChips");
+const starterShuffle = document.getElementById("starterShuffle");
+
+function renderStarters() {
+  const bag = STARTERS.slice();
+  for (let i = bag.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [bag[i], bag[j]] = [bag[j], bag[i]]; }
+  starterChips.innerHTML = "";
+  bag.slice(0, 6).forEach((op) => {
+    const b = document.createElement("button");
+    b.className = "starter-chip";
+    b.textContent = op.replace(/,$/, "") + "…";
+    b.addEventListener("click", () => {
+      input.value = op + " ";
+      input.dispatchEvent(new Event("input"));
+      input.focus();
+      const n = input.value.length;
+      try { input.setSelectionRange(n, n); } catch {}
+    });
+    starterChips.appendChild(b);
+  });
+}
+starterShuffle.addEventListener("click", renderStarters);
+
+function updateInputAssist() {
+  starterRow.hidden = input.value.trim().length > 0;
+  updateHints();
+}
+renderStarters();
+updateInputAssist();
 
 /* ── Voice input: cakap je, app transkrip jadi teks (Web Speech API) ── */
 const micBtn = document.getElementById("micBtn");
@@ -1453,7 +1544,7 @@ clearBtn.addEventListener("click", () => {
   input.value = "";
   charCount.textContent = "";
   clearImage();
-  updateHints();
+  updateInputAssist();
   input.focus();
 });
 intenSel.addEventListener("change", updateHints);
