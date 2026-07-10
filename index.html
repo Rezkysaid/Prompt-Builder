@@ -321,6 +321,31 @@
     .mem-toggle.active .mem-icon { animation: memPulse 2.6s ease-in-out infinite; }
   }
 
+  /* ── Voice input ── */
+  .mic-btn { border-color: var(--accent-border); color: var(--accent); }
+  .mic-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .mic-btn.recording { border-color: var(--danger); color: var(--danger); background: var(--danger-soft); }
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes micPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.28); } }
+    .mic-btn.recording svg { animation: micPulse 1s ease-in-out infinite; }
+  }
+
+  /* ── Hint masa taip ── */
+  .hint-bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 13px;
+    padding-left: 6px;
+    font-family: var(--font-hand);
+    font-size: 16.5px;
+    color: var(--text-tertiary);
+    transform: rotate(-0.4deg);
+  }
+  .hint-bar[hidden] { display: none; }
+  .hint-ic { width: 15px; height: 15px; flex-shrink: 0; color: var(--text-tertiary); }
+  .hint-bar.ok, .hint-bar.ok .hint-ic { color: var(--accent); }
+
   /* ── Dual panel (sengaja tak sama besar) ── */
   .panels {
     display: grid;
@@ -1102,6 +1127,10 @@
       </div>
       <input type="file" id="imgFile" accept="image/*" hidden>
       <div class="panel-foot">
+        <button class="mini-btn mic-btn" id="micBtn" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 00-3 3v6a3 3 0 006 0V5a3 3 0 00-3-3z"/><path d="M19 10v1a7 7 0 01-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+          <span class="mic-label">Cakap</span>
+        </button>
         <button class="mini-btn" id="clearBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
           Clear
@@ -1147,6 +1176,11 @@
         </button>
       </div>
     </div>
+  </div>
+
+  <div class="hint-bar" id="hintBar" hidden>
+    <svg class="hint-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 00-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0012 2z"/></svg>
+    <span id="hintText"></span>
   </div>
 
   <div class="action-row">
@@ -1336,7 +1370,80 @@ memToggle.addEventListener("click", () => {
 /* ── Input helpers ── */
 input.addEventListener("input", () => {
   charCount.textContent = input.value.length ? input.value.length + " / 4000" : "";
+  updateHints();
 });
+
+/* ── Hint masa taip: nudge lembut apa yang kurang ── */
+const hintBar = document.getElementById("hintBar");
+const hintText = document.getElementById("hintText");
+function updateHints() {
+  const s = input.value.toLowerCase().trim();
+  // sembunyi bila kosong, atau bila mod "kemas je" (memang sengaja minimal)
+  if (!s || intenSel.value === "kemas") { hintBar.hidden = true; return; }
+  const words = s.split(/\s+/).filter(Boolean);
+  const miss = [];
+  if (words.length < 4) miss.push("detail lagi sikit");
+  if (!/(senarai|list|langkah|step|point|jadual|table|e-?mel|email|kod|code|perenggan|paragraph|ringkas|pendek|panjang|contoh|example|format|bullet|caption|surat|karangan|esei)/.test(s))
+    miss.push("format hasil (senarai/langkah/email…)");
+  if (!/(untuk|audience|pemula|beginner|pelajar|budak|kanak|pakar|expert|professional|awam|client|customer|pelanggan|bos|boss|team|geng)/.test(s))
+    miss.push("untuk siapa");
+  if (!miss.length) {
+    hintBar.className = "hint-bar ok";
+    hintText.textContent = "dah ada detail elok — tekan Power-kan je!";
+  } else {
+    hintBar.className = "hint-bar";
+    hintText.textContent = "boleh tambah: " + miss.slice(0, 2).join(" · ");
+  }
+  hintBar.hidden = false;
+}
+
+/* ── Voice input: cakap je, app transkrip jadi teks (Web Speech API) ── */
+const micBtn = document.getElementById("micBtn");
+const micLabel = micBtn.querySelector(".mic-label");
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recog = null, micOn = false, micBase = "", micFinal = "";
+if (SR) {
+  micBtn.style.display = "";
+  micBtn.addEventListener("click", () => { micOn ? stopMic() : startMic(); });
+}
+function setMicUI(on) {
+  micBtn.classList.toggle("recording", on);
+  micLabel.textContent = on ? "Dengar…" : "Cakap";
+}
+function startMic() {
+  try {
+    recog = new SR();
+  } catch { return; }
+  recog.lang = "ms-MY";
+  recog.interimResults = true;
+  recog.continuous = true;
+  micBase = input.value ? input.value.replace(/\s+$/, "") + " " : "";
+  micFinal = "";
+  recog.onresult = (e) => {
+    let interim = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const tr = e.results[i][0].transcript;
+      if (e.results[i].isFinal) micFinal += tr + " ";
+      else interim += tr;
+    }
+    input.value = (micBase + micFinal + interim).slice(0, 4000);
+    input.dispatchEvent(new Event("input"));
+  };
+  recog.onerror = (e) => {
+    if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+      errorBox.textContent = "Bagi akses mic dulu ya, lepas tu cuba lagi.";
+      errorBox.classList.add("show");
+      setTimeout(() => errorBox.classList.remove("show"), 3000);
+    }
+  };
+  recog.onend = () => { micOn = false; setMicUI(false); };
+  try { recog.start(); micOn = true; setMicUI(true); input.focus(); } catch {}
+}
+function stopMic() {
+  micOn = false;
+  if (recog) { try { recog.stop(); } catch {} }
+  setMicUI(false);
+}
 input.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); enhance(); }
 });
@@ -1344,8 +1451,10 @@ clearBtn.addEventListener("click", () => {
   input.value = "";
   charCount.textContent = "";
   clearImage();
+  updateHints();
   input.focus();
 });
+intenSel.addEventListener("change", updateHints);
 pasteBtn.addEventListener("click", async () => {
   try {
     const t = await navigator.clipboard.readText();
