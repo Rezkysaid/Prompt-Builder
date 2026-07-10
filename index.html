@@ -348,27 +348,19 @@
     z-index: 1;
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    justify-content: center;
     border: none;
     background: none;
     border-radius: 999px;
-    padding: 8px 18px;
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: 14.5px;
-    font-weight: 600;
+    padding: 10px 22px;
     color: var(--text-tertiary);
     cursor: pointer;
     transition: color 0.28s ease;
   }
-  .mode-seg svg { width: 15px; height: 15px; }
+  .mode-seg svg { width: 19px; height: 19px; }
+  .seg-label { display: none; }
   .mode-seg.active { color: var(--bg); }
   @media (prefers-reduced-motion: reduce) { .mode-indicator { transition: none; } }
-  @media (max-width: 560px) {
-    .mode-switch { width: 100%; max-width: 100%; }
-    .mode-seg { flex: 1; justify-content: center; padding: 8px 8px; font-size: 12.5px; gap: 5px; }
-    .mode-seg svg { width: 13px; height: 13px; }
-  }
 
   /* ── Coach Socratic ── */
   #workCoach { max-width: 720px; margin: 0 auto; }
@@ -1296,17 +1288,17 @@
 
   <div class="mode-switch" id="modeSwitch">
     <span class="mode-indicator" id="modeIndicator"></span>
-    <button class="mode-seg active" id="segRangka">
+    <button class="mode-seg active" id="segRangka" title="Rangka Prompt" aria-label="Rangka Prompt">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      Rangka Prompt
+      <span class="seg-label">Rangka Prompt</span>
     </button>
-    <button class="mode-seg" id="segFaham">
+    <button class="mode-seg" id="segFaham" title="Faham Output" aria-label="Faham Output">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-      Faham Output
+      <span class="seg-label">Faham Output</span>
     </button>
-    <button class="mode-seg" id="segCoach">
+    <button class="mode-seg" id="segCoach" title="Coach Socratic" aria-label="Coach Socratic">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
-      Coach Socratic
+      <span class="seg-label">Coach Socratic</span>
     </button>
   </div>
 
