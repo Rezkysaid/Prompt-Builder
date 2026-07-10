@@ -6,10 +6,11 @@ Macam Google Translate, tapi untuk prompt: translate prompt mentah / kabur / roj
 
 ## Dua mod (toggle atas)
 
-App ada dua kerja, tukar dengan toggle **✍️ Rangka Prompt │ 📖 Faham Output**:
+App ada tiga kerja, tukar dengan toggle **✍️ Rangka Prompt │ 📖 Faham Output │ 🧭 Coach Socratic**:
 
 - **Rangka Prompt** — semua ciri di bawah: buat prompt mentah jadi power.
 - **📖 Faham Output** — malas/susah baca jawapan panjang dari ChatGPT/Claude/Gemini? Paste jawapan tu masuk sini, app ringkaskan jadi **Intinya (TL;DR) · Poin penting · Apa kau kena buat · Terang simple**, dalam BM santai yang senang telan — siap butang **Dengar** (TTS baca kuat-kuat) & Copy.
+- **🧭 Coach Socratic** — ada AI power tapi tak tau nak buat apa (macam ada Lamborghini tapi tak tau nak pandu ke mana)? Coach tanya soalan reflektif satu-satu, gali sampai faham kau, lepas tu cadang 2-3 hala tuju konkrit yang kau boleh terus buat dengan AI (tap "jom mula" terus masuk Rangka Prompt). Ada butang **"cukup — bagi cadangan"** untuk skip, dan penjagaan rehat: nudge lembut kalau sesi lebih sejam + butang **"aku rasa serabut"** bila-bila.
 
 ## Ciri-ciri (Rangka Prompt)
 
