@@ -1260,7 +1260,9 @@
   }
 
   /* ── Seed grower: bagi benih, AI tumbuhkan 5 prompt penuh ── */
-  .seed-section { margin-top: 46px; }
+  .seed-section { margin-top: 4px; }
+  /* seed sits first now; this heading opens the enhancer (second) section */
+  .enhance-head { margin-top: 44px; padding-top: 30px; border-top: 1.5px dashed var(--border); }
   .seed-lang-row { margin: 12px 0 12px; }
   .seed-input-row { display: flex; gap: 8px; align-items: stretch; max-width: 720px; margin-bottom: 4px; }
   #seedInput {
@@ -1463,6 +1465,35 @@
   </div>
 
   <div id="workRangka">
+  <div class="seed-section">
+    <div class="idea-head">
+      <h2>tak ada idea? bagi benih je</h2>
+      <span class="idea-note">taip frasa pendek — AI tumbuhkan jadi 5 prompt penuh</span>
+    </div>
+    <div class="lang-row seed-lang-row">
+      <span>bahasa output:</span>
+      <select id="seedLang">
+        <option value="auto" selected>Auto (ikut benih)</option>
+        <option value="ms">Bahasa Melayu</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+    <div class="seed-input-row">
+      <input type="text" id="seedInput" maxlength="200" placeholder="contoh: buat duit dengan ai">
+      <button class="seed-grow" id="seedGrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C12 8 9 5 4 5c0 5 3 7 8 7z"/><path d="M12 14c0-3.5 3-6.5 8-6.5 0 4.5-3 6.5-8 6.5z"/></svg>
+        Grow
+      </button>
+    </div>
+    <div class="seed-status" id="seedStatus"></div>
+    <div class="seed-results" id="seedResults"></div>
+  </div>
+
+  <div class="idea-head enhance-head">
+    <h2>dah ada prompt? jom tweak jadi cantik</h2>
+    <span class="idea-note">susun jadi jelas, spesifik &amp; power — hasil AI terus naik kelas</span>
+  </div>
+
   <div class="controls" id="modes">
     <span class="controls-note">pilih genre:</span>
     <button class="chip active" data-mode="general">
@@ -1629,30 +1660,6 @@
       <textarea id="chatInput" rows="1" placeholder="tulis prompt je…"></textarea>
       <button class="chat-send" id="chatSend">Craft follow-up</button>
     </div>
-  </div>
-
-  <div class="seed-section">
-    <div class="idea-head">
-      <h2>malas taip panjang? bagi benih je</h2>
-      <span class="idea-note">taip frasa pendek — AI tumbuhkan jadi 5 prompt penuh</span>
-    </div>
-    <div class="lang-row seed-lang-row">
-      <span>bahasa output:</span>
-      <select id="seedLang">
-        <option value="auto" selected>Auto (ikut benih)</option>
-        <option value="ms">Bahasa Melayu</option>
-        <option value="en">English</option>
-      </select>
-    </div>
-    <div class="seed-input-row">
-      <input type="text" id="seedInput" maxlength="200" placeholder="contoh: buat duit dengan ai">
-      <button class="seed-grow" id="seedGrow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C12 8 9 5 4 5c0 5 3 7 8 7z"/><path d="M12 14c0-3.5 3-6.5 8-6.5 0 4.5-3 6.5-8 6.5z"/></svg>
-        Grow
-      </button>
-    </div>
-    <div class="seed-status" id="seedStatus"></div>
-    <div class="seed-results" id="seedResults"></div>
   </div>
 
   <div class="hist-section">
@@ -2955,7 +2962,8 @@ function renderSeeds(seeds) {
       input.value = s.prompt.slice(0, 4000);
       input.dispatchEvent(new Event("input"));
       annot.classList.remove("show");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      input.scrollIntoView({ behavior: "smooth", block: "center" });
+      input.focus();
     });
     actions.append(use);
     card.append(top, txt, actions);
