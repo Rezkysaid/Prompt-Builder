@@ -757,49 +757,6 @@
   }
   textarea::placeholder { color: var(--text-tertiary); }
 
-  /* reference image preview inside the input panel */
-  .img-preview {
-    display: none;
-    align-items: center;
-    gap: 11px;
-    margin: 0 14px 12px;
-    padding: 8px;
-    background: var(--accent-soft);
-    border: 1.5px dashed var(--accent-border);
-    border-radius: 11px 13px 11px 12px;
-  }
-  .img-preview.show { display: flex; }
-  #imgThumb {
-    width: 52px;
-    height: 52px;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 1.5px solid var(--border-strong);
-    flex-shrink: 0;
-  }
-  .img-preview-meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-  .img-preview-label {
-    font-family: var(--font-hand);
-    font-size: 16px;
-    color: var(--accent);
-    line-height: 1.2;
-  }
-  .img-preview-hint { font-size: 11.5px; color: var(--text-tertiary); }
-  .img-remove {
-    margin-left: auto;
-    flex-shrink: 0;
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    border: 1.5px solid var(--border-strong);
-    background: var(--surface);
-    color: var(--text-secondary);
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s ease;
-  }
-  .img-remove svg { width: 13px; height: 13px; }
-  .img-remove:hover { border-color: var(--danger); color: var(--danger); }
-
   .out-body { flex: 1; padding: 16px; overflow-y: auto; }
   .out-text { white-space: pre-wrap; font-size: 15px; line-height: 1.65; }
   .out-text.typing::after {
@@ -1489,17 +1446,6 @@
     <div class="panel panel-in">
       <div class="panel-head">tampal prompt buruk kau sini<span class="count" id="charCount"></span></div>
       <textarea id="input" placeholder="Taip atau paste prompt mentah kau kat sini…" maxlength="4000"></textarea>
-      <div class="img-preview" id="imgPreview">
-        <img id="imgThumb" alt="gambar rujukan">
-        <div class="img-preview-meta">
-          <span class="img-preview-label">gambar rujukan dilampir</span>
-          <span class="img-preview-hint">AI akan tengok gambar ni masa rangka prompt</span>
-        </div>
-        <button class="img-remove" id="imgRemove" title="Buang gambar" aria-label="Buang gambar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <input type="file" id="imgFile" accept="image/*" hidden>
       <div class="starter-row" id="starterRow" hidden>
         <span class="starter-label">tak tau nak mula? cuba:</span>
         <div class="starter-chips" id="starterChips"></div>
@@ -1531,10 +1477,6 @@
         <button class="mini-btn" id="copyInBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
           Copy
-        </button>
-        <button class="mini-btn" id="imgBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-          Gambar
         </button>
       </div>
     </div>
@@ -2047,7 +1989,6 @@ input.addEventListener("keydown", (e) => {
 clearBtn.addEventListener("click", () => {
   input.value = "";
   charCount.textContent = "";
-  clearImage();
   updateInputAssist();
   input.focus();
 });
@@ -2072,59 +2013,6 @@ copyInBtn.addEventListener("click", async () => {
     }, 1500);
   } catch {}
 });
-/* ── Reference image: attach, resize, preview ── */
-let attachedImage = null; // { data: base64 (no prefix), mimeType }
-const imgBtn = document.getElementById("imgBtn");
-const imgFile = document.getElementById("imgFile");
-const imgPreview = document.getElementById("imgPreview");
-const imgThumb = document.getElementById("imgThumb");
-const imgRemove = document.getElementById("imgRemove");
-
-imgBtn.addEventListener("click", () => imgFile.click());
-imgFile.addEventListener("change", () => {
-  const file = imgFile.files && imgFile.files[0];
-  imgFile.value = ""; // allow re-picking the same file later
-  if (!file) return;
-  if (!file.type.startsWith("image/")) { showImgError("Tu bukan gambar la."); return; }
-  const reader = new FileReader();
-  reader.onload = () => {
-    const img = new Image();
-    img.onload = () => {
-      // resize so the longest side is <= 1024px, re-encode as JPEG to keep
-      // the upload small and fast (well within the proxy/body limits)
-      const MAX = 1024;
-      let { width, height } = img;
-      if (width > MAX || height > MAX) {
-        const scale = MAX / Math.max(width, height);
-        width = Math.round(width * scale);
-        height = Math.round(height * scale);
-      }
-      const canvas = document.createElement("canvas");
-      canvas.width = width; canvas.height = height;
-      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
-      attachedImage = { data: dataUrl.split(",")[1], mimeType: "image/jpeg" };
-      imgThumb.src = dataUrl;
-      imgPreview.classList.add("show");
-    };
-    img.onerror = () => showImgError("Gambar ni tak dapat dibaca.");
-    img.src = reader.result;
-  };
-  reader.onerror = () => showImgError("Gagal baca fail gambar.");
-  reader.readAsDataURL(file);
-});
-imgRemove.addEventListener("click", clearImage);
-function clearImage() {
-  attachedImage = null;
-  imgThumb.removeAttribute("src");
-  imgPreview.classList.remove("show");
-}
-function showImgError(msg) {
-  errorBox.textContent = msg;
-  errorBox.classList.add("show");
-  setTimeout(() => errorBox.classList.remove("show"), 2500);
-}
-
 swapBtn.addEventListener("click", () => {
   if (!lastEnhanced) return;
   clearInterval(typeTimer);
@@ -2317,7 +2205,7 @@ const MODE_GUIDE = {
   academic: "Academic / research — the enhanced prompt should specify scope, depth, citation expectations, structure, and target academic level.",
 };
 
-function buildPrompt(raw, mode, lang, style, inten, hasImage) {
+function buildPrompt(raw, mode, lang, style, inten) {
   const langRule =
     lang === "ms" ? "Write the ENHANCED prompt fully in Bahasa Melayu."
     : lang === "en" ? "Write the ENHANCED prompt fully in English."
@@ -2327,10 +2215,7 @@ function buildPrompt(raw, mode, lang, style, inten, hasImage) {
     const santaiKemas = style === "santai"
       ? " Keep the casual, natural spoken register — tidy does not mean formal."
       : "";
-    const imgKemas = hasImage
-      ? "\n\nA REFERENCE IMAGE is attached. You may weave in concrete details you can see in it (subject, key objects, style) to make the request unambiguous, but still keep the prompt tight and don't invent things that aren't in the image."
-      : "";
-    return `You are a prompt tidier. Your ONLY job is to rewrite the user's raw prompt so it is neat, grammatical, and clearly phrased — WITHOUT changing or adding to its meaning.${imgKemas}
+    return `You are a prompt tidier. Your ONLY job is to rewrite the user's raw prompt so it is neat, grammatical, and clearly phrased — WITHOUT changing or adding to its meaning.
 
 Example of the expected level of change:
 Raw: "Kenapa bumi kita ni bulat?"
@@ -2365,14 +2250,11 @@ Write the ENHANCED prompt itself in that same santai KL register too (while keep
   const formatRule = style === "santai"
     ? "3. Shape the expected response as a flowing conversation (paragraphs, macam berbual) — only suggest lists/tables/code when the task genuinely needs them."
     : "3. Specify a suitable output format (list, table, paragraphs, code, etc.).";
-  const imgBlock = hasImage ? `
-
-A REFERENCE IMAGE is attached to this request. Study it carefully — it shows what the user is referring to. Fold the relevant, concrete visual details you observe (subject, objects, style, colours, composition, mood, text visible, etc.) into the ENHANCED prompt so the target AI has the full context and doesn't have to guess. Only describe what is actually visible; do NOT invent details that aren't there. If the mode is Image-Gen, turn the image into a rich descriptive generation prompt.` : "";
   return `You are a Prompt Enhancement Engine — like Google Translate, but instead of translating between languages, you translate a rough, vague prompt into a clear, specific, well-structured prompt that gets much better results from any LLM.
 
 The user's raw prompt may be in Malay, English, or a casual Malay-English mix (bahasa rojak). Treat mixed language as first-class input.
 
-Enhancement mode: ${MODE_GUIDE[mode]}${santaiBlock}${imgBlock}${memoryBlock()}
+Enhancement mode: ${MODE_GUIDE[mode]}${santaiBlock}${memoryBlock()}
 
 Rules:
 1. Identify the user's core intent and PRESERVE it exactly — never change what they want.
@@ -2515,9 +2397,7 @@ function sparkleBurst() {
 
 async function enhance(attempt = 0) {
   let raw = input.value.trim();
-  if (!raw && !attachedImage) { input.focus(); return; }
-  // allow enhancing from an image alone
-  if (!raw && attachedImage) raw = "Rangka satu prompt yang bagus berdasarkan gambar rujukan ni.";
+  if (!raw) { input.focus(); return; }
   if (attempt === 0) {
     if (enhanceBtn.disabled) return;
     clearTimeout(retryTimer);
@@ -2530,8 +2410,7 @@ async function enhance(attempt = 0) {
   loading.classList.add("show");
 
   try {
-    const body = { prompt: buildPrompt(raw, currentMode, outLangSel.value, styleSel.value, intenSel.value, !!attachedImage) };
-    if (attachedImage) body.image = attachedImage;
+    const body = { prompt: buildPrompt(raw, currentMode, outLangSel.value, styleSel.value, intenSel.value) };
     const res = await fetch(PROXY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

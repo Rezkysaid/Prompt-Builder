@@ -23,7 +23,6 @@ App ada tiga kerja, tukar dengan toggle **✍️ Rangka Prompt │ 📖 Faham Ou
 - 💡 **Hint masa taip** — sambil kau taip, app bagi nudge lembut apa yang kurang (untuk siapa? format hasil?) dan bagitau bila prompt dah cukup detail — ngajar kau jadi lebih pandai prompt. Tak muncul dalam mod "Kemas je"
 - 🧹 **Intensiti: Kemas je** — pilihan untuk hanya susun ayat jadi kemas dan gramatis tanpa AI tambah konteks/format/andaian sendiri; sesuai bila kau nak AI tafsir sendiri niat prompt kau. Terpakai pada enhance utama dan follow-up sekali
 - 💬 **Konteks perbualan** — satu kotak untuk bagitau apa kau tengah bincang dengan AI di tempat lain (ChatGPT/Claude/Gemini) & di mana perbualan tu dah sampai; app suntik konteks ni supaya prompt yang dibuat **berkait & sambung** dengan chat kau di sana, bukan topik baru. Suis on/off, animasi buka/tutup smooth, disimpan dalam browser; tak terpakai dalam mod "Kemas je"
-- 🖼️ **Gambar rujukan** — lampirkan gambar masa rangka prompt (butang "Gambar" di panel input); AI (Gemini 3.5, multimodal) tengok gambar tu dan masukkan butiran visualnya ke dalam prompt supaya tak payah teka. Gambar di-resize kecil dulu (≤1024px) untuk laju; boleh enhance walau kotak teks kosong
 - 🌱 **Seed grower** — malas taip panjang? Bagi frasa pendek/kasar (contoh: "buat duit dengan ai") dan AI tumbuhkan jadi 5 cadangan prompt penuh dengan angle berbeza, siap boleh copy atau terus "Guna ni" untuk power-kan lagi
 - 🕘 **Sejarah prompt + kegemaran** — disimpan dalam browser (localStorage)
 - 📋 Copy, Paste, Swap, Regenerate
@@ -35,4 +34,4 @@ App ada tiga kerja, tukar dengan toggle **✍️ Rangka Prompt │ 📖 Faham Ou
 ## Teknikal
 
 - Satu fail `index.html` sahaja — static site, GitHub Pages friendly
-- AI engine: Gemini melalui proxy Vercel sedia ada (`muhasabah-app.vercel.app/api/gemini`) — API key kekal selamat di server side, tidak terdedah dalam frontend
+- AI engine: DeepSeek V4 (`deepseek-v4-flash`, non-thinking mode) melalui proxy Vercel (`muhasabah-app.vercel.app/api/gemini`) — API key kekal selamat di server side, tidak terdedah dalam frontend. Proxy pulangkan respons dalam bentuk Gemini supaya serasi dengan app lain yang berkongsi endpoint yang sama
