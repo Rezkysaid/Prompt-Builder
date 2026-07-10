@@ -323,6 +323,7 @@
 
   /* ── Mode switch (Rangka Prompt / Faham Output) ── */
   .mode-switch {
+    position: relative;
     display: flex;
     gap: 6px;
     background: var(--surface);
@@ -333,7 +334,18 @@
     width: fit-content;
     box-shadow: var(--shadow-sm);
   }
+  .mode-indicator {
+    position: absolute;
+    left: 0; top: 0;
+    z-index: 0;
+    background: var(--ink);
+    border-radius: 999px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.34s cubic-bezier(.34, 1.3, .5, 1), width 0.34s cubic-bezier(.34, 1.3, .5, 1), height 0.34s ease;
+  }
   .mode-seg {
+    position: relative;
+    z-index: 1;
     display: inline-flex;
     align-items: center;
     gap: 7px;
@@ -347,10 +359,11 @@
     font-weight: 600;
     color: var(--text-tertiary);
     cursor: pointer;
-    transition: all 0.18s ease;
+    transition: color 0.28s ease;
   }
   .mode-seg svg { width: 15px; height: 15px; }
-  .mode-seg.active { background: var(--ink); color: var(--bg); box-shadow: var(--shadow-sm); }
+  .mode-seg.active { color: var(--bg); }
+  @media (prefers-reduced-motion: reduce) { .mode-indicator { transition: none; } }
 
   /* ── Faham Output: paste box + digest ── */
   .faham-panel {
@@ -1201,6 +1214,7 @@
   </div>
 
   <div class="mode-switch" id="modeSwitch">
+    <span class="mode-indicator" id="modeIndicator"></span>
     <button class="mode-seg active" id="segRangka">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
       Rangka Prompt
@@ -1538,13 +1552,26 @@ let lastEnhanced = "";
 let retryTimer = null;
 let typeTimer = null;
 let loadingTimer = null;
+const MOTION_OK = !matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* ── Mode chips ── */
 document.querySelectorAll("#modes .chip").forEach((chip) => {
   chip.addEventListener("click", () => {
+    const wasActive = chip.classList.contains("active");
     document.querySelectorAll("#modes .chip").forEach((c) => c.classList.remove("active"));
     chip.classList.add("active");
     currentMode = chip.dataset.mode;
+    // pop bounce bila pilih genre
+    if (MOTION_OK && !wasActive) {
+      chip.animate(
+        [
+          { transform: "rotate(0.5deg) scale(0.9)" },
+          { transform: "rotate(0.5deg) scale(1.09)" },
+          { transform: "rotate(0.5deg) scale(1)" },
+        ],
+        { duration: 320, easing: "cubic-bezier(.34,1.56,.64,1)" }
+      );
+    }
   });
 });
 
@@ -2875,16 +2902,41 @@ const workRangka = document.getElementById("workRangka");
 const workFaham = document.getElementById("workFaham");
 const segRangka = document.getElementById("segRangka");
 const segFaham = document.getElementById("segFaham");
+const modeSwitch = document.getElementById("modeSwitch");
+const modeIndicator = document.getElementById("modeIndicator");
+
+function moveModeIndicator() {
+  const active = segFaham.classList.contains("active") ? segFaham : segRangka;
+  const sw = modeSwitch.getBoundingClientRect();
+  const r = active.getBoundingClientRect();
+  modeIndicator.style.width = r.width + "px";
+  modeIndicator.style.height = r.height + "px";
+  modeIndicator.style.transform = `translate(${r.left - sw.left}px, ${r.top - sw.top}px)`;
+}
+
 function setMode(faham) {
+  const show = faham ? workFaham : workRangka;
   workFaham.hidden = !faham;
   workRangka.hidden = faham;
   segFaham.classList.toggle("active", faham);
   segRangka.classList.toggle("active", !faham);
+  moveModeIndicator();
   if (!faham) stopSpeak();
+  // kandungan mod baru fade masuk
+  if (MOTION_OK) {
+    show.animate(
+      [{ opacity: 0, transform: "translateY(14px)" }, { opacity: 1, transform: "none" }],
+      { duration: 340, easing: "cubic-bezier(.4,0,.2,1)" }
+    );
+  }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 segRangka.addEventListener("click", () => setMode(false));
 segFaham.addEventListener("click", () => setMode(true));
+// letak indikator kat posisi awal + selaraskan bila saiz berubah
+requestAnimationFrame(moveModeIndicator);
+window.addEventListener("resize", moveModeIndicator);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveModeIndicator);
 
 /* ── Faham Output: ringkaskan jawapan AI luar supaya senang faham ── */
 const fahamInput = document.getElementById("fahamInput");
