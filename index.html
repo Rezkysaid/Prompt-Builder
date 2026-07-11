@@ -780,7 +780,7 @@
   .wiz-preview { font-family: var(--font-hand); font-size: 17.5px; line-height: 1.5; color: var(--text); }
   .wiz-preview .seg.fresh { color: var(--accent); }
 
-  /* ── Anti-overthink: butang unblock + reframe + mod Laju je ── */
+  /* ── Anti-overthink: butang "aku overthinking?" + reframe ── */
   .unblock-row { display: flex; gap: 8px; margin: 0 16px 11px; flex-wrap: wrap; }
   .unblock-btn {
     display: inline-flex; align-items: center; gap: 6px;
@@ -813,38 +813,6 @@
     margin-left: auto; font-family: var(--font-hand); font-size: 15.5px;
     padding: 6px 15px; border-radius: 11px;
     border: 1.5px solid var(--ink); background: var(--ink); color: var(--bg); cursor: pointer;
-  }
-
-  /* Mod Laju je overlay */
-  .flow-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-  .flow-timer { font-family: var(--font-hand); font-size: 20px; color: var(--accent); min-width: 46px; }
-  .flow-timer.low { color: var(--danger); }
-  .flow-track { flex: 1; height: 5px; border-radius: 3px; background: var(--border); overflow: hidden; }
-  .flow-track-fill { display: block; height: 100%; width: 100%; background: var(--accent); transition: width 1s linear; }
-  .flow-hide-toggle {
-    font-family: var(--font-hand); font-size: 14px;
-    padding: 5px 11px; border-radius: 999px;
-    border: 1.5px solid var(--border-strong); background: var(--surface); color: var(--text-secondary); cursor: pointer;
-  }
-  .flow-hide-toggle[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent-border); color: var(--accent); }
-  .flow-box {
-    width: 100%; min-height: 170px; resize: none;
-    font-family: inherit; font-size: 15px; line-height: 1.6;
-    padding: 13px 15px;
-    border: 1.5px solid var(--border-strong); border-radius: 12px 14px 11px 13px;
-    background: var(--surface); color: var(--text);
-    transition: color 0.2s ease, text-shadow 0.2s ease;
-  }
-  .flow-box:focus { outline: none; border-color: var(--accent); }
-  .flow-box.hidden-text { color: transparent; text-shadow: 0 0 8px var(--text-tertiary); caret-color: var(--accent); }
-  .flow-foot { display: flex; align-items: center; gap: 10px; min-height: 22px; margin: 9px 0 14px; }
-  .flow-count { font-family: var(--font-hand); font-size: 15px; color: var(--text-tertiary); }
-  .flow-count.hot { color: var(--accent); }
-  .flow-nudge { font-family: var(--font-hand); font-size: 15px; color: var(--danger); margin-left: auto; }
-  .flow-nudge[hidden] { display: none; }
-  @media (prefers-reduced-motion: no-preference) {
-    .flow-nudge { animation: flowPulse 0.9s ease-in-out infinite; }
-    @keyframes flowPulse { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
   }
 
   /* ── Hint masa taip (dalam panel input, bawah teks) ── */
@@ -1641,10 +1609,6 @@
         <span>kepala serabut? jom aku pandu kau tulis</span>
       </button>
       <div class="unblock-row">
-        <button class="unblock-btn" id="flowOpen" title="Tulis laju tanpa fikir">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/></svg>
-          Laju je
-        </button>
         <button class="unblock-btn ghost" id="overthinkBtn">aku overthinking?</button>
       </div>
       <div class="reframe-card" id="reframeCard" hidden>
@@ -1877,27 +1841,6 @@
       <div class="wiz-preview" id="wizPreview"></div>
     </div>
     <button class="guide-use" id="wizFinish" hidden>guna ni →</button>
-  </div>
-</div>
-
-<div class="guide-overlay" id="flowOverlay" hidden>
-  <div class="guide-card flow-card" role="dialog" aria-modal="true" aria-label="Mod Laju je">
-    <button class="guide-close" id="flowClose" title="Tutup" aria-label="Tutup">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-    </button>
-    <h2 class="guide-title">laju je — jangan fikir, taip je</h2>
-    <p class="guide-sub" id="flowSub">taip apa-apa je sampai masa habis. jangan berhenti, jangan padam — mentah takpe, nanti Power-kan kemas semua.</p>
-    <div class="flow-bar">
-      <span class="flow-timer" id="flowTimer">1:00</span>
-      <span class="flow-track"><span class="flow-track-fill" id="flowTrackFill"></span></span>
-      <button class="flow-hide-toggle" id="flowHideToggle" aria-pressed="false" title="Sorok teks masa taip supaya tak boleh baca balik">sorok teks</button>
-    </div>
-    <textarea class="flow-box" id="flowBox" placeholder="mula je… tak payah betul, tak payah cantik." maxlength="4000"></textarea>
-    <div class="flow-foot">
-      <span class="flow-count" id="flowCount">0 patah</span>
-      <span class="flow-nudge" id="flowNudge" hidden>jangan berhenti — taip apa-apa je!</span>
-    </div>
-    <button class="guide-use" id="flowUse" disabled>guna ni →</button>
   </div>
 </div>
 
@@ -2220,92 +2163,6 @@ document.getElementById("overthinkBtn").addEventListener("click", () => {
 });
 document.getElementById("reframeShuffle").addEventListener("click", () => showReframe(true));
 document.getElementById("reframeGo").addEventListener("click", () => { reframeCard.hidden = true; input.focus(); });
-
-/* ── Mod "Laju je": freewrite bermasa, momentum, sorok teks ── */
-const flowOverlay = document.getElementById("flowOverlay");
-const flowBox = document.getElementById("flowBox");
-const flowTimer = document.getElementById("flowTimer");
-const flowTrackFill = document.getElementById("flowTrackFill");
-const flowCount = document.getElementById("flowCount");
-const flowNudge = document.getElementById("flowNudge");
-const flowSub = document.getElementById("flowSub");
-const flowUse = document.getElementById("flowUse");
-const flowHideToggle = document.getElementById("flowHideToggle");
-const FLOW_SECS = 60;
-let flowLeft = FLOW_SECS, flowTick = null, flowStarted = false, flowDone = false, flowIdleAt = 0, flowIdleChk = null;
-
-function fmtTime(s) { return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
-function countWords(t) { return (t.trim().match(/\S+/g) || []).length; }
-function flowEncourage(n) {
-  if (n === 0) return "0 patah";
-  if (n < 12) return n + " patah — jalan!";
-  if (n < 30) return n + " patah — teruskan, jangan berhenti!";
-  if (n < 60) return n + " patah — laju gila, teruih!";
-  return n + " patah — kau on fire! 🔥";
-}
-function openFlow() {
-  flowLeft = FLOW_SECS; flowStarted = false; flowDone = false;
-  flowBox.value = "";
-  flowTimer.textContent = fmtTime(flowLeft); flowTimer.classList.remove("low");
-  flowTrackFill.style.transition = "none"; flowTrackFill.style.width = "100%";
-  flowCount.textContent = "0 patah"; flowCount.classList.remove("hot");
-  flowNudge.hidden = true;
-  flowUse.disabled = true; flowUse.textContent = "guna ni →";
-  flowSub.textContent = "taip apa-apa je sampai masa habis. jangan berhenti, jangan padam — mentah takpe, nanti Power-kan kemas semua.";
-  flowOverlay.hidden = false; document.body.style.overflow = "hidden";
-  if (MOTION_OK) setTimeout(() => flowBox.focus(), 60);
-}
-function stopFlowTimers() { clearInterval(flowTick); clearInterval(flowIdleChk); flowTick = null; flowIdleChk = null; }
-function closeFlow() { stopFlowTimers(); flowOverlay.hidden = true; document.body.style.overflow = ""; }
-function startFlowClock() {
-  if (flowStarted) return;
-  flowStarted = true;
-  requestAnimationFrame(() => { flowTrackFill.style.transition = "width 1s linear"; flowTrackFill.style.width = ((flowLeft - 1) / FLOW_SECS * 100) + "%"; });
-  flowTick = setInterval(() => {
-    flowLeft--;
-    flowTimer.textContent = fmtTime(Math.max(flowLeft, 0));
-    flowTrackFill.style.width = (Math.max(flowLeft, 0) / FLOW_SECS * 100) + "%";
-    if (flowLeft <= 10) flowTimer.classList.add("low");
-    if (flowLeft <= 0) finishFlowTime();
-  }, 1000);
-  flowIdleChk = setInterval(() => {
-    if (!flowDone && flowStarted && Date.now() - flowIdleAt > 2600) flowNudge.hidden = false;
-  }, 600);
-}
-function finishFlowTime() {
-  stopFlowTimers();
-  flowDone = true;
-  flowNudge.hidden = true;
-  flowBox.classList.remove("hidden-text");
-  flowHideToggle.setAttribute("aria-pressed", "false");
-  flowTimer.textContent = "0:00";
-  flowSub.textContent = "masa habis 🎉 kau berjaya keluarkan idea. tekan \"guna ni\" — nanti Power-kan kemas semua.";
-  flowUse.disabled = !flowBox.value.trim();
-}
-flowBox.addEventListener("input", () => {
-  flowIdleAt = Date.now();
-  flowNudge.hidden = true;
-  if (!flowStarted && flowBox.value.trim()) startFlowClock();
-  const n = countWords(flowBox.value);
-  flowCount.textContent = flowEncourage(n);
-  flowCount.classList.toggle("hot", n >= 12);
-  flowUse.disabled = !flowBox.value.trim();
-});
-flowHideToggle.addEventListener("click", () => {
-  const on = flowBox.classList.toggle("hidden-text");
-  flowHideToggle.setAttribute("aria-pressed", on ? "true" : "false");
-  flowBox.focus();
-});
-flowUse.addEventListener("click", () => {
-  const t = flowBox.value.trim();
-  if (!t) return;
-  closeFlow();
-  fillInputFromGuide(t);
-});
-document.getElementById("flowOpen").addEventListener("click", openFlow);
-document.getElementById("flowClose").addEventListener("click", closeFlow);
-flowOverlay.addEventListener("click", (e) => { if (e.target === flowOverlay) closeFlow(); });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !flowOverlay.hidden) closeFlow(); });
 
 function updateInputAssist() {
   guideOpen.hidden = input.value.trim().length > 0;
