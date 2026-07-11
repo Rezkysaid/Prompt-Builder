@@ -3391,9 +3391,13 @@ function mdToHtml(src) {
       continue;
     }
     if (isOl(line)) {
+      // keep the real starting number so items split by paragraphs still count
+      // up (2, 3, 4…) instead of every stray one-item list resetting to 1
+      const startNum = parseInt((line.match(/^\s*(\d+)[.)]/) || [])[1] || "1", 10);
       const items = [];
       while (i < lines.length && isOl(lines[i])) { items.push(mdInline(escapeHtml(lines[i].replace(/^\s*\d+[.)]\s+/, "")))); i++; }
-      html += "<ol>" + items.map((x) => "<li>" + x + "</li>").join("") + "</ol>";
+      const startAttr = startNum !== 1 ? ' start="' + startNum + '"' : "";
+      html += "<ol" + startAttr + ">" + items.map((x) => "<li>" + x + "</li>").join("") + "</ol>";
       continue;
     }
     if (line.trim() === "") { i++; continue; }
