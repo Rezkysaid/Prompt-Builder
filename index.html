@@ -378,12 +378,12 @@
     padding: 11px 15px;
     font-size: 14.5px;
     line-height: 1.6;
-    white-space: pre-wrap;
     overflow-wrap: break-word;
     user-select: text; -webkit-user-select: text;
   }
   .ruang-bubble.ai {
     align-self: flex-start;
+    max-width: 92%;
     background: var(--surface);
     border: 1.5px solid var(--border);
     border-radius: 15px 16px 15px 5px;
@@ -392,6 +392,7 @@
   }
   .ruang-bubble.user {
     align-self: flex-end;
+    white-space: pre-wrap;
     background: var(--ink);
     color: var(--bg);
     border-radius: 15px 15px 5px 15px;
@@ -399,6 +400,21 @@
   }
   .ruang-bubble.typing { color: var(--text-tertiary); font-style: italic; }
   .ruang-bubble.err { border-color: var(--danger-border); background: var(--danger-soft); color: var(--danger); }
+  /* markdown dalam balasan AI */
+  .ruang-bubble.ai p { margin: 0 0 8px; }
+  .ruang-bubble.ai > *:last-child { margin-bottom: 0; }
+  .ruang-bubble.ai ul, .ruang-bubble.ai ol { margin: 4px 0 9px; padding-left: 20px; }
+  .ruang-bubble.ai li { margin: 3px 0; }
+  .ruang-bubble.ai .md-h { font-weight: 700; margin: 8px 0 4px; }
+  .ruang-bubble.ai strong { font-weight: 700; }
+  .ruang-bubble.ai a { color: var(--accent); text-decoration: underline; }
+  .ruang-bubble.ai code { background: var(--border); padding: 1px 5px; border-radius: 5px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.88em; }
+  .ruang-bubble.ai pre { background: var(--border); padding: 10px 12px; border-radius: 9px; overflow-x: auto; margin: 7px 0; }
+  .ruang-bubble.ai pre code { background: none; padding: 0; }
+  .ruang-bubble.ai .md-tbl { overflow-x: auto; margin: 7px 0; }
+  .ruang-bubble.ai table { border-collapse: collapse; font-size: 13px; }
+  .ruang-bubble.ai th, .ruang-bubble.ai td { border: 1.5px solid var(--border-strong); padding: 6px 10px; text-align: left; vertical-align: top; }
+  .ruang-bubble.ai th { background: var(--accent-soft); font-weight: 700; white-space: nowrap; }
   .ruang-input-row { display: flex; gap: 8px; align-items: stretch; }
   #ruangInput {
     flex: 1; min-width: 0;
@@ -3320,10 +3336,71 @@ function saveRuang() { try { localStorage.setItem(RUANG_KEY, JSON.stringify(ruan
 function ruangBubbleEl(role, text) {
   const d = document.createElement("div");
   d.className = "ruang-bubble " + role;
-  d.textContent = text;
+  if (role === "ai") d.innerHTML = mdToHtml(text);
+  else d.textContent = text;
   ruangLog.appendChild(d);
   d.scrollIntoView({ behavior: "smooth", block: "nearest" });
   return d;
+}
+/* Mini-markdown → HTML untuk balasan AI (jadual, bold, senarai, kod). Escape
+   dulu supaya selamat, lepas tu baru format. */
+function mdInline(s) {
+  return s
+    .replace(/`([^`]+)`/g, (m, c) => "<code>" + c + "</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>")
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+}
+function mdCell(s) { return mdInline(escapeHtml(s.trim())); }
+function mdToHtml(src) {
+  const lines = String(src).replace(/\r\n/g, "\n").split("\n");
+  const isSep = (l) => /\|/.test(l) && /^[\s|:\-]+$/.test(l) && /-/.test(l);
+  const isUl = (l) => /^\s*[-*+]\s+/.test(l);
+  const isOl = (l) => /^\s*\d+[.)]\s+/.test(l);
+  const isTblHead = (l, nx) => l.includes("|") && nx != null && isSep(nx);
+  let html = "", i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (/^\s*```/.test(line)) {
+      const code = []; i++;
+      while (i < lines.length && !/^\s*```/.test(lines[i])) { code.push(lines[i]); i++; }
+      i++;
+      html += "<pre><code>" + escapeHtml(code.join("\n")) + "</code></pre>";
+      continue;
+    }
+    if (isTblHead(line, lines[i + 1])) {
+      const row = (l) => l.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(mdCell);
+      const header = row(line);
+      i += 2;
+      const body = [];
+      while (i < lines.length && lines[i].includes("|") && lines[i].trim() !== "") { body.push(row(lines[i])); i++; }
+      html += '<div class="md-tbl"><table><thead><tr>' + header.map((h) => "<th>" + h + "</th>").join("") +
+        "</tr></thead><tbody>" + body.map((r) => "<tr>" + r.map((c) => "<td>" + c + "</td>").join("") + "</tr>").join("") +
+        "</tbody></table></div>";
+      continue;
+    }
+    const h = line.match(/^\s*(#{1,6})\s+(.*)$/);
+    if (h) { html += '<div class="md-h">' + mdInline(escapeHtml(h[2])) + "</div>"; i++; continue; }
+    if (isUl(line)) {
+      const items = [];
+      while (i < lines.length && isUl(lines[i])) { items.push(mdInline(escapeHtml(lines[i].replace(/^\s*[-*+]\s+/, "")))); i++; }
+      html += "<ul>" + items.map((x) => "<li>" + x + "</li>").join("") + "</ul>";
+      continue;
+    }
+    if (isOl(line)) {
+      const items = [];
+      while (i < lines.length && isOl(lines[i])) { items.push(mdInline(escapeHtml(lines[i].replace(/^\s*\d+[.)]\s+/, "")))); i++; }
+      html += "<ol>" + items.map((x) => "<li>" + x + "</li>").join("") + "</ol>";
+      continue;
+    }
+    if (line.trim() === "") { i++; continue; }
+    const para = [];
+    while (i < lines.length && lines[i].trim() !== "" && !/^\s*```/.test(lines[i]) && !isUl(lines[i]) && !isOl(lines[i]) && !/^\s*#{1,6}\s+/.test(lines[i]) && !isTblHead(lines[i], lines[i + 1])) {
+      para.push(mdInline(escapeHtml(lines[i]))); i++;
+    }
+    html += "<p>" + para.join("<br>") + "</p>";
+  }
+  return html;
 }
 function renderRuang() {
   ruangLog.innerHTML = "";
@@ -3364,7 +3441,7 @@ async function sendRuang() {
     const out = (data?.candidates?.[0]?.content?.parts?.[0]?.text || "").trim();
     if (!out) throw new Error("kosong");
     typing.classList.remove("typing");
-    typing.textContent = out;
+    typing.innerHTML = mdToHtml(out);
     ruangConvo.push({ role: "ai", text: out });
     saveRuang();
   } catch (e) {
