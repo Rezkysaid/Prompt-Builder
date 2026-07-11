@@ -360,15 +360,21 @@
   }
   .mode-seg svg { width: 18px; height: 18px; flex-shrink: 0; }
   .seg-label { font-family: var(--font-hand); font-size: 16px; line-height: 1; white-space: nowrap; }
-  @media (max-width: 360px) { .mode-seg { padding: 10px 13px; } .seg-label { font-size: 15px; } }
+  /* 4 segments: tighten on narrow screens, drop labels to icon-only when very tight */
+  @media (max-width: 460px) { .mode-switch { gap: 3px; padding: 3px; } .mode-seg { gap: 5px; padding: 9px 11px; } .seg-label { font-size: 14px; } }
+  @media (max-width: 380px) { .mode-seg { padding: 9px 12px; } .seg-label { display: none; } }
   .mode-seg.active { color: var(--bg); }
   @media (prefers-reduced-motion: reduce) { .mode-indicator { transition: none; } }
 
-  /* ── Coach Socratic ── */
+  /* ── Coach (swipe deck) ── */
   #workCoach { max-width: 720px; margin: 0 auto; }
-  .coach-log { display: flex; flex-direction: column; gap: 11px; margin-bottom: 14px; }
-  .coach-bubble {
-    max-width: 82%;
+
+  /* ── Ruang AI: chat am macam ChatGPT/Claude ── */
+  #workRuang { max-width: 720px; margin: 0 auto; }
+  .ruang-log { display: flex; flex-direction: column; gap: 11px; margin-bottom: 14px; min-height: 60px; }
+  .ruang-empty { font-family: var(--font-hand); font-size: 17px; color: var(--text-tertiary); text-align: center; padding: 26px 12px; }
+  .ruang-bubble {
+    max-width: 84%;
     padding: 11px 15px;
     font-size: 14.5px;
     line-height: 1.6;
@@ -376,7 +382,7 @@
     overflow-wrap: break-word;
     user-select: text; -webkit-user-select: text;
   }
-  .coach-bubble.coach {
+  .ruang-bubble.ai {
     align-self: flex-start;
     background: var(--surface);
     border: 1.5px solid var(--border);
@@ -384,17 +390,17 @@
     box-shadow: var(--shadow-sm);
     transform: rotate(-0.3deg);
   }
-  .coach-bubble.user {
+  .ruang-bubble.user {
     align-self: flex-end;
     background: var(--ink);
     color: var(--bg);
     border-radius: 15px 15px 5px 15px;
     transform: rotate(0.3deg);
   }
-  .coach-bubble.typing { color: var(--text-tertiary); font-style: italic; }
-  .coach-bubble.err { border-color: var(--danger-border); background: var(--danger-soft); color: var(--danger); }
-  .coach-input-row { margin-bottom: 12px; }
-  #coachInput {
+  .ruang-bubble.typing { color: var(--text-tertiary); font-style: italic; }
+  .ruang-bubble.err { border-color: var(--danger-border); background: var(--danger-soft); color: var(--danger); }
+  .ruang-input-row { display: flex; gap: 8px; align-items: stretch; }
+  #ruangInput {
     flex: 1; min-width: 0;
     border: 1.5px solid var(--border-strong);
     border-radius: 12px 13px 12px 13px;
@@ -404,10 +410,10 @@
     resize: none; min-height: 46px; max-height: 160px; overflow: hidden;
     outline: none;
   }
-  #coachInput:focus { border-color: var(--accent); }
-  .coach-controls { display: flex; flex-wrap: wrap; gap: 8px; }
-  .coach-serabut { border-color: var(--accent-border); color: var(--accent); }
-  .coach-serabut:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  #ruangInput:focus { border-color: var(--accent); }
+  .ruang-foot { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .ruang-err { font-size: 13px; color: var(--danger); }
+  .ruang-err[hidden] { display: none; }
   .coach-rest {
     display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
     background: var(--accent-soft);
@@ -1497,6 +1503,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
       <span class="seg-label">ilham</span>
     </button>
+    <button class="mode-seg" id="segRuang" title="Ruang AI — tanya apa-apa" aria-label="Ruang AI — tanya apa-apa">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <span class="seg-label">ruang</span>
+    </button>
   </div>
 
   <div id="workRangka">
@@ -1813,6 +1823,22 @@
         <div class="coach-hist-head"><h3>idea kau suka</h3></div>
         <div class="coach-ideas" id="swipeSavedList"></div>
       </div>
+    </div>
+  </div>
+
+  <div id="workRuang" hidden>
+    <div class="idea-head">
+      <h2>ruang AI — tanya apa-apa je</h2>
+      <span class="idea-note">macam ChatGPT/Claude, tak berkait prompt. borak, tanya, minta tolong</span>
+    </div>
+    <div class="ruang-log" id="ruangLog"></div>
+    <div class="ruang-input-row">
+      <textarea id="ruangInput" rows="1" placeholder="tanya apa-apa… (cth: terangkan black hole simple-simple)"></textarea>
+      <button class="chat-send" id="ruangSend">Hantar</button>
+    </div>
+    <div class="ruang-foot">
+      <button class="clear-chat" id="ruangClear">chat baru</button>
+      <span class="ruang-err" id="ruangErr" hidden></span>
     </div>
   </div>
 
@@ -3227,15 +3253,18 @@ document.addEventListener("touchend", (e) => {
 const workRangka = document.getElementById("workRangka");
 const workFaham = document.getElementById("workFaham");
 const workCoach = document.getElementById("workCoach");
+const workRuang = document.getElementById("workRuang");
 const segRangka = document.getElementById("segRangka");
 const segFaham = document.getElementById("segFaham");
 const segCoach = document.getElementById("segCoach");
+const segRuang = document.getElementById("segRuang");
 const modeSwitch = document.getElementById("modeSwitch");
 const modeIndicator = document.getElementById("modeIndicator");
 const MODES = {
   rangka: { work: workRangka, seg: segRangka },
   faham: { work: workFaham, seg: segFaham },
   coach: { work: workCoach, seg: segCoach },
+  ruang: { work: workRuang, seg: segRuang },
 };
 
 function moveModeIndicator() {
@@ -3266,6 +3295,7 @@ function setMode(name) {
 segRangka.addEventListener("click", () => setMode("rangka"));
 segFaham.addEventListener("click", () => setMode("faham"));
 segCoach.addEventListener("click", () => setMode("coach"));
+segRuang.addEventListener("click", () => setMode("ruang"));
 requestAnimationFrame(moveModeIndicator);
 window.addEventListener("resize", moveModeIndicator);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveModeIndicator);
@@ -3274,6 +3304,93 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveModeIn
 function onEnterCoach() {
   if (!swipeStarted) startSwipe();
 }
+
+/* ── Ruang AI: chat am (macam ChatGPT/Claude), tak berkait prompt ── */
+const RUANG_KEY = "promptcraft_ruang_chat";
+const ruangLog = document.getElementById("ruangLog");
+const ruangInput = document.getElementById("ruangInput");
+const ruangSend = document.getElementById("ruangSend");
+const ruangClear = document.getElementById("ruangClear");
+const ruangErr = document.getElementById("ruangErr");
+let ruangConvo = [];
+let ruangBusy = false;
+
+function loadRuang() { try { return JSON.parse(localStorage.getItem(RUANG_KEY)) || []; } catch { return []; } }
+function saveRuang() { try { localStorage.setItem(RUANG_KEY, JSON.stringify(ruangConvo.slice(-40))); } catch {} }
+function ruangBubbleEl(role, text) {
+  const d = document.createElement("div");
+  d.className = "ruang-bubble " + role;
+  d.textContent = text;
+  ruangLog.appendChild(d);
+  d.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  return d;
+}
+function renderRuang() {
+  ruangLog.innerHTML = "";
+  if (!ruangConvo.length) {
+    const e = document.createElement("div");
+    e.className = "ruang-empty";
+    e.textContent = "takde apa lagi — tanya je apa-apa kat bawah.";
+    ruangLog.appendChild(e);
+    return;
+  }
+  ruangConvo.forEach((m) => ruangBubbleEl(m.role, m.text));
+}
+function buildRuangPrompt() {
+  const hist = ruangConvo.slice(-16).map((m) => (m.role === "ai" ? "AI" : "User") + ": " + m.text).join("\n");
+  return `Kau AI pembantu am dalam app PromptCraft — macam ChatGPT atau Claude. Jawab soalan atau permintaan pengguna dengan membantu, jelas, jujur & tepat. Ikut bahasa pengguna (kalau dia guna Bahasa Melayu santai, balas BM santai; kalau English, balas English). Guna senarai atau langkah kalau sesuai, ringkas bila boleh, panjang bila perlu. Kalau kau tak pasti atau tak tau, cakap terus — jangan reka.
+
+Perbualan setakat ni:
+${hist}
+
+Balas untuk giliran TERAKHIR user. Bagi jawapan sahaja, jangan letak "AI:" di depan.`;
+}
+async function sendRuang() {
+  const text = ruangInput.value.trim();
+  if (!text || ruangBusy) return;
+  ruangBusy = true; ruangSend.disabled = true;
+  ruangErr.hidden = true;
+  ruangInput.value = ""; ruangInput.style.height = "";
+  if (!ruangConvo.length) ruangLog.innerHTML = ""; // buang placeholder
+  ruangConvo.push({ role: "user", text });
+  const userBubble = ruangBubbleEl("user", text);
+  saveRuang();
+  const typing = ruangBubbleEl("ai", "…");
+  typing.classList.add("typing");
+  try {
+    const res = await fetch(PROXY_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: buildRuangPrompt() }) });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || data.error);
+    const out = (data?.candidates?.[0]?.content?.parts?.[0]?.text || "").trim();
+    if (!out) throw new Error("kosong");
+    typing.classList.remove("typing");
+    typing.textContent = out;
+    ruangConvo.push({ role: "ai", text: out });
+    saveRuang();
+  } catch (e) {
+    // rawat sebagai "tak terhantar": buang giliran user tu, pulihkan teks
+    typing.remove();
+    userBubble.remove();
+    ruangConvo.pop();
+    saveRuang();
+    if (!ruangConvo.length) renderRuang();
+    ruangInput.value = text;
+    const msg = e && e.message ? String(e.message) : String(e);
+    const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|high demand/i.test(msg);
+    ruangErr.textContent = isQuota ? "ramai orang tengah guna — tunggu sekejap, cuba lagi." : "alamak, tak dapat sambung — cuba hantar balik.";
+    ruangErr.hidden = false;
+  } finally {
+    ruangBusy = false; ruangSend.disabled = false;
+  }
+}
+ruangSend.addEventListener("click", sendRuang);
+ruangInput.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendRuang(); } });
+ruangInput.addEventListener("input", () => { ruangInput.style.height = "auto"; ruangInput.style.height = Math.min(ruangInput.scrollHeight, 160) + "px"; });
+ruangClear.addEventListener("click", () => {
+  if (!ruangConvo.length || confirm("Buang chat ni & mula baru?")) { ruangConvo = []; saveRuang(); renderRuang(); ruangErr.hidden = true; }
+});
+ruangConvo = loadRuang();
+renderRuang();
 
 /* ── Faham Output: ringkaskan jawapan AI luar supaya senang faham ── */
 const fahamInput = document.getElementById("fahamInput");
