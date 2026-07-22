@@ -418,13 +418,13 @@
   .ruang-input-row { display: flex; gap: 8px; align-items: flex-end; }
   .ruang-input-row .chat-send { flex: none; }
   #ruangInput, #sembangInput {
-    flex: 1; min-width: 0;
+    flex: 1 1 auto; min-width: 0;
     border: 1.5px solid var(--border-strong);
     border-radius: 12px 13px 12px 13px;
-    padding: 13px 15px;
-    font-family: inherit; font-size: 14.5px; line-height: 1.55;
+    padding: 12px 14px;
+    font-family: inherit; font-size: 14.5px; line-height: 1.5;
     color: var(--text); background: var(--surface);
-    resize: none; min-height: 80px; max-height: 200px; overflow: hidden;
+    resize: none; min-height: 50px; max-height: 160px; overflow-y: auto;
     outline: none;
   }
   #ruangInput:focus, #sembangInput:focus { border-color: var(--accent); }
@@ -1743,7 +1743,7 @@
     <div class="ruang-log" id="sembangLog"></div>
 
     <div class="sembang-starts" id="sembangStarts">
-      <p class="sembang-helper">tak perlu susun, tak perlu jadikan arahan, tak perlu perfect. tulis macam kau tengah fikir.</p>
+      <p class="sembang-helper">ayat tak lengkap pun boleh — tak payah perfect.</p>
       <div class="sembang-chips" id="sembangStartChips"></div>
     </div>
 
@@ -1761,7 +1761,7 @@
     </div>
 
     <div class="ruang-input-row">
-      <textarea id="sembangInput" rows="2" placeholder="Tulis apa saja yang ada dalam kepala. Ayat tak lengkap pun boleh."></textarea>
+      <textarea id="sembangInput" rows="1" placeholder="tulis apa saja…"></textarea>
       <button class="chat-send" id="sembangSend">Hantar</button>
     </div>
     <div class="ruang-foot sembang-foot">
@@ -2192,7 +2192,7 @@ async function sendRuang() {
 }
 ruangSend.addEventListener("click", sendRuang);
 ruangInput.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendRuang(); } });
-ruangInput.addEventListener("input", () => { ruangInput.style.height = "auto"; ruangInput.style.height = Math.min(ruangInput.scrollHeight, 200) + "px"; });
+ruangInput.addEventListener("input", () => { ruangInput.style.height = "auto"; ruangInput.style.height = Math.min(ruangInput.scrollHeight, 160) + "px"; });
 ruangClear.addEventListener("click", () => {
   if (!ruangConvo.length || confirm("Buang chat ni & mula baru?")) { ruangConvo = []; saveRuang(); renderRuang(); ruangErr.hidden = true; }
 });
@@ -2403,7 +2403,7 @@ function saveIdea(e) {
 }
 document.getElementById("sembangSend").addEventListener("click", () => sendSembang(sbInput.value));
 sbInput.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendSembang(sbInput.value); } });
-sbInput.addEventListener("input", () => { sbInput.style.height = "auto"; sbInput.style.height = Math.min(sbInput.scrollHeight, 200) + "px"; });
+sbInput.addEventListener("input", () => { sbInput.style.height = "auto"; sbInput.style.height = Math.min(sbInput.scrollHeight, 160) + "px"; });
 document.getElementById("sembangEnough").addEventListener("click", () => {
   if (sbBusy) return;
   if (!sbConvo.some((m) => m.role === "user")) { sbInput.focus(); return; }
