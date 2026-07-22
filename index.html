@@ -372,6 +372,7 @@
   /* ── Ruang AI: chat am macam ChatGPT/Claude ── */
   #workRuang { max-width: 720px; margin: 0 auto; }
   .ruang-log { display: flex; flex-direction: column; gap: 11px; margin-bottom: 14px; min-height: 60px; }
+  #sembangLog:empty { min-height: 0; margin-bottom: 0; }
   .ruang-empty { font-family: var(--font-hand); font-size: 17px; color: var(--text-tertiary); text-align: center; padding: 26px 12px; }
   .ruang-bubble {
     max-width: 84%;
@@ -435,6 +436,7 @@
   /* ── Sembang Dulu: mod discovery (cari arah dulu) ── */
   #workSembang { max-width: 720px; margin: 0 auto; }
   .sembang-starts[hidden], .sembang-actions[hidden], .sembang-prompt[hidden] { display: none; }
+  .sembang-starts { margin-bottom: 15px; }
   .sembang-helper { font-size: 13.5px; color: var(--text-tertiary); line-height: 1.55; margin-bottom: 11px; }
   .sembang-chips, .sembang-qr { display: flex; flex-wrap: wrap; gap: 7px; }
   .sembang-qr { margin: 2px 0 4px; }
@@ -1231,19 +1233,18 @@
   }
   #chatInput:focus { border-color: var(--accent); }
   .chat-send {
+    flex: none;
+    width: 48px; height: 48px;
+    display: inline-flex; align-items: center; justify-content: center;
     border: none;
     background: var(--ink);
     color: var(--bg);
-    font-family: var(--font-display);
-    font-style: italic;
-    font-weight: 600;
-    font-size: 14.5px;
-    border-radius: 11px 13px 11px 12px;
-    padding: 12px 20px;
+    border-radius: 12px 13px 12px 12px;
     cursor: pointer;
     box-shadow: 0 3px 0 #4a4230;
-    transition: all 0.12s ease;
+    transition: background 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
   }
+  .chat-send svg { width: 20px; height: 20px; }
   .chat-send:hover:not(:disabled) { background: #000; }
   .chat-send:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #4a4230; }
   .chat-send:disabled { opacity: 0.55; cursor: default; }
@@ -1713,8 +1714,10 @@
     </div>
     <div class="ruang-log" id="ruangLog"></div>
     <div class="ruang-input-row">
-      <textarea id="ruangInput" rows="2" placeholder="tanya apa-apa…"></textarea>
-      <button class="chat-send" id="ruangSend">Hantar</button>
+      <textarea id="ruangInput" rows="1" placeholder="tanya apa-apa…"></textarea>
+      <button class="chat-send" id="ruangSend" aria-label="Hantar" title="Hantar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+      </button>
     </div>
     <div class="ruang-foot">
       <button class="mini-btn" id="ruangClear">
@@ -1762,7 +1765,9 @@
 
     <div class="ruang-input-row">
       <textarea id="sembangInput" rows="1" placeholder="tulis apa saja…"></textarea>
-      <button class="chat-send" id="sembangSend">Hantar</button>
+      <button class="chat-send" id="sembangSend" aria-label="Hantar" title="Hantar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+      </button>
     </div>
     <div class="ruang-foot sembang-foot">
       <button class="mini-btn" id="sembangEnough">cukup, terus bantu aku</button>
