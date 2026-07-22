@@ -415,8 +415,9 @@
   .ruang-bubble.ai table { border-collapse: collapse; font-size: 13px; }
   .ruang-bubble.ai th, .ruang-bubble.ai td { border: 1.5px solid var(--border-strong); padding: 6px 10px; text-align: left; vertical-align: top; }
   .ruang-bubble.ai th { background: var(--accent-soft); font-weight: 700; white-space: nowrap; }
-  .ruang-input-row { display: flex; gap: 8px; align-items: stretch; }
-  #ruangInput {
+  .ruang-input-row { display: flex; gap: 8px; align-items: flex-end; }
+  .ruang-input-row .chat-send { flex: none; }
+  #ruangInput, #sembangInput {
     flex: 1; min-width: 0;
     border: 1.5px solid var(--border-strong);
     border-radius: 12px 13px 12px 13px;
@@ -426,7 +427,7 @@
     resize: none; min-height: 80px; max-height: 200px; overflow: hidden;
     outline: none;
   }
-  #ruangInput:focus { border-color: var(--accent); }
+  #ruangInput:focus, #sembangInput:focus { border-color: var(--accent); }
   .ruang-foot { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
   .ruang-err { font-size: 13px; color: var(--danger); }
   .ruang-err[hidden] { display: none; }
