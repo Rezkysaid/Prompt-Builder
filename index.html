@@ -360,9 +360,9 @@
   }
   .mode-seg svg { width: 18px; height: 18px; flex-shrink: 0; }
   .seg-label { font-family: var(--font-hand); font-size: 16px; line-height: 1; white-space: nowrap; }
-  /* 5 segments: tighten as it narrows, drop labels to icon-only when tight */
-  @media (max-width: 620px) { .mode-switch { gap: 3px; padding: 3px; } .mode-seg { gap: 5px; padding: 9px 11px; } .seg-label { font-size: 14px; } }
-  @media (max-width: 520px) { .mode-seg { padding: 10px 13px; } .seg-label { display: none; } }
+  /* 3 segments: keep labels; only tighten a touch on very narrow screens */
+  @media (max-width: 380px) { .mode-switch { gap: 4px; padding: 4px; } .mode-seg { gap: 6px; padding: 10px 14px; } .seg-label { font-size: 15px; } }
+  @media (max-width: 320px) { .seg-label { display: none; } }
   .mode-seg.active { color: var(--bg); }
   @media (prefers-reduced-motion: reduce) { .mode-indicator { transition: none; } }
 
@@ -1573,14 +1573,6 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
       <span class="seg-label">ilham</span>
     </button>
-    <button class="mode-seg" id="segRuang" title="Ruang AI — tanya apa-apa" aria-label="Ruang AI — tanya apa-apa">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      <span class="seg-label">ruang</span>
-    </button>
-    <button class="mode-seg" id="segSembang" title="Sembang Dulu — cari arah dulu" aria-label="Sembang Dulu — cari arah dulu">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 00-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0012 2z"/></svg>
-      <span class="seg-label">sembang</span>
-    </button>
   </div>
 
   <div id="workRangka">
@@ -1707,77 +1699,6 @@
     </div>
   </div>
 
-  <div id="workRuang" hidden>
-    <div class="idea-head">
-      <h2>ruang AI — tanya apa-apa je</h2>
-      <span class="idea-note">macam ChatGPT/Claude, tak berkait prompt. borak, tanya, minta tolong</span>
-    </div>
-    <div class="ruang-log" id="ruangLog"></div>
-    <div class="ruang-input-row">
-      <textarea id="ruangInput" rows="1" placeholder="tanya apa-apa…"></textarea>
-      <button class="chat-send" id="ruangSend" aria-label="Hantar" title="Hantar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-      </button>
-    </div>
-    <div class="ruang-foot">
-      <button class="mini-btn" id="ruangClear">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
-        chat baru
-      </button>
-      <span class="ruang-err" id="ruangErr" hidden></span>
-    </div>
-  </div>
-
-  <div id="workSembang" hidden>
-    <div class="idea-head">
-      <h2>sembang dulu</h2>
-      <span class="idea-note">belum pasti apa nak minta? tulis apa saja yang ada dalam kepala.</span>
-    </div>
-
-    <div class="brief-card" id="briefCard" hidden>
-      <button class="brief-head" id="briefToggle" aria-expanded="true">
-        <span class="brief-title">arah yang sedang terbentuk</span>
-        <span class="brief-status kabur" id="briefStatus">masih kabur</span>
-        <svg class="brief-chevron" id="briefChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <div class="brief-body" id="briefBody"></div>
-    </div>
-
-    <div class="ruang-log" id="sembangLog"></div>
-
-    <div class="sembang-starts" id="sembangStarts">
-      <p class="sembang-helper">ayat tak lengkap pun boleh — tak payah perfect.</p>
-      <div class="sembang-chips" id="sembangStartChips"></div>
-    </div>
-
-    <div class="sembang-actions" id="sembangActions" hidden></div>
-
-    <div class="sembang-prompt" id="sembangPrompt" hidden>
-      <span class="sembang-prompt-label">prompt siap — copy & paste kat AI tool kau:</span>
-      <div class="sembang-prompt-out" id="sembangPromptOut"></div>
-      <div class="sembang-prompt-actions">
-        <button class="mini-btn" id="sembangPromptCopy">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy
-        </button>
-        <button class="mini-btn" id="sembangPromptClose">tutup</button>
-      </div>
-    </div>
-
-    <div class="ruang-input-row">
-      <textarea id="sembangInput" rows="1" placeholder="tulis apa saja…"></textarea>
-      <button class="chat-send" id="sembangSend" aria-label="Hantar" title="Hantar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-      </button>
-    </div>
-    <div class="ruang-foot sembang-foot">
-      <button class="mini-btn" id="sembangEnough">cukup, terus bantu aku</button>
-      <button class="mini-btn" id="sembangClear">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v6h6"/><path d="M3.5 13a9 9 0 102.5-8.5L3 8"/></svg>
-        sembang baru
-      </button>
-      <span class="ruang-err" id="sembangErr" hidden></span>
-    </div>
-  </div>
 
 </div>
 
@@ -1995,21 +1916,15 @@ document.addEventListener("touchend", (e) => {
 const workRangka = document.getElementById("workRangka");
 const workFaham = document.getElementById("workFaham");
 const workCoach = document.getElementById("workCoach");
-const workRuang = document.getElementById("workRuang");
-const workSembang = document.getElementById("workSembang");
 const segRangka = document.getElementById("segRangka");
 const segFaham = document.getElementById("segFaham");
 const segCoach = document.getElementById("segCoach");
-const segRuang = document.getElementById("segRuang");
-const segSembang = document.getElementById("segSembang");
 const modeSwitch = document.getElementById("modeSwitch");
 const modeIndicator = document.getElementById("modeIndicator");
 const MODES = {
   rangka: { work: workRangka, seg: segRangka },
   faham: { work: workFaham, seg: segFaham },
   coach: { work: workCoach, seg: segCoach },
-  ruang: { work: workRuang, seg: segRuang },
-  sembang: { work: workSembang, seg: segSembang },
 };
 
 function moveModeIndicator() {
@@ -2029,7 +1944,6 @@ function setMode(name) {
   moveModeIndicator();
   if (name !== "faham") stopSpeak();
   if (name === "coach") onEnterCoach();
-  if (name === "sembang") onEnterSembang();
   if (MOTION_OK) {
     MODES[name].work.animate(
       [{ opacity: 0, transform: "translateY(14px)" }, { opacity: 1, transform: "none" }],
@@ -2041,8 +1955,6 @@ function setMode(name) {
 segRangka.addEventListener("click", () => setMode("rangka"));
 segFaham.addEventListener("click", () => setMode("faham"));
 segCoach.addEventListener("click", () => setMode("coach"));
-segRuang.addEventListener("click", () => setMode("ruang"));
-segSembang.addEventListener("click", () => setMode("sembang"));
 requestAnimationFrame(moveModeIndicator);
 window.addEventListener("resize", moveModeIndicator);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveModeIndicator);
@@ -2051,382 +1963,6 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveModeIn
 function onEnterCoach() {
   if (!swipeStarted) startSwipe();
 }
-
-/* ── Ruang AI: chat am (macam ChatGPT/Claude), tak berkait prompt ── */
-const RUANG_KEY = "promptcraft_ruang_chat";
-const ruangLog = document.getElementById("ruangLog");
-const ruangInput = document.getElementById("ruangInput");
-const ruangSend = document.getElementById("ruangSend");
-const ruangClear = document.getElementById("ruangClear");
-const ruangErr = document.getElementById("ruangErr");
-let ruangConvo = [];
-let ruangBusy = false;
-
-function loadRuang() { try { return JSON.parse(localStorage.getItem(RUANG_KEY)) || []; } catch { return []; } }
-function saveRuang() { try { localStorage.setItem(RUANG_KEY, JSON.stringify(ruangConvo.slice(-40))); } catch {} }
-function ruangBubbleEl(role, text) {
-  const d = document.createElement("div");
-  d.className = "ruang-bubble " + role;
-  if (role === "ai") d.innerHTML = mdToHtml(text);
-  else d.textContent = text;
-  ruangLog.appendChild(d);
-  d.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  return d;
-}
-/* Mini-markdown → HTML untuk balasan AI (jadual, bold, senarai, kod). Escape
-   dulu supaya selamat, lepas tu baru format. */
-function mdInline(s) {
-  return s
-    .replace(/`([^`]+)`/g, (m, c) => "<code>" + c + "</code>")
-    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
-    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>")
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-}
-function mdCell(s) { return mdInline(escapeHtml(s.trim())); }
-function mdToHtml(src) {
-  const lines = String(src).replace(/\r\n/g, "\n").split("\n");
-  const isSep = (l) => /\|/.test(l) && /^[\s|:\-]+$/.test(l) && /-/.test(l);
-  const isUl = (l) => /^\s*[-*+]\s+/.test(l);
-  const isOl = (l) => /^\s*\d+[.)]\s+/.test(l);
-  const isTblHead = (l, nx) => l.includes("|") && nx != null && isSep(nx);
-  let html = "", i = 0;
-  while (i < lines.length) {
-    const line = lines[i];
-    if (/^\s*```/.test(line)) {
-      const code = []; i++;
-      while (i < lines.length && !/^\s*```/.test(lines[i])) { code.push(lines[i]); i++; }
-      i++;
-      html += "<pre><code>" + escapeHtml(code.join("\n")) + "</code></pre>";
-      continue;
-    }
-    if (isTblHead(line, lines[i + 1])) {
-      const row = (l) => l.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(mdCell);
-      const header = row(line);
-      i += 2;
-      const body = [];
-      while (i < lines.length && lines[i].includes("|") && lines[i].trim() !== "") { body.push(row(lines[i])); i++; }
-      html += '<div class="md-tbl"><table><thead><tr>' + header.map((h) => "<th>" + h + "</th>").join("") +
-        "</tr></thead><tbody>" + body.map((r) => "<tr>" + r.map((c) => "<td>" + c + "</td>").join("") + "</tr>").join("") +
-        "</tbody></table></div>";
-      continue;
-    }
-    const h = line.match(/^\s*(#{1,6})\s+(.*)$/);
-    if (h) { html += '<div class="md-h">' + mdInline(escapeHtml(h[2])) + "</div>"; i++; continue; }
-    if (isUl(line)) {
-      const items = [];
-      while (i < lines.length && isUl(lines[i])) { items.push(mdInline(escapeHtml(lines[i].replace(/^\s*[-*+]\s+/, "")))); i++; }
-      html += "<ul>" + items.map((x) => "<li>" + x + "</li>").join("") + "</ul>";
-      continue;
-    }
-    if (isOl(line)) {
-      // keep the real starting number so items split by paragraphs still count
-      // up (2, 3, 4…) instead of every stray one-item list resetting to 1
-      const startNum = parseInt((line.match(/^\s*(\d+)[.)]/) || [])[1] || "1", 10);
-      const items = [];
-      while (i < lines.length && isOl(lines[i])) { items.push(mdInline(escapeHtml(lines[i].replace(/^\s*\d+[.)]\s+/, "")))); i++; }
-      const startAttr = startNum !== 1 ? ' start="' + startNum + '"' : "";
-      html += "<ol" + startAttr + ">" + items.map((x) => "<li>" + x + "</li>").join("") + "</ol>";
-      continue;
-    }
-    if (line.trim() === "") { i++; continue; }
-    const para = [];
-    while (i < lines.length && lines[i].trim() !== "" && !/^\s*```/.test(lines[i]) && !isUl(lines[i]) && !isOl(lines[i]) && !/^\s*#{1,6}\s+/.test(lines[i]) && !isTblHead(lines[i], lines[i + 1])) {
-      para.push(mdInline(escapeHtml(lines[i]))); i++;
-    }
-    html += "<p>" + para.join("<br>") + "</p>";
-  }
-  return html;
-}
-function renderRuang() {
-  ruangLog.innerHTML = "";
-  if (!ruangConvo.length) {
-    const e = document.createElement("div");
-    e.className = "ruang-empty";
-    e.textContent = "takde apa lagi — tanya je apa-apa kat bawah.";
-    ruangLog.appendChild(e);
-    return;
-  }
-  ruangConvo.forEach((m) => ruangBubbleEl(m.role, m.text));
-}
-function buildRuangPrompt() {
-  const hist = ruangConvo.slice(-16).map((m) => (m.role === "ai" ? "AI" : "User") + ": " + m.text).join("\n");
-  return `Kau AI pembantu am dalam app PromptCraft — macam ChatGPT atau Claude. Jawab soalan atau permintaan pengguna dengan membantu, jelas, jujur & tepat. Ikut bahasa pengguna (kalau dia guna Bahasa Melayu santai, balas BM santai; kalau English, balas English). Guna senarai atau langkah kalau sesuai, ringkas bila boleh, panjang bila perlu. Kalau kau tak pasti atau tak tau, cakap terus — jangan reka.
-
-Perbualan setakat ni:
-${hist}
-
-Balas untuk giliran TERAKHIR user. Bagi jawapan sahaja, jangan letak "AI:" di depan.`;
-}
-async function sendRuang() {
-  const text = ruangInput.value.trim();
-  if (!text || ruangBusy) return;
-  ruangBusy = true; ruangSend.disabled = true;
-  ruangErr.hidden = true;
-  ruangInput.value = ""; ruangInput.style.height = "";
-  if (!ruangConvo.length) ruangLog.innerHTML = ""; // buang placeholder
-  ruangConvo.push({ role: "user", text });
-  const userBubble = ruangBubbleEl("user", text);
-  saveRuang();
-  const typing = ruangBubbleEl("ai", "…");
-  typing.classList.add("typing");
-  try {
-    const res = await fetch(PROXY_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: buildRuangPrompt() }) });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message || data.error);
-    const out = (data?.candidates?.[0]?.content?.parts?.[0]?.text || "").trim();
-    if (!out) throw new Error("kosong");
-    typing.classList.remove("typing");
-    typing.innerHTML = mdToHtml(out);
-    ruangConvo.push({ role: "ai", text: out });
-    saveRuang();
-  } catch (e) {
-    // rawat sebagai "tak terhantar": buang giliran user tu, pulihkan teks
-    typing.remove();
-    userBubble.remove();
-    ruangConvo.pop();
-    saveRuang();
-    if (!ruangConvo.length) renderRuang();
-    ruangInput.value = text;
-    const msg = e && e.message ? String(e.message) : String(e);
-    const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|high demand/i.test(msg);
-    ruangErr.textContent = isQuota ? "ramai orang tengah guna — tunggu sekejap, cuba lagi." : "alamak, tak dapat sambung — cuba hantar balik.";
-    ruangErr.hidden = false;
-  } finally {
-    ruangBusy = false; ruangSend.disabled = false;
-  }
-}
-ruangSend.addEventListener("click", sendRuang);
-ruangInput.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendRuang(); } });
-ruangInput.addEventListener("input", () => { ruangInput.style.height = "auto"; ruangInput.style.height = Math.min(ruangInput.scrollHeight, 160) + "px"; });
-ruangClear.addEventListener("click", () => {
-  if (!ruangConvo.length || confirm("Buang chat ni & mula baru?")) { ruangConvo = []; saveRuang(); renderRuang(); ruangErr.hidden = true; }
-});
-ruangConvo = loadRuang();
-renderRuang();
-
-/* ── Sembang Dulu: mod discovery — bantu user cari arah sebelum bina prompt ── */
-const SEMBANG_KEY = "promptcraft_sembang";
-const SEMBANG_SAVED_KEY = "promptcraft_sembang_saved";
-const SB_STARTS = ["Aku blank.", "Aku ada idea tapi susah nak explain.", "Aku nak buat sesuatu tapi tak tau apa.", "Aku ada masalah nak settle.", "Aku nak explore je."];
-const sbLog = document.getElementById("sembangLog");
-const sbInput = document.getElementById("sembangInput");
-const sbSend = document.getElementById("sembangSend");
-const sbStarts = document.getElementById("sembangStarts");
-const sbStartChips = document.getElementById("sembangStartChips");
-const sbActions = document.getElementById("sembangActions");
-const sbPromptCard = document.getElementById("sembangPrompt");
-const sbPromptOut = document.getElementById("sembangPromptOut");
-const sbErr = document.getElementById("sembangErr");
-const briefCard = document.getElementById("briefCard");
-const briefToggle = document.getElementById("briefToggle");
-const briefBody = document.getElementById("briefBody");
-const briefStatus = document.getElementById("briefStatus");
-let sbConvo = [], sbBrief = {}, sbStatus = "unclear", sbBusy = false, sbStarted = false, sbLastPrompt = "";
-
-function loadSembang() { try { const s = JSON.parse(localStorage.getItem(SEMBANG_KEY)); if (s) { sbConvo = s.convo || []; sbBrief = s.brief || {}; sbStatus = s.status || "unclear"; } } catch {} }
-function saveSembang() { try { localStorage.setItem(SEMBANG_KEY, JSON.stringify({ convo: sbConvo.slice(-40), brief: sbBrief, status: sbStatus })); } catch {} }
-function onEnterSembang() {
-  if (!sbStarted) { sbStarted = true; loadSembang(); renderSembang(); }
-}
-// quick-start chips (empty state)
-SB_STARTS.forEach((s) => {
-  const b = document.createElement("button");
-  b.className = "sembang-chip"; b.textContent = s;
-  b.addEventListener("click", () => { if (!sbBusy) sendSembang(s); });
-  sbStartChips.appendChild(b);
-});
-
-function buildSembangHist() { return sbConvo.slice(-16).map((m) => (m.role === "ai" ? "AI" : "User") + ": " + m.text).join("\n"); }
-function buildSembangPrompt() {
-  return `You are operating in "Sembang Dulu" mode inside a small AI helper app. Your job is NOT to produce a polished prompt. Help the user move from vague, messy thoughts to a usable direction.
-Treat every user message as raw thinking, never as a failed instruction.
-Rules:
-- Reply in the SAME language & tone as the user (if Bahasa Melayu santai, reply BM santai; keep it warm, calm, not formal).
-- Reflect briefly what you understood, then ask ONE main question at a time (based on their last answer).
-- Simple, concrete language. No prompt-engineering jargon. Do not over-praise vague ideas. No empty motivation.
-- Offer 2-4 short quick-reply options when an open question might make the user more blank. Always let "Tak pasti" be valid.
-- After 2-4 turns, START giving value (a short reflection, 2-3 possible directions, a first step) instead of asking forever.
-- Set status "ready_for_action" once there is: a topic/problem/interest + a desired direction/outcome + a reasonable next step. Otherwise "continue_discovery".
-- Keep every reply short (1-4 sentences).
-
-Current working brief (may be partial): ${JSON.stringify(sbBrief)}
-
-Conversation so far:
-${buildSembangHist()}
-
-Reply with ONLY a JSON object (no markdown, no code fences), exactly this shape:
-{"message": "your reply", "quickReplies": ["short option", "..."], "brief": {"topik":"","masalah":"","keadaan":"","hasil":"","arah":"","belumJelas":""}, "status": "continue_discovery"}
-For "brief": include ONLY fields you are fairly sure of, short plain-language, and it will be merged into the existing brief. "quickReplies" is 0-4 items, omit or empty when not helpful.`;
-}
-function parseSembang(raw) {
-  let obj = null;
-  const m = String(raw).match(/\{[\s\S]*\}/);
-  if (m) { try { obj = JSON.parse(m[0]); } catch {} }
-  if (!obj || typeof obj.message !== "string") {
-    return { message: (String(raw).trim()) || "Cuba cerita sikit lagi — apa yang paling kuat main dalam kepala kau sekarang?", quickReplies: [], brief: {}, status: "continue_discovery" };
-  }
-  return {
-    message: String(obj.message).trim(),
-    quickReplies: Array.isArray(obj.quickReplies) ? obj.quickReplies.filter((x) => typeof x === "string" && x.trim()).slice(0, 4) : [],
-    brief: (obj.brief && typeof obj.brief === "object") ? obj.brief : {},
-    status: obj.status === "ready_for_action" ? "ready_for_action" : "continue_discovery",
-  };
-}
-function computeReadiness(aiStatus) {
-  if (aiStatus === "ready_for_action") return "ready";
-  const filled = ["topik", "masalah", "hasil", "arah"].filter((k) => sbBrief[k]).length;
-  return filled >= 1 ? "forming" : "unclear";
-}
-function sbBubble(role, text, typing) {
-  const d = document.createElement("div");
-  d.className = "ruang-bubble " + (role === "ai" ? "ai" : "user") + (typing ? " sembang-bubble-typing" : "");
-  if (role === "ai" && !typing) d.innerHTML = mdToHtml(text); else d.textContent = text;
-  sbLog.appendChild(d);
-  return d;
-}
-function renderSembang() {
-  sbStarts.hidden = sbConvo.length > 0;
-  sbLog.innerHTML = "";
-  sbConvo.forEach((m) => sbBubble(m.role, m.text));
-  const last = sbConvo[sbConvo.length - 1];
-  if (last && last.role === "ai" && last.qr && last.qr.length && sbStatus !== "ready") {
-    const row = document.createElement("div");
-    row.className = "sembang-qr";
-    last.qr.forEach((q) => {
-      const b = document.createElement("button");
-      b.className = "sembang-chip"; b.textContent = q;
-      b.addEventListener("click", () => { if (!sbBusy) sendSembang(q); });
-      row.appendChild(b);
-    });
-    sbLog.appendChild(row);
-  }
-  if (sbLog.lastElementChild) sbLog.lastElementChild.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  renderBrief();
-  renderSembangActions();
-}
-function renderBrief() {
-  const keys = [["topik", "Topik"], ["masalah", "Masalah utama"], ["keadaan", "Keadaan sekarang"], ["hasil", "Hasil yang dicari"], ["arah", "Arah semasa"], ["belumJelas", "Belum jelas"]];
-  const rows = keys.filter(([k]) => sbBrief[k]);
-  if (!rows.length) { briefCard.hidden = true; return; }
-  briefCard.hidden = false;
-  briefBody.innerHTML = rows.map(([k, label]) => '<div class="brief-row"><span class="brief-row-label">' + label + '</span><span class="brief-row-val">' + escapeHtml(sbBrief[k]) + "</span></div>").join("");
-  const st = sbStatus === "ready" ? ["ready", "cukup untuk mula"] : sbStatus === "forming" ? ["forming", "mula nampak"] : ["kabur", "masih kabur"];
-  briefStatus.className = "brief-status " + st[0];
-  briefStatus.textContent = st[1];
-}
-function renderSembangActions() {
-  if (sbStatus !== "ready") { sbActions.hidden = true; return; }
-  sbActions.hidden = false;
-  sbActions.innerHTML = "";
-  const acts = [["primary", "Terus bantu aku", runNow], ["", "Tukar jadi prompt", convertToPrompt], ["", "Simpan idea", saveIdea], ["", "Sambung sembang", () => { sbInput.focus(); }]];
-  acts.forEach(([cls, label, fn]) => {
-    const b = document.createElement("button");
-    b.className = "sembang-act " + cls; b.textContent = label;
-    b.addEventListener("click", (e) => fn(e));
-    sbActions.appendChild(b);
-  });
-}
-async function sendSembang(text) {
-  text = (text || "").trim();
-  if (!text || sbBusy) return;
-  sbBusy = true; sbSend.disabled = true; sbErr.hidden = true;
-  sbInput.value = ""; sbInput.style.height = "";
-  sbConvo.push({ role: "user", text });
-  renderSembang();
-  const typing = sbBubble("ai", "hmm, jap…", true);
-  typing.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  try {
-    const res = await fetch(PROXY_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: buildSembangPrompt() }) });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message || data.error);
-    const c = parseSembang(data?.candidates?.[0]?.content?.parts?.[0]?.text || "");
-    Object.entries(c.brief).forEach(([k, v]) => { if (typeof v === "string" && v.trim()) sbBrief[k] = v.trim(); });
-    sbStatus = computeReadiness(c.status);
-    sbConvo.push({ role: "ai", text: c.message, qr: c.quickReplies });
-    saveSembang();
-    renderSembang();
-  } catch (e) {
-    const msg = e && e.message ? String(e.message) : String(e);
-    const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|high demand/i.test(msg);
-    sbErr.textContent = isQuota ? "ramai orang tengah guna — cuba hantar balik sekejap." : "aku tak dapat susun arah tu tadi — cuba dari benda paling mudah: apa yang paling kuat main dalam kepala kau sekarang?";
-    sbErr.hidden = false;
-    renderSembang();
-  } finally { sbBusy = false; sbSend.disabled = false; }
-}
-async function sbRunAI(promptStr) {
-  const res = await fetch(PROXY_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: promptStr }) });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message || data.error);
-  const out = (data?.candidates?.[0]?.content?.parts?.[0]?.text || "").trim();
-  if (!out) throw new Error("kosong");
-  return out;
-}
-async function runNow() {
-  if (sbBusy) return;
-  sbBusy = true; sbErr.hidden = true; sbActions.hidden = true;
-  const typing = sbBubble("ai", "jap, aku susunkan…", true);
-  typing.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  try {
-    const out = await sbRunAI(`The user has been in a "Sembang Dulu" discovery chat. Based on the conversation and the working brief below, NOW actually help them with the first useful thing — give the concrete idea / plan / answer / first steps they need to move forward. Be practical and specific, reply in the user's language (Bahasa Melayu santai if they used it). Short lists are fine. Keep it focused, not bloated.
-
-Working brief: ${JSON.stringify(sbBrief)}
-
-Conversation:
-${buildSembangHist()}`);
-    sbConvo.push({ role: "ai", text: out, qr: [] });
-    saveSembang(); renderSembang();
-  } catch (e) {
-    sbErr.textContent = "alamak, tak jadi susun — cuba tekan balik.";
-    sbErr.hidden = false; renderSembang();
-  } finally { sbBusy = false; }
-}
-async function convertToPrompt() {
-  if (sbBusy) return;
-  sbBusy = true; sbErr.hidden = true;
-  sbPromptCard.hidden = false; sbPromptOut.textContent = "jap, tengah susun prompt…";
-  sbPromptCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  try {
-    sbLastPrompt = await sbRunAI(`Based on this "Sembang Dulu" discovery conversation and working brief, write ONE clear, ready-to-use prompt the user can paste into an AI tool (ChatGPT/Claude/Gemini) to get what they want. Keep it concise and natural — not bloated, no "You are an expert…" boilerplate unless it genuinely helps. Match the user's language. Output the PROMPT ONLY — no preamble, no quotes, no explanation.
-
-Working brief: ${JSON.stringify(sbBrief)}
-
-Conversation:
-${buildSembangHist()}`);
-    sbPromptOut.textContent = sbLastPrompt;
-  } catch (e) {
-    sbPromptOut.textContent = "alamak, tak jadi — cuba tekan balik.";
-  } finally { sbBusy = false; }
-}
-function saveIdea(e) {
-  try {
-    const list = JSON.parse(localStorage.getItem(SEMBANG_SAVED_KEY) || "[]");
-    const title = (sbBrief.topik || sbBrief.masalah || (sbConvo.find((m) => m.role === "user") || {}).text || "idea").slice(0, 80);
-    list.unshift({ id: Date.now(), ts: Date.now(), title, brief: { ...sbBrief }, convo: sbConvo.slice(), status: sbStatus });
-    localStorage.setItem(SEMBANG_SAVED_KEY, JSON.stringify(list.slice(0, 30)));
-    if (e && e.currentTarget) { const b = e.currentTarget; b.textContent = "disimpan ✓"; setTimeout(() => { b.textContent = "Simpan idea"; }, 1600); }
-  } catch { sbErr.textContent = "tak dapat simpan — storage penuh mungkin."; sbErr.hidden = false; }
-}
-document.getElementById("sembangSend").addEventListener("click", () => sendSembang(sbInput.value));
-sbInput.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendSembang(sbInput.value); } });
-sbInput.addEventListener("input", () => { sbInput.style.height = "auto"; sbInput.style.height = Math.min(sbInput.scrollHeight, 160) + "px"; });
-document.getElementById("sembangEnough").addEventListener("click", () => {
-  if (sbBusy) return;
-  if (!sbConvo.some((m) => m.role === "user")) { sbInput.focus(); return; }
-  sbStatus = "ready"; saveSembang(); renderSembang(); runNow();
-});
-document.getElementById("sembangClear").addEventListener("click", () => {
-  if (!sbConvo.length || confirm("Buang sembang ni & mula baru?")) { sbConvo = []; sbBrief = {}; sbStatus = "unclear"; sbLastPrompt = ""; sbPromptCard.hidden = true; sbErr.hidden = true; saveSembang(); renderSembang(); }
-});
-document.getElementById("sembangPromptCopy").addEventListener("click", async (e) => {
-  if (!sbLastPrompt) return;
-  try { await navigator.clipboard.writeText(sbLastPrompt); const b = e.currentTarget; b.lastChild.textContent = "Dah copy!"; setTimeout(() => { b.lastChild.textContent = "Copy"; }, 1500); } catch {}
-});
-document.getElementById("sembangPromptClose").addEventListener("click", () => { sbPromptCard.hidden = true; });
-briefToggle.addEventListener("click", () => {
-  const open = briefToggle.getAttribute("aria-expanded") !== "false";
-  briefToggle.setAttribute("aria-expanded", open ? "false" : "true");
-  briefBody.hidden = open;
-});
 
 /* ── Faham Output: ringkaskan jawapan AI luar supaya senang faham ── */
 const fahamInput = document.getElementById("fahamInput");
