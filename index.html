@@ -2275,8 +2275,11 @@ function parseSwipeIdeas(text) {
 async function loadMoreSwipeIdeas() {
   if (swipeAiBusy) return [];
   swipeAiBusy = true;
+  // Guard with a client-side timeout so a hung request can't spin forever.
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), 12000);
   try {
-    const res = await fetch(PROXY_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: buildSwipeIdeaPrompt() }) });
+    const res = await fetch(PROXY_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: buildSwipeIdeaPrompt() }), signal: ac.signal });
     const data = await res.json();
     if (data.error) throw new Error(data.error.message || data.error);
     const out = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
@@ -2292,8 +2295,9 @@ async function loadMoreSwipeIdeas() {
     });
     return newIdx;
   } catch (e) {
-    return null; // signal failure to the caller
+    return null; // signal failure (error or timeout) to the caller
   } finally {
+    clearTimeout(timer);
     swipeAiBusy = false;
   }
 }
@@ -2305,35 +2309,30 @@ async function topUpSwipe(renderAfter) {
   if (newIdx && newIdx.length) {
     swipeBag.push(...shuffleArr(newIdx));
     swipeAiFailed = false;
-  } else if (newIdx === null) {
+  } else {
+    // error, timeout, or no fresh ideas came back — don't get stuck: recycle
+    // the seed deck so the user can keep swiping, and stop hammering the AI.
     swipeAiFailed = true;
+    if (!swipeBag.length) refillSwipeBag();
   }
-  if (renderAfter || swipeAiFailed) renderDeck();
+  if (renderAfter || swipeBag.length) renderDeck();
 }
 function renderDeck() {
   swipeDeck.innerHTML = "";
   if (!swipeBag.length) {
+    // If the AI couldn't give fresh ideas, don't dead-end — recycle the seed
+    // deck so the user is never stuck staring at a spinner.
+    if (swipeAiFailed && !swipeAiBusy) {
+      refillSwipeBag();
+      renderDeck();
+      return;
+    }
     const e = document.createElement("div");
     e.className = "swipe-empty";
-    if (swipeAiFailed && !swipeAiBusy) {
-      // AI couldn't fetch fresh ideas — offer retry, or reshuffle the seeds.
-      const msg = document.createElement("span");
-      msg.textContent = "tak dapat idea baru sekejap ni.";
-      const retry = document.createElement("button");
-      retry.className = "swipe-empty-btn";
-      retry.textContent = "cuba lagi";
-      retry.addEventListener("click", () => { swipeAiFailed = false; renderDeck(); });
-      const old = document.createElement("button");
-      old.className = "swipe-empty-btn ghost";
-      old.textContent = "ulang idea lama";
-      old.addEventListener("click", () => { swipeAiFailed = false; refillSwipeBag(); renderDeck(); });
-      e.append(msg, retry, old);
-    } else {
-      const sp = document.createElement("span"); sp.className = "swipe-spin";
-      const tx = document.createElement("span"); tx.textContent = "jap, cari idea baru untuk kau…";
-      e.append(sp, tx);
-      if (!swipeAiBusy) topUpSwipe(true);
-    }
+    const sp = document.createElement("span"); sp.className = "swipe-spin";
+    const tx = document.createElement("span"); tx.textContent = "jap, cari idea baru untuk kau…";
+    e.append(sp, tx);
+    if (!swipeAiBusy) topUpSwipe(true);
     swipeDeck.appendChild(e);
     return;
   }
