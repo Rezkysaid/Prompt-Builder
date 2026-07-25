@@ -1370,13 +1370,56 @@
     transform: rotate(-0.6deg);
   }
 
+  /* ── Terokai sudut: kata kunci kabur → senarai sudut perbincangan ── */
+  .sudut-section { margin-top: 4px; }
+  .sudut-results { display: none; flex-direction: column; gap: 9px; margin-top: 15px; max-width: 720px; }
+  .sudut-results.show { display: flex; }
+  .sudut-item {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 12px 15px 12px 14px;
+    box-shadow: var(--shadow-sm);
+    padding: 11px 14px;
+    cursor: pointer;
+    transition: border-color 0.12s ease, background 0.12s ease;
+  }
+  .sudut-item:nth-child(odd) { transform: rotate(-0.25deg); }
+  .sudut-item:nth-child(even) { transform: rotate(0.25deg); }
+  .sudut-item:hover { border-color: var(--accent); }
+  .sudut-item:active { transform: translateY(1px); }
+  .sudut-item.picked { border-color: var(--accent); background: var(--accent-soft); }
+  .sudut-tag {
+    flex-shrink: 0;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 6px;
+    padding: 3px 8px;
+    white-space: nowrap;
+  }
+  .sudut-item.picked .sudut-tag { background: var(--surface); }
+  .sudut-text { font-family: var(--font-hand); font-size: 19px; line-height: 1.32; color: var(--text); }
+  .sudut-foot { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 13px; }
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes seedNudge { 0%, 100% { transform: none; } 30% { transform: translateY(-4px); } 60% { transform: none; } 80% { transform: translateY(-2px); } }
+    .seed-grow.nudge { animation: seedNudge 0.75s ease 2; }
+  }
+
   /* ── Seed grower: bagi benih, AI tumbuhkan 5 prompt penuh ── */
-  .seed-section { margin-top: 4px; }
-  /* seed sits first now; this heading opens the enhancer (second) section */
-  .enhance-head { margin-top: 44px; padding-top: 30px; border-top: 1.5px dashed var(--border); }
+  .seed-section { margin-top: 40px; padding-top: 28px; border-top: 1.5px dashed var(--border); }
   .seed-lang-row { margin: 12px 0 12px; }
   .seed-input-row { display: flex; gap: 8px; align-items: stretch; max-width: 720px; margin-bottom: 4px; }
-  #seedInput {
+  #seedInput, #sudutInput {
     flex: 1;
     border: 1.5px solid var(--border-strong);
     border-radius: 12px 13px 12px 13px;
@@ -1387,8 +1430,8 @@
     background: var(--surface);
     outline: none;
   }
-  #seedInput:focus { border-color: var(--accent); }
-  #seedInput::placeholder { color: var(--text-tertiary); }
+  #seedInput:focus, #sudutInput:focus { border-color: var(--accent); }
+  #seedInput::placeholder, #sudutInput::placeholder { color: var(--text-tertiary); }
   .seed-grow {
     flex-shrink: 0;
     font-family: var(--font-display);
@@ -1576,6 +1619,22 @@
   </div>
 
   <div id="workRangka">
+  <div class="sudut-section">
+    <div class="idea-head">
+      <h2>tak tau nak bincang apa?</h2>
+      <span class="idea-note">bagi satu kata kunci — AI bukakan sudut yang orang biasa bincang</span>
+    </div>
+    <div class="seed-input-row">
+      <input type="text" id="sudutInput" maxlength="120" placeholder="contoh: harga diri">
+      <button class="seed-grow" id="sudutGo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
+        Terokai
+      </button>
+    </div>
+    <div class="seed-status" id="sudutStatus"></div>
+    <div class="sudut-results" id="sudutResults"></div>
+  </div>
+
   <div class="seed-section">
     <div class="idea-head">
       <h2>tak ada idea? bagi benih je</h2>
@@ -1890,6 +1949,155 @@ seedInput.addEventListener("keydown", (e) => {
 });
 
 
+/* ── Terokai sudut ──
+   Ramai orang tak ada idea jelas apa mereka nak bincang dengan AI — cuma ada
+   satu perkataan bermain dalam kepala ("harga diri"). Panel ni ambil kata
+   kunci kabur tu dan bukakan jadi sudut perbincangan konkrit, supaya pengguna
+   cuma perlu pilih mana yang kena dengan hati. Yang dipilih terus jatuh ke
+   kotak benih di bawah untuk ditumbuhkan jadi prompt penuh. */
+const sudutInput = document.getElementById("sudutInput");
+const sudutGoBtn = document.getElementById("sudutGo");
+const sudutStatus = document.getElementById("sudutStatus");
+const sudutResults = document.getElementById("sudutResults");
+let sudutBusy = false;
+let sudutSeen = [];   // sudut yang dah dipapar — elak AI ulang benda sama
+let sudutKey = "";    // kata kunci yang sedang diterokai
+
+function buildSudutPrompt(key, avoid) {
+  const av = avoid.length
+    ? `\nSUDUT YANG DAH DIPAPAR (jangan ulang, jangan bagi yang sama maksud):\n${avoid.slice(-32).map((t) => "- " + t).join("\n")}\n`
+    : "";
+  return `Orang ni ada sesuatu bermain dalam kepala tapi belum jelas apa sebenarnya dia nak bincang, fikir, atau selesaikan dengan AI. Dia baru taip kata kunci / frasa ringkas ni:
+
+"""
+${key.slice(0, 120)}
+"""
+
+Tugas kau: bukakan kata kunci tu jadi 8 SUDUT perbincangan berbeza — benda yang orang betul-betul tanya, rasa, bergelut dalam hati, atau nak selesaikan bila topik ni timbul.
+
+Peraturan:
+- Tulis macam suara hati orang tu sendiri — jujur, spesifik, hidup. BUKAN tajuk buku teks, bukan ayat akademik.
+- Setiap sudut kena beza jauh antara satu sama lain. Campurkan jenis ni: soalan yang bermain dalam kepala, situasi harian yang menyakitkan, punca/akar, salah faham biasa, langkah praktikal, dan satu dua sudut yang orang jarang terfikir.
+- Pendek: 7-15 patah perkataan setiap satu. Kena senang scan sekali pandang.
+- Bahasa Melayu santai (KL-style). Kecuali kata kunci tu English sepenuhnya — baru guna English.
+- Kalau kata kunci tu satu perkataan je, kabur, luas, atau pelik — kau TETAP kena bagi 8 sudut yang munasabah dan berkaitan. JANGAN tanya soalan balik, JANGAN minta penjelasan, JANGAN tolak.
+- Jangan letak tanda petikan keliling sudut. Jangan nomborkan.
+${av}
+Label: satu dua perkataan je (contoh: soalan, situasi, punca, salah faham, langkah, sudut lain).
+
+Balas TEPAT 8 baris, tiada apa-apa sebelum atau selepas. Setiap baris ikut format ni:
+label | sudut perbincangan tu`;
+}
+
+function parseSudut(text) {
+  return text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => l.replace(/^\s*(?:\d+[.)]|[-*•])\s*/, "")) // buang penomboran
+    .map((l) => {
+      const i = l.indexOf("|");
+      if (i === -1) return null;
+      const tag = l.slice(0, i).replace(/[*#]/g, "").trim().toLowerCase();
+      const body = l.slice(i + 1).replace(/[*#]/g, "").replace(/^\s*["']|["']\s*$/g, "").trim();
+      if (body.length < 8) return null;
+      return { tag: tag.slice(0, 20) || "sudut", text: body };
+    })
+    .filter(Boolean);
+}
+
+function pickSudut(item, el) {
+  sudutResults.querySelectorAll(".sudut-item.picked").forEach((n) => n.classList.remove("picked"));
+  el.classList.add("picked");
+  // sudut yang dipilih jadi benih — pengguna tinggal tekan Grow
+  seedInput.value = item.text;
+  seedResults.classList.remove("show");
+  seedResults.innerHTML = "";
+  seedStatus.className = "seed-status";
+  sudutStatus.className = "seed-status show";
+  sudutStatus.textContent = "dah masuk kotak benih bawah — tekan Grow untuk jadi prompt penuh";
+  document.querySelector(".seed-section").scrollIntoView({ behavior: MOTION_OK ? "smooth" : "auto", block: "center" });
+  seedGrowBtn.classList.remove("nudge");
+  void seedGrowBtn.offsetWidth; // restart animasi kalau pilih sudut lain
+  seedGrowBtn.classList.add("nudge");
+  setTimeout(() => seedGrowBtn.classList.remove("nudge"), 1600);
+}
+
+function renderSudut(items, append) {
+  if (!append) { sudutResults.innerHTML = ""; sudutSeen = []; }
+  const foot = sudutResults.querySelector(".sudut-foot");
+  if (foot) foot.remove();
+  items.forEach((it) => {
+    sudutSeen.push(it.text);
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = "sudut-item";
+    const tag = document.createElement("span");
+    tag.className = "sudut-tag";
+    tag.textContent = it.tag;
+    const txt = document.createElement("span");
+    txt.className = "sudut-text";
+    txt.textContent = it.text;
+    row.append(tag, txt);
+    row.addEventListener("click", () => pickSudut(it, row));
+    sudutResults.appendChild(row);
+  });
+  const bar = document.createElement("div");
+  bar.className = "sudut-foot";
+  const more = document.createElement("button");
+  more.className = "mini-btn";
+  more.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>lagi sudut';
+  more.addEventListener("click", () => exploreSudut(true));
+  bar.appendChild(more);
+  sudutResults.appendChild(bar);
+  sudutResults.classList.add("show");
+}
+
+async function exploreSudut(more) {
+  const key = more ? sudutKey : sudutInput.value.trim();
+  if (!key) { sudutInput.focus(); return; }
+  if (sudutBusy) return;
+  sudutBusy = true;
+  sudutKey = key;
+  sudutGoBtn.disabled = true;
+  sudutResults.querySelectorAll(".sudut-foot .mini-btn").forEach((b) => (b.disabled = true));
+  sudutStatus.className = "seed-status show";
+  sudutStatus.textContent = more ? "jap, cari sudut lain…" : `AI tengah bukakan "${key}" jadi sudut…`;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 20000);
+  try {
+    const res = await fetch(PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: buildSudutPrompt(key, more ? sudutSeen : []) }),
+      signal: ctrl.signal,
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || data.error);
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const fresh = parseSudut(text).filter((it) => !sudutSeen.some((s) => s.toLowerCase() === it.text.toLowerCase()));
+    if (!fresh.length) throw new Error("tak dapat baca sudut — cuba sekali lagi");
+    renderSudut(fresh, more);
+    sudutStatus.className = "seed-status show";
+    sudutStatus.textContent = "mana satu kena dengan hati kau? tap satu — dia jatuh ke kotak benih bawah";
+  } catch (e) {
+    const msg = e && (e.name === "AbortError" ? "lambat sangat — cuba sekali lagi" : e.message) || String(e);
+    const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|retry in|high demand/i.test(String(msg));
+    sudutStatus.className = "seed-status show err";
+    sudutStatus.textContent = isQuota ? "ramai orang tengah guna — cuba sekejap lagi" : "alamak, tak jadi: " + msg;
+  } finally {
+    clearTimeout(timer);
+    sudutBusy = false;
+    sudutGoBtn.disabled = false;
+    sudutResults.querySelectorAll(".sudut-foot .mini-btn").forEach((b) => (b.disabled = false));
+  }
+}
+sudutGoBtn.addEventListener("click", () => exploreSudut(false));
+sudutInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); exploreSudut(false); }
+});
+
+
 /* iOS Safari ignores user-scalable=no in the browser, so block pinch and
    double-tap zoom by hand; standalone (home screen) mode honours the meta. */
 document.addEventListener("gesturestart", (e) => e.preventDefault());
@@ -1902,7 +2110,7 @@ document.addEventListener("touchend", (e) => {
 
 /* seksyen bawah muncul lembut bila scroll sampai */
 (function scrollReveal() {
-  const targets = document.querySelectorAll(".seed-section, .hist-section, footer");
+  const targets = document.querySelectorAll(".sudut-section, .seed-section, .hist-section, footer");
   if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const io = new IntersectionObserver((entries) => {
     entries.forEach((en) => {
