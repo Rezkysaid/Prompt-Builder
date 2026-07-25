@@ -1959,9 +1959,10 @@ requestAnimationFrame(moveModeIndicator);
 window.addEventListener("resize", moveModeIndicator);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveModeIndicator);
 
-/* ── Coach: masuk mod → terus mula swipe deck ── */
+/* ── Coach: masuk mod → tarik idea AI segar setiap kali buka ── */
 function onEnterCoach() {
-  if (!swipeStarted) startSwipe();
+  if (swipeAiBusy) return; // a fetch is already running — don't stack
+  startSwipe();
 }
 
 /* ── Faham Output: ringkaskan jawapan AI luar supaya senang faham ── */
@@ -2201,50 +2202,28 @@ function ideaCardEl(it, onDelete) {
 }
 
 /* ── Swipe idea ── */
-const SWIPE_POOL = [
-  { c: "produktiviti", title: "Jadikan AI setiausaha peribadi", desc: "suruh dia susun jadual, ingatkan tugas, draf email — kau fokus kerja penting je" },
-  { c: "belajar", title: "AI jadi tutor 24 jam", desc: "belajar apa-apa topik ikut pace kau, tanya sampai faham tanpa segan" },
-  { c: "duit", title: "Rancang bajet & saving", desc: "bagi pendapatan & perbelanjaan, AI tolong susun pelan duit realistik" },
-  { c: "kerja", title: "Auto-draf laporan & email", desc: "bagi poin je, AI tuliskan versi kemas, kau tinggal semak & hantar" },
-  { c: "kreatif", title: "Brainstorm content 30 hari", desc: "dapat kalendar idea post/video untuk sebulan dalam beberapa saat" },
-  { c: "masak", title: "Menu ikut bahan peti ais", desc: "list apa ada, AI cadang resepi malam ni tanpa perlu keluar beli" },
-  { c: "kesihatan", title: "Pelan senaman di rumah", desc: "20 minit sehari tanpa gym, disesuaikan dengan level kau" },
-  { c: "kerjaya", title: "Latih interview kerja", desc: "AI jadi interviewer, tanya soalan susah, bagi feedback jawapan kau" },
-  { c: "belajar", title: "Ringkas nota & buku teks", desc: "paste bab panjang, dapat ringkasan + soalan latihan sendiri" },
-  { c: "bisnes", title: "Validate idea side income", desc: "uji idea bisnes kau dengan AI sebagai rakan fikir yang jujur" },
-  { c: "harian", title: "Betulkan & terjemah bahasa", desc: "tulis mesej formal, cover letter, caption — tanpa risau grammar" },
-  { c: "kreatif", title: "Tulis cerita/lirik sama-sama", desc: "mula satu ayat, AI sambung — best untuk lepas tension" },
-  { c: "parenting", title: "Jawab soalan pelik anak", desc: "'kenapa langit biru?' — AI bagi jawapan simple sesuai umur dia" },
-  { c: "kerja", title: "Analisa data & buat keputusan", desc: "paste nombor/senarai, AI tolong cari corak & cadang langkah" },
-  { c: "belajar", title: "Kuasai skill baru 15 min/hari", desc: "AI susun roadmap dari sifar untuk skill kau nak belajar" },
-  { c: "santai", title: "Rancang trip bajet", desc: "bagi bajet & tarikh, dapat itinerary tempat bukan mainstream" },
-  { c: "produktiviti", title: "Pecahkan projek besar", desc: "benda yang rasa berat jadi langkah kecil yang boleh terus mula" },
-  { c: "kerjaya", title: "Upgrade resume & LinkedIn", desc: "AI tajamkan ayat achievement kau supaya nampak lebih power" },
-];
+// Fully AI-driven deck — no default/seed ideas. Filled live from the AI each
+// time the user opens ilham, and topped up as they swipe.
+const SWIPE_POOL = [];
 const swipeDeck = document.getElementById("swipeDeck");
 const swipeSaved = document.getElementById("swipeSaved");
 const swipeSavedList = document.getElementById("swipeSavedList");
 let swipeBag = [], swipeSavedArr = [], swipeStarted = false, swipeAnim = false;
 let swipeAiBusy = false, swipeAiFailed = false;
 
+// Reset the deck and pull fresh AI ideas right away (saved likes are kept).
 function startSwipe() {
   swipeStarted = true;
-  swipeSavedArr = [];
-  swipeSaved.hidden = true;
-  swipeSavedList.innerHTML = "";
   swipeAiFailed = false;
-  refillSwipeBag();
-  renderDeck();
+  SWIPE_POOL.length = 0;
+  swipeBag = [];
+  renderDeck(); // empty deck → shows the loading card → fetches AI ideas
 }
 function shuffleArr(a) {
   for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
   return a;
 }
-function refillSwipeBag() {
-  swipeBag = shuffleArr(SWIPE_POOL.map((_, i) => i));
-}
-// Ask the AI for fresh, non-duplicate use-case ideas so the deck never runs
-// out — the static SWIPE_POOL is just the seed.
+// Ask the AI for fresh, non-duplicate use-case ideas to fill the deck.
 function buildSwipeIdeaPrompt() {
   const avoid = SWIPE_POOL.map((x) => x.title).slice(-45).join("; ");
   return `Kau bagi idea use-case KREATIF & praktikal untuk orang biasa guna AI chatbot (ChatGPT/Claude/Gemini/DeepSeek) dalam hidup harian, kerja, belajar, duit, kesihatan, kreatif, keluarga, hobi, dsb.
@@ -2310,29 +2289,29 @@ async function topUpSwipe(renderAfter) {
     swipeBag.push(...shuffleArr(newIdx));
     swipeAiFailed = false;
   } else {
-    // error, timeout, or no fresh ideas came back — don't get stuck: recycle
-    // the seed deck so the user can keep swiping, and stop hammering the AI.
+    // error, timeout, or no fresh ideas — fully-AI deck has nothing to fall
+    // back on, so flag it and offer a retry (no infinite refetch loop).
     swipeAiFailed = true;
-    if (!swipeBag.length) refillSwipeBag();
   }
-  if (renderAfter || swipeBag.length) renderDeck();
+  if (renderAfter || swipeAiFailed || swipeBag.length) renderDeck();
 }
 function renderDeck() {
   swipeDeck.innerHTML = "";
   if (!swipeBag.length) {
-    // If the AI couldn't give fresh ideas, don't dead-end — recycle the seed
-    // deck so the user is never stuck staring at a spinner.
-    if (swipeAiFailed && !swipeAiBusy) {
-      refillSwipeBag();
-      renderDeck();
-      return;
-    }
     const e = document.createElement("div");
     e.className = "swipe-empty";
-    const sp = document.createElement("span"); sp.className = "swipe-spin";
-    const tx = document.createElement("span"); tx.textContent = "jap, cari idea baru untuk kau…";
-    e.append(sp, tx);
-    if (!swipeAiBusy) topUpSwipe(true);
+    if (swipeAiFailed && !swipeAiBusy) {
+      // couldn't reach the AI — offer a manual retry instead of a dead spinner
+      const msg = document.createElement("span"); msg.textContent = "tak dapat idea sekejap ni.";
+      const retry = document.createElement("button"); retry.className = "swipe-empty-btn"; retry.textContent = "cuba lagi";
+      retry.addEventListener("click", () => { swipeAiFailed = false; renderDeck(); });
+      e.append(msg, retry);
+    } else {
+      const sp = document.createElement("span"); sp.className = "swipe-spin";
+      const tx = document.createElement("span"); tx.textContent = "jap, cari idea untuk kau…";
+      e.append(sp, tx);
+      if (!swipeAiBusy) topUpSwipe(true);
+    }
     swipeDeck.appendChild(e);
     return;
   }
