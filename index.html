@@ -1419,7 +1419,7 @@
   .seed-section { margin-top: 40px; padding-top: 28px; border-top: 1.5px dashed var(--border); }
   .seed-lang-row { margin: 12px 0 12px; }
   .seed-input-row { display: flex; gap: 8px; align-items: stretch; max-width: 720px; margin-bottom: 4px; }
-  #seedInput, #sudutInput {
+  #sudutInput {
     flex: 1;
     border: 1.5px solid var(--border-strong);
     border-radius: 12px 13px 12px 13px;
@@ -1430,8 +1430,28 @@
     background: var(--surface);
     outline: none;
   }
+  /* the seed box is a textarea: room to actually tell the AI what you want */
+  #seedInput {
+    display: block;
+    width: 100%;
+    max-width: 720px;
+    min-height: 150px;
+    resize: none;
+    overflow-y: auto;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 12px 14px 12px 13px;
+    padding: 12px 15px;
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--surface);
+    outline: none;
+  }
   #seedInput:focus, #sudutInput:focus { border-color: var(--accent); }
   #seedInput::placeholder, #sudutInput::placeholder { color: var(--text-tertiary); }
+  .seed-go-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; max-width: 720px; margin-top: 11px; }
+  .seed-hint { font-family: var(--font-hand); font-size: 15.5px; color: var(--text-tertiary); transform: rotate(-1deg); }
   .seed-grow {
     flex-shrink: 0;
     font-family: var(--font-display);
@@ -1443,6 +1463,7 @@
     border: none;
     border-radius: 11px 13px 11px 12px;
     padding: 11px 24px;
+    min-height: 44px;
     cursor: pointer;
     box-shadow: 0 3px 0 #4a4230;
     transition: all 0.12s ease;
@@ -1637,23 +1658,24 @@
 
   <div class="seed-section">
     <div class="idea-head">
-      <h2>tak ada idea? bagi benih je</h2>
-      <span class="idea-note">taip frasa pendek — AI tumbuhkan jadi 5 prompt penuh</span>
+      <h2>cerita je apa kau nak</h2>
+      <span class="idea-note">frasa pendek pun boleh — atau terus bagitau AI prompt macam mana kau nak</span>
     </div>
     <div class="lang-row seed-lang-row">
       <span>bahasa output:</span>
       <select id="seedLang">
-        <option value="auto" selected>Auto (ikut benih)</option>
+        <option value="auto" selected>Auto (ikut cerita kau)</option>
         <option value="ms">Bahasa Melayu</option>
         <option value="en">English</option>
       </select>
     </div>
-    <div class="seed-input-row">
-      <input type="text" id="seedInput" maxlength="200" placeholder="contoh: buat duit dengan ai">
+    <textarea id="seedInput" rows="4" maxlength="700" placeholder="contoh: buat duit dengan ai&#10;&#10;atau cerita je — buatkan aku prompt pasal macam mana nak confident masa meeting"></textarea>
+    <div class="seed-go-row">
       <button class="seed-grow" id="seedGrow">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C12 8 9 5 4 5c0 5 3 7 8 7z"/><path d="M12 14c0-3.5 3-6.5 8-6.5 0 4.5-3 6.5-8 6.5z"/></svg>
         Grow
       </button>
+      <span class="seed-hint">atau tekan Ctrl + Enter</span>
     </div>
     <div class="seed-status" id="seedStatus"></div>
     <div class="seed-results" id="seedResults"></div>
@@ -1837,21 +1859,30 @@ function buildSeedPrompt(seed) {
     seedLang.value === "ms" ? "Write every suggested prompt fully in Bahasa Melayu."
     : seedLang.value === "en" ? "Write every suggested prompt fully in English."
     : "Write the suggested prompts in the same language (or natural Malay-English mix) as the seed.";
-  return `You are a Prompt Seed Grower. The user gives you a SHORT, rough seed — a few words or a vague phrase — and you grow it into 5 different, fully-formed prompts they can paste straight into an AI tool (ChatGPT / Claude / Gemini).
+  return `You are a Prompt Builder. The user writes, in their own words, whatever is in their head, and you hand back 5 finished prompts they can paste straight into an AI tool (ChatGPT / Claude / Gemini).
 
-Think of it like a seed growing into a tree: the seed is tiny and unclear, but you interpret the likely intents behind it and expand each into a complete, well-structured prompt — with implied context, a clear goal, and a suitable output format.
+What they write comes in two shapes. Read it and decide which one you got:
 
-The 5 prompts must take DISTINCT angles / interpretations of the seed (e.g. different goals, audiences, or use-cases), so the user has a real range to choose from. Do NOT just reword the same prompt 5 times.
+A) A BARE SEED — just a topic or a vague phrase, with no instructions about the prompt itself. Example: "buat duit dengan ai".
+   -> Grow it. Interpret the likely intents behind it and expand each into a complete, well-structured prompt with implied context, a clear goal and a suitable output format. The 5 must take DISTINCT angles (different goals, audiences, use-cases) so they get a real range to choose from. Do NOT reword the same prompt 5 times.
+
+B) A REQUEST / BRIEF — they are telling you what they want the prompt to be about, who it is for, what tone, what it should produce. Example: "buatkan aku prompt pasal macam mana nak build confidence, untuk aku yang pemalu masa meeting — aku nak dia bagi langkah praktikal, bukan motivasi kosong".
+   -> Everything they asked for is BINDING. All 5 prompts must satisfy every single requirement they stated. Vary only the APPROACH — structure, framing, depth, output format, how the AI is asked to think. Never drop a requirement, never contradict one, never wander off their topic into a "different angle" they did not ask for.
+   -> Their meta-wording is an instruction TO YOU, not part of the prompt. Strip phrases like "buatkan aku prompt pasal…", "aku nak prompt yang…", "tolong buat…", "make me a prompt about…" and write the actual prompt itself.
+
+If it is a mix of both, treat every explicit requirement as binding and take free rein only where they said nothing.
 
 Rules:
 - Each prompt: 30 to 70 words, self-contained and ready to use as-is.
-- Preserve the spirit of the seed; you may add reasonable context, but do NOT drift into an unrelated topic.
+- Write it in the voice of a person talking to an AI — first person is fine.
+- Preserve the spirit of what they wrote; you may add reasonable implied context, but do NOT drift into an unrelated topic.
 - ${langRule}
 - Give each one a SHORT angle label (2-4 words) describing its take.
+- Never ask them a clarifying question, never refuse, never explain yourself — always return exactly 5 prompts.
 
-SEED:
+WHAT THEY WROTE:
 """
-${seed.slice(0, 200)}
+${seed.slice(0, 700)}
 """
 
 Respond with EXACTLY 5 lines, nothing else before or after. Each line in this format (single line, no line breaks inside a prompt):
@@ -1916,7 +1947,7 @@ async function growSeed() {
   seedBusy = true;
   seedGrowBtn.disabled = true;
   seedStatus.className = "seed-status show";
-  seedStatus.textContent = "AI tengah tumbuhkan benih kau jadi 5 prompt…";
+  seedStatus.textContent = "AI tengah buat 5 prompt ikut apa kau cerita…";
   try {
     const res = await fetch(PROXY_URL, {
       method: "POST",
@@ -1944,9 +1975,16 @@ async function growSeed() {
   }
 }
 seedGrowBtn.addEventListener("click", growSeed);
+// Enter makes a newline — this box is meant to be talked into, not just
+// dropped a word in. Ctrl/Cmd+Enter sends, and so does the Grow button.
 seedInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") { e.preventDefault(); growSeed(); }
+  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); growSeed(); }
 });
+function autoGrowSeedBox() {
+  seedInput.style.height = "auto";
+  seedInput.style.height = Math.min(seedInput.scrollHeight, 320) + "px";
+}
+seedInput.addEventListener("input", autoGrowSeedBox);
 
 
 /* ── Terokai sudut ──
@@ -2009,13 +2047,15 @@ function parseSudut(text) {
 function pickSudut(item, el) {
   sudutResults.querySelectorAll(".sudut-item.picked").forEach((n) => n.classList.remove("picked"));
   el.classList.add("picked");
-  // sudut yang dipilih jadi benih — pengguna tinggal tekan Grow
+  // sudut yang dipilih jatuh ke kotak bawah — pengguna boleh tambah cerita
+  // sendiri kat situ sebelum tekan Grow
   seedInput.value = item.text;
+  autoGrowSeedBox();
   seedResults.classList.remove("show");
   seedResults.innerHTML = "";
   seedStatus.className = "seed-status";
   sudutStatus.className = "seed-status show";
-  sudutStatus.textContent = "dah masuk kotak benih bawah — tekan Grow untuk jadi prompt penuh";
+  sudutStatus.textContent = "dah masuk kotak bawah — tambah cerita kau kalau nak, lepas tu tekan Grow";
   document.querySelector(".seed-section").scrollIntoView({ behavior: MOTION_OK ? "smooth" : "auto", block: "center" });
   seedGrowBtn.classList.remove("nudge");
   void seedGrowBtn.offsetWidth; // restart animasi kalau pilih sudut lain
