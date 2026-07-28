@@ -1418,9 +1418,12 @@
   /* ── Seed grower: bagi benih, AI tumbuhkan 5 prompt penuh ── */
   .seed-section { margin-top: 40px; padding-top: 28px; border-top: 1.5px dashed var(--border); }
   .seed-lang-row { margin: 12px 0 12px; }
-  .seed-input-row { display: flex; gap: 8px; align-items: stretch; max-width: 720px; margin-bottom: 4px; }
-  #sudutInput {
-    flex: 1;
+  .seed-input-row { display: flex; gap: 8px; align-items: stretch; flex-wrap: wrap; max-width: 720px; margin-bottom: 4px; }
+  #sudutInput, #tmplInput {
+    /* min-width:0 lets the input actually shrink — without it the input's
+       intrinsic width pins the row open and pushes the button off-screen */
+    flex: 1 1 180px;
+    min-width: 0;
     border: 1.5px solid var(--border-strong);
     border-radius: 12px 13px 12px 13px;
     padding: 11px 15px;
@@ -1472,8 +1475,75 @@
     background: var(--surface);
     outline: none;
   }
-  #seedInput:focus, #sudutInput:focus { border-color: var(--accent); }
-  #seedInput::placeholder, #sudutInput::placeholder { color: var(--text-tertiary); }
+  #seedInput:focus, #sudutInput:focus, #tmplInput:focus { border-color: var(--accent); }
+  #seedInput::placeholder, #sudutInput::placeholder, #tmplInput::placeholder { color: var(--text-tertiary); }
+
+  /* ── Rangka prompt: kerangka berlabel yang pengguna sendiri isi ── */
+  .tmpl-section { margin-top: 40px; padding-top: 28px; border-top: 1.5px dashed var(--border); }
+  .tmpl-blocks { display: none; flex-direction: column; gap: 12px; margin-top: 16px; max-width: 720px; }
+  .tmpl-blocks.show { display: flex; }
+  .tmpl-block {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 13px 16px 13px 15px;
+    box-shadow: var(--shadow-sm);
+    padding: 12px 15px 13px;
+  }
+  .tmpl-block:nth-child(odd) { transform: rotate(-0.2deg); }
+  .tmpl-block:nth-child(even) { transform: rotate(0.2deg); }
+  .tmpl-block.filled { border-color: var(--accent-border); }
+  .tmpl-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .tmpl-top svg { width: 17px; height: 17px; color: var(--accent); flex-shrink: 0; }
+  .tmpl-label { font-family: var(--font-display); font-style: italic; font-size: 16.5px; font-weight: 600; }
+  .tmpl-opt {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 7px;
+  }
+  .tmpl-q { font-family: var(--font-hand); font-size: 17.5px; color: var(--text-secondary); margin: 7px 0 3px; }
+  .tmpl-hint { font-size: 12.5px; line-height: 1.55; color: var(--text-tertiary); margin-bottom: 9px; }
+  .tmpl-block textarea {
+    width: 100%;
+    min-height: 62px;
+    resize: none;
+    overflow-y: auto;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 10px 12px 10px 11px;
+    padding: 9px 12px;
+    font-family: inherit;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--text);
+    background: var(--bg);
+    outline: none;
+  }
+  .tmpl-block textarea:focus { border-color: var(--accent); }
+  .tmpl-out { display: none; max-width: 720px; margin-top: 18px; }
+  .tmpl-out.show { display: block; }
+  .tmpl-out-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 9px; flex-wrap: wrap; }
+  .tmpl-out-head h3 { font-family: var(--font-display); font-style: italic; font-size: 17px; font-weight: 600; }
+  .tmpl-count { font-family: var(--font-hand); font-size: 16px; color: var(--text-tertiary); }
+  .tmpl-pre {
+    background: var(--surface);
+    border: 1.5px solid var(--accent-border);
+    border-radius: 13px 16px 13px 15px;
+    padding: 13px 16px;
+    font-size: 14.5px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    color: var(--text);
+    user-select: text;
+    -webkit-user-select: text;
+  }
+  .tmpl-pre.empty { color: var(--text-tertiary); font-family: var(--font-hand); font-size: 17px; }
+  .tmpl-actions { display: flex; gap: 8px; margin-top: 11px; flex-wrap: wrap; }
   .seed-go-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; max-width: 720px; margin-top: 11px; }
   .seed-hint { font-family: var(--font-hand); font-size: 15.5px; color: var(--text-tertiary); transform: rotate(-1deg); }
   .seed-grow {
@@ -1708,6 +1778,30 @@
     </div>
     <div class="seed-status" id="seedStatus"></div>
     <div class="seed-results" id="seedResults"></div>
+  </div>
+
+  <div class="tmpl-section">
+    <div class="idea-head">
+      <h2>nak rangka penuh? kau isi sendiri</h2>
+      <span class="idea-note">AI buatkan kerangka berlabel ikut topik kau — kau isi kotak, prompt tersusun sendiri</span>
+    </div>
+    <div class="seed-input-row">
+      <input type="text" id="tmplInput" maxlength="160" placeholder="topik kau — boleh kosong">
+      <button class="seed-grow" id="tmplGo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 9v12"/></svg>
+        Buat rangka
+      </button>
+    </div>
+    <div class="seed-status" id="tmplStatus"></div>
+    <div class="tmpl-blocks" id="tmplBlocks"></div>
+    <div class="tmpl-out" id="tmplOut">
+      <div class="tmpl-out-head">
+        <h3>prompt kau setakat ni</h3>
+        <span class="tmpl-count" id="tmplCount"></span>
+      </div>
+      <div class="tmpl-pre" id="tmplPre"></div>
+      <div class="tmpl-actions" id="tmplActions"></div>
+    </div>
   </div>
   </div><!-- /#workRangka -->
 
@@ -2293,6 +2387,215 @@ sudutInput.addEventListener("keydown", (e) => {
 });
 
 
+/* ── Rangka prompt ──
+   Bukan prompt siap — kerangka KOSONG berlabel yang pengguna sendiri isi.
+   Ditarik segar dari AI setiap kali (tiada simpanan), dan disesuaikan dengan
+   topik dia: kerja kreatif, analisis, belajar dan buat keputusan tak guna
+   rangka yang sama. Bila dia taip, prompt tersusun terbentuk di bawah —
+   jadi dia nampak struktur terbina di depan mata, bukan dihafal. */
+const tmplInput = document.getElementById("tmplInput");
+const tmplGoBtn = document.getElementById("tmplGo");
+const tmplStatus = document.getElementById("tmplStatus");
+const tmplBlocks = document.getElementById("tmplBlocks");
+const tmplOut = document.getElementById("tmplOut");
+const tmplPre = document.getElementById("tmplPre");
+const tmplCount = document.getElementById("tmplCount");
+const tmplActions = document.getElementById("tmplActions");
+let tmplBusy = false, tmplParts = [];
+
+// ikon dipadan dengan label yang AI bagi — dia tak boleh hantar SVG sendiri
+const TMPL_ICONS = [
+  [/konteks|latar|context|background|siapa kau/i, '<path d="M12 21s7-6.1 7-11a7 7 0 10-14 0c0 4.9 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>'],
+  [/situasi|masalah|problem|isu|cabaran/i, '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 014.7 1.1c0 1.7-2.4 2.2-2.4 3.7"/><path d="M12 17.4h.01"/>'],
+  [/matlamat|goal|objektif|hasil akhir|apa kau nak/i, '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4"/>'],
+  [/kekangan|constraint|had|syarat|limit|elak/i, '<path d="M10.3 3.9L1.9 18a2 2 0 001.7 3h16.8a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9.2v4"/><path d="M12 17h.01"/>'],
+  [/tugas|task|arahan|minta|kerja ai/i, '<path d="M9 11.5l2.6 2.6L21 4.7"/><path d="M21 12.4V19a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>'],
+  [/output|format|bentuk|persembah|jawapan|hasil/i, '<path d="M21 16V8a2 2 0 00-1-1.7l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.7l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.3 7L12 12l8.7-5"/><path d="M12 22V12"/>'],
+  [/nada|tone|gaya|suara|bahasa/i, '<path d="M21 11.5a8.5 8.5 0 01-8.5 8.5 8.4 8.4 0 01-3.8-.9L3 21l1.9-5.7A8.5 8.5 0 1121 11.5z"/>'],
+  [/audien|sasaran|pembaca|untuk siapa|penonton/i, '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.9"/><path d="M16 3.1a4 4 0 010 7.8"/>'],
+  [/contoh|example|rujukan|sampel/i, '<path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/>'],
+];
+function tmplIcon(label) {
+  for (const [re, path] of TMPL_ICONS) if (re.test(label)) return path;
+  return '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/>';
+}
+
+function buildTmplPrompt(topic) {
+  const scope = topic
+    ? `Topik / kerja yang dia nak buat dengan AI:\n"""\n${topic.slice(0, 160)}\n"""`
+    : `Dia tak bagi topik tertentu — reka rangka serba guna untuk kerja harian dengan AI, tapi tetap konkrit.`;
+  const n = topic ? "6 hingga 7" : "6";
+  return `Kau reka RANGKA PROMPT (prompt template) — BUKAN prompt siap. Ini kerangka kosong berlabel yang pengguna sendiri akan isi, supaya dia belajar susun fikiran dia dengan lebih terarah bila bercakap dengan AI chatbot.
+
+${scope}
+
+Bagi ${n} bahagian yang dia kena isi. Untuk setiap bahagian, bagi 4 benda:
+1. LABEL — 1 hingga 3 patah perkataan (contoh: Konteks, Situasi, Matlamat, Kekangan, Tugas, Output, Nada, Sasaran, Contoh).
+2. SOALAN PANDUAN — satu soalan pendek yang buat dia terus tau apa nak tulis kat situ. Contoh: "Apa yang sedang berlaku sekarang?"
+3. PETUNJUK — satu ayat contoh KONKRIT${topic ? ", betul-betul berkaitan dengan topik dia di atas," : ""} tunjuk jenis maklumat yang patut masuk. Ini bahagian paling penting: jangan umum, jangan berulang, jangan kosong.
+4. Tanda "wajib" atau "pilihan".
+
+Peraturan:
+- Susun ikut aliran semula jadi: latar/konteks dulu, pastu situasi, apa dia nak capai, had/syarat, arahan kepada AI, dan akhir sekali bentuk jawapan.
+- Sekurang-kurangnya satu bahagian mesti bertanda "pilihan".
+- Sesuaikan rangka dengan JENIS kerja tu. Kerja kreatif, kerja analisis, kerja belajar dan kerja buat keputusan TAK guna rangka yang sama — jangan bagi rangka generik yang sama untuk semua benda.
+- Bahasa Melayu santai (KL-style), pendek dan jelas. Jangan berbunyi macam borang kerajaan.
+- JANGAN guna simbol | di dalam mana-mana teks — dia dipakai sebagai pemisah.
+- JANGAN tulis prompt siap untuk dia. Kerangka kosong sahaja.
+- Jangan tanya soalan balik, jangan tolak, jangan terangkan apa-apa di luar format.
+
+Balas TEPAT ${n} baris, tiada apa-apa sebelum atau selepas. Setiap baris ikut format ni:
+LABEL | soalan panduan | petunjuk konkrit | wajib atau pilihan`;
+}
+
+function parseTmpl(text) {
+  return text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => l.replace(/^\s*(?:\d+[.)]|[-*•])\s*/, "")) // buang penomboran
+    .map((l) => {
+      const p = l.split("|").map((s) => s.replace(/[*#]/g, "").trim());
+      if (p.length < 3) return null;
+      const label = p[0].replace(/[:：]$/, "").trim();
+      if (!label || !p[1]) return null;
+      return {
+        label: label.slice(0, 28),
+        q: p[1],
+        hint: p[2] || "",
+        optional: /pilihan|optional/i.test(p[3] || ""),
+      };
+    })
+    .filter(Boolean)
+    .slice(0, 8);
+}
+
+// susun semula apa yang dia dah isi jadi satu prompt tersusun
+function updateTmplOut() {
+  const filled = tmplParts.filter((p) => p.el.value.trim());
+  tmplParts.forEach((p) => p.block.classList.toggle("filled", !!p.el.value.trim()));
+  const need = tmplParts.filter((p) => !p.optional).length;
+  const needFilled = tmplParts.filter((p) => !p.optional && p.el.value.trim()).length;
+  tmplCount.textContent = `${needFilled}/${need} bahagian wajib diisi`;
+  if (!filled.length) {
+    tmplPre.className = "tmpl-pre empty";
+    tmplPre.textContent = "isi kotak di atas — prompt kau terbina kat sini secara langsung";
+  } else {
+    tmplPre.className = "tmpl-pre";
+    tmplPre.textContent = filled.map((p) => `${p.label}:\n${p.el.value.trim()}`).join("\n\n");
+  }
+  tmplActions.querySelectorAll("[data-need-text]").forEach((b) => (b.disabled = !filled.length));
+}
+
+function renderTmpl(parts) {
+  tmplBlocks.innerHTML = "";
+  tmplParts = [];
+  parts.forEach((p) => {
+    const block = document.createElement("div");
+    block.className = "tmpl-block";
+    const top = document.createElement("div");
+    top.className = "tmpl-top";
+    top.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${tmplIcon(p.label)}</svg>`;
+    const lab = document.createElement("span");
+    lab.className = "tmpl-label";
+    lab.textContent = p.label;
+    top.appendChild(lab);
+    if (p.optional) {
+      const o = document.createElement("span");
+      o.className = "tmpl-opt";
+      o.textContent = "pilihan";
+      top.appendChild(o);
+    }
+    const q = document.createElement("p");
+    q.className = "tmpl-q";
+    q.textContent = p.q;
+    const ta = document.createElement("textarea");
+    ta.rows = 2;
+    ta.setAttribute("aria-label", p.label);
+    ta.addEventListener("input", () => {
+      ta.style.height = "auto";
+      ta.style.height = Math.min(ta.scrollHeight, 220) + "px";
+      updateTmplOut();
+    });
+    block.append(top, q);
+    if (p.hint) {
+      const h = document.createElement("p");
+      h.className = "tmpl-hint";
+      h.textContent = p.hint;
+      block.appendChild(h);
+    }
+    block.appendChild(ta);
+    tmplBlocks.appendChild(block);
+    tmplParts.push({ label: p.label, optional: p.optional, el: ta, block });
+  });
+  tmplBlocks.classList.add("show");
+
+  tmplActions.innerHTML = "";
+  const copy = document.createElement("button");
+  copy.className = "mini-btn";
+  copy.dataset.needText = "1";
+  copy.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy prompt';
+  copy.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(tmplPre.textContent);
+      copy.classList.add("copied"); copy.lastChild.textContent = "Dah copy!";
+      setTimeout(() => { copy.classList.remove("copied"); copy.lastChild.textContent = "Copy prompt"; }, 1500);
+    } catch {}
+  });
+  const again = document.createElement("button");
+  again.className = "mini-btn";
+  again.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>rangka lain';
+  again.addEventListener("click", () => makeTmpl());
+  tmplActions.append(copy, again);
+
+  tmplOut.classList.add("show");
+  updateTmplOut();
+}
+
+async function makeTmpl() {
+  if (tmplBusy) return;
+  const topic = tmplInput.value.trim();
+  tmplBusy = true;
+  tmplGoBtn.disabled = true;
+  tmplActions.querySelectorAll(".mini-btn").forEach((b) => (b.disabled = true));
+  tmplStatus.className = "seed-status show";
+  tmplStatus.textContent = topic ? `AI tengah reka rangka untuk "${topic}"…` : "AI tengah reka rangka untuk kau…";
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 20000);
+  try {
+    const res = await fetch(PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: buildTmplPrompt(topic) }),
+      signal: ctrl.signal,
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || data.error);
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const parts = parseTmpl(text);
+    if (parts.length < 3) throw new Error("tak dapat baca rangka — cuba sekali lagi");
+    renderTmpl(parts);
+    tmplStatus.className = "seed-status show";
+    tmplStatus.textContent = "isi ikut soalan tiap kotak — yang bertanda pilihan boleh dilangkau";
+  } catch (e) {
+    const msg = (e && (e.name === "AbortError" ? "lambat sangat — cuba sekali lagi" : e.message)) || String(e);
+    const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|retry in|high demand/i.test(String(msg));
+    tmplStatus.className = "seed-status show err";
+    tmplStatus.textContent = isQuota ? "ramai orang tengah guna — cuba sekejap lagi" : "alamak, tak jadi: " + msg;
+  } finally {
+    clearTimeout(timer);
+    tmplBusy = false;
+    tmplGoBtn.disabled = false;
+    tmplActions.querySelectorAll(".mini-btn").forEach((b) => (b.disabled = false));
+    updateTmplOut();
+  }
+}
+tmplGoBtn.addEventListener("click", makeTmpl);
+tmplInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); makeTmpl(); }
+});
+
+
 /* iOS Safari ignores user-scalable=no in the browser, so block pinch and
    double-tap zoom by hand; standalone (home screen) mode honours the meta. */
 document.addEventListener("gesturestart", (e) => e.preventDefault());
@@ -2305,7 +2608,7 @@ document.addEventListener("touchend", (e) => {
 
 /* seksyen bawah muncul lembut bila scroll sampai */
 (function scrollReveal() {
-  const targets = document.querySelectorAll(".sudut-section, .seed-section, .hist-section, footer");
+  const targets = document.querySelectorAll(".sudut-section, .seed-section, .tmpl-section, .hist-section, footer");
   if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const io = new IntersectionObserver((entries) => {
     entries.forEach((en) => {
