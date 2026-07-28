@@ -1430,6 +1430,30 @@
     background: var(--surface);
     outline: none;
   }
+  /* ── Mula ayat: pembuka ayat separuh siap untuk pecahkan mental block ── */
+  .starter { max-width: 720px; margin: 2px 0 15px; }
+  .starter-title { display: block; font-family: var(--font-hand); font-size: 17px; color: var(--text-tertiary); transform: rotate(-1deg); margin-bottom: 10px; }
+  .starter-groups { display: flex; flex-wrap: wrap; gap: 7px; }
+  .starter-lines { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
+  .starter-line {
+    font-family: var(--font-hand);
+    font-size: 17.5px;
+    line-height: 1.2;
+    text-align: left;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 1.5px dashed var(--border-strong);
+    border-radius: 10px 12px 10px 11px;
+    padding: 7px 13px 8px;
+    cursor: pointer;
+    transition: color 0.12s ease, border-color 0.12s ease;
+  }
+  /* the trailing ellipsis is the whole point: the sentence is unfinished, you
+     finish it. Lines already ending in ":" carry that signal themselves. */
+  .starter-line::after { content: attr(data-tail); opacity: 0.45; }
+  .starter-line:hover { border-color: var(--accent); border-style: solid; color: var(--accent); }
+  .starter-line:active { transform: translateY(1px); }
+
   /* the seed box is a textarea: room to actually tell the AI what you want */
   #seedInput {
     display: block;
@@ -1668,6 +1692,11 @@
         <option value="ms">Bahasa Melayu</option>
         <option value="en">English</option>
       </select>
+    </div>
+    <div class="starter">
+      <span class="starter-title">buntu nak mula? pilih keadaan kepala kau:</span>
+      <div class="starter-groups" id="starterGroups"></div>
+      <div class="starter-lines" id="starterLines"></div>
     </div>
     <textarea id="seedInput" rows="4" maxlength="700" placeholder="contoh: buat duit dengan ai&#10;&#10;atau cerita je — buatkan aku prompt pasal macam mana nak confident masa meeting"></textarea>
     <div class="seed-go-row">
@@ -1985,6 +2014,132 @@ function autoGrowSeedBox() {
   seedInput.style.height = Math.min(seedInput.scrollHeight, 320) + "px";
 }
 seedInput.addEventListener("input", autoGrowSeedBox);
+
+
+/* ── Mula ayat ──
+   Blok bukan berlaku sebab orang tak tau nak cakap apa; ia berlaku sebab
+   ayat pertama tak bergerak. Jadi ni bukan senarai kata kunci — ni ayat yang
+   DAH bermula, tinggal kau habiskan. Disusun ikut KEADAAN KEPALA, bukan
+   kategori tugas, sebab orang buntu tak fikir "aku nak belajar" — dia fikir
+   "aku serabut". Semua statik & serta-merta: tunggu AI masa buntu = blok
+   makin tebal. */
+const STARTER_GROUPS = [
+  {
+    label: "kepala kosong",
+    icon: '<circle cx="12" cy="12" r="9" stroke-dasharray="3.5 3.5"/>',
+    lines: [
+      "Aku tak tau nak mula kat mana pasal ",
+      "Aku ada satu perkataan je dalam kepala: ",
+      "Tanya aku soalan satu-satu sampai jelas apa aku nak: ",
+      "Ada benda mengganggu aku tapi aku tak dapat nak namakan: ",
+    ],
+  },
+  {
+    label: "kepala serabut",
+    icon: '<path d="M4 8c4-3 6 3 10 0s4-3 6-1"/><path d="M4 13c4-3 6 3 10 0s4-3 6-1"/><path d="M4 18c4-3 6 3 10 0s4-3 6-1"/>',
+    lines: [
+      "Tolong susun fikiran aku pasal ",
+      "Banyak benda main dalam kepala aku sekarang: ",
+      "Mana satu aku kena buat dulu antara ",
+      "Aku asyik ulang fikir benda sama: ",
+      "Pisahkan mana fakta mana perasaan aku dalam hal ni: ",
+    ],
+  },
+  {
+    label: "tersekat",
+    icon: '<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>',
+    lines: [
+      "Aku stuck kat ",
+      "Aku dah cuba tapi tak jadi: ",
+      "Apa yang aku tak nampak dalam hal ni: ",
+      "Setakat ni aku dah buat macam ni: ",
+      "Aku tau apa aku nak tapi tak tau macam mana: ",
+    ],
+  },
+  {
+    label: "nak faham",
+    icon: '<path d="M2 5h6.5A3.5 3.5 0 0112 8.5V20a3 3 0 00-3-2.6H2z"/><path d="M22 5h-6.5A3.5 3.5 0 0012 8.5V20a3 3 0 013-2.6h7z"/>',
+    lines: [
+      "Terangkan macam aku baru mula belajar: ",
+      "Apa beza antara ",
+      "Kenapa benda ni boleh jadi macam ni: ",
+      "Bagi contoh betul-betul untuk ",
+      "Pecahkan jadi langkah kecil: ",
+    ],
+  },
+  {
+    label: "nak siapkan",
+    icon: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/>',
+    lines: [
+      "Tolong draf ",
+      "Semak ni dan bagitau mana yang lemah: ",
+      "Tukar ni jadi ",
+      "Bagi 5 versi berbeza untuk ",
+      "Pendekkan ni tanpa hilang maksud: ",
+    ],
+  },
+  {
+    label: "nak dilawan",
+    icon: '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+    lines: [
+      "Cabar idea aku ni: ",
+      "Apa lubang dalam rancangan aku: ",
+      "Bagi pandangan jujur, jangan ampu aku: ",
+      "Apa orang lain akan bantah pasal ",
+      "Yakinkan aku yang aku silap pasal ",
+    ],
+  },
+];
+
+const starterGroupsEl = document.getElementById("starterGroups");
+const starterLinesEl = document.getElementById("starterLines");
+
+// Letak pembuka ayat kat kedudukan kursor, kursor duduk betul-betul kat
+// hujung supaya pengguna boleh terus taip sambungan.
+function insertStarter(text) {
+  const el = seedInput;
+  const start = typeof el.selectionStart === "number" ? el.selectionStart : el.value.length;
+  const end = typeof el.selectionEnd === "number" ? el.selectionEnd : el.value.length;
+  const before = el.value.slice(0, start);
+  const after = el.value.slice(end);
+  // dah ada ayat sebelum ni? mula baris baru supaya tak bercantum
+  const ins = before.trim() && !/\n\s*$/.test(before) ? "\n" + text : text;
+  const next = (before + ins + after).slice(0, 700);
+  el.value = next;
+  const caret = Math.min((before + ins).length, next.length);
+  autoGrowSeedBox();
+  el.focus();
+  el.setSelectionRange(caret, caret);
+  el.scrollTop = el.scrollHeight;
+}
+
+function renderStarterLines(group) {
+  starterLinesEl.innerHTML = "";
+  group.lines.forEach((line) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "starter-line";
+    b.textContent = line.trim();
+    b.dataset.tail = line.trim().endsWith(":") ? "" : "…";
+    b.addEventListener("click", () => insertStarter(line));
+    starterLinesEl.appendChild(b);
+  });
+}
+
+STARTER_GROUPS.forEach((g, i) => {
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.className = "chip" + (i === 0 ? " active" : "");
+  chip.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${g.icon}</svg>`;
+  chip.appendChild(document.createTextNode(g.label));
+  chip.addEventListener("click", () => {
+    starterGroupsEl.querySelectorAll(".chip.active").forEach((c) => c.classList.remove("active"));
+    chip.classList.add("active");
+    renderStarterLines(g);
+  });
+  starterGroupsEl.appendChild(chip);
+});
+renderStarterLines(STARTER_GROUPS[0]);
 
 
 /* ── Terokai sudut ──
