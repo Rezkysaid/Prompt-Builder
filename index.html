@@ -321,7 +321,7 @@
     .mem-toggle.active .mem-icon { animation: memPulse 2.6s ease-in-out infinite; }
   }
 
-  /* ── Mode switch (Rangka Prompt / Faham Output) ── */
+  /* ── Mode switch (Input / ilham) ── */
   .mode-switch {
     position: relative;
     display: flex;
@@ -632,14 +632,6 @@
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
 
-  /* ── Faham Output: paste box + digest ── */
-  .faham-panel {
-    max-width: 720px;
-    margin: 0 auto;
-    min-height: 220px;
-    transform: rotate(-0.2deg);
-  }
-  .faham-panel textarea { min-height: 200px; }
   .digest {
     max-width: 720px;
     margin: 24px auto 0;
@@ -1419,7 +1411,7 @@
   .seed-section { margin-top: 40px; padding-top: 28px; border-top: 1.5px dashed var(--border); }
   .seed-lang-row { margin: 12px 0 12px; }
   .seed-input-row { display: flex; gap: 8px; align-items: stretch; flex-wrap: wrap; max-width: 720px; margin-bottom: 4px; }
-  #sudutInput, #cmdInput {
+  #sudutInput, #seedInput {
     /* min-width:0 lets the input actually shrink — without it the input's
        intrinsic width pins the row open and pushes the button off-screen */
     flex: 1 1 180px;
@@ -1457,8 +1449,8 @@
   .starter-line:hover { border-color: var(--accent); border-style: solid; color: var(--accent); }
   .starter-line:active { transform: translateY(1px); }
 
-  /* the seed box is a textarea: room to actually tell the AI what you want */
-  #seedInput {
+  /* kotak mentah: ruang luas untuk tulis bersepah tanpa rasa tertekan */
+  #fixInput {
     display: block;
     width: 100%;
     max-width: 720px;
@@ -1475,58 +1467,46 @@
     background: var(--surface);
     outline: none;
   }
-  #seedInput:focus, #sudutInput:focus, #cmdInput:focus { border-color: var(--accent); }
-  #seedInput::placeholder, #sudutInput::placeholder, #cmdInput::placeholder { color: var(--text-tertiary); }
+  #fixInput:focus, #sudutInput:focus, #seedInput:focus { border-color: var(--accent); }
+  #fixInput::placeholder, #sudutInput::placeholder, #seedInput::placeholder { color: var(--text-tertiary); }
 
-  /* ── Arahan: taip satu ayat, AI terus muntahkan hasil ── */
-  .cmd-section { margin-top: 40px; padding-top: 28px; border-top: 1.5px dashed var(--border); }
-  .cmd-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; max-width: 720px; }
-  .cmd-chip {
-    font-family: var(--font-hand);
-    font-size: 17.5px;
-    line-height: 1.2;
-    text-align: left;
-    color: var(--text-secondary);
+  /* ── Kemas-kan: tulisan mentah → prompt berstruktur ── */
+  .fix-section { margin-top: 40px; padding-top: 28px; border-top: 1.5px dashed var(--border); }
+  .fix-out { display: none; max-width: 720px; margin-top: 16px; }
+  .fix-out.show { display: block; }
+  .fix-out-head h3 { font-family: var(--font-display); font-style: italic; font-size: 17px; font-weight: 600; margin-bottom: 9px; }
+  .fix-pre {
     background: var(--surface);
-    border: 1.5px dashed var(--border-strong);
-    border-radius: 10px 12px 10px 11px;
-    padding: 7px 13px 8px;
-    cursor: pointer;
-    transition: color 0.12s ease, border-color 0.12s ease;
-  }
-  .cmd-chip:hover:not(:disabled) { border-color: var(--accent); border-style: solid; color: var(--accent); }
-  .cmd-chip:active:not(:disabled) { transform: translateY(1px); }
-  .cmd-chip:disabled { opacity: 0.5; cursor: default; }
-  .cmd-results { display: none; flex-direction: column; gap: 11px; margin-top: 16px; max-width: 720px; }
-  .cmd-results.show { display: flex; }
-  .cmd-card {
-    background: var(--surface);
-    border: 1.5px solid var(--border);
+    border: 1.5px solid var(--accent-border);
     border-radius: 13px 16px 13px 15px;
-    box-shadow: var(--shadow-sm);
-    padding: 13px 16px 13px;
-  }
-  .cmd-card:nth-child(odd) { transform: rotate(-0.25deg); }
-  .cmd-card:nth-child(even) { transform: rotate(0.25deg); }
-  .cmd-title { font-family: var(--font-display); font-style: italic; font-size: 16.5px; font-weight: 600; margin-bottom: 8px; min-height: 1em; }
-  .cmd-body {
+    padding: 13px 16px;
     font-size: 14.5px;
     line-height: 1.62;
-    color: var(--text);
     white-space: pre-wrap;
     overflow-wrap: break-word;
+    color: var(--text);
     user-select: text;
     -webkit-user-select: text;
     -webkit-touch-callout: default;
-    min-height: 1em;
   }
-  /* kursor berkelip masa menaip — hilang sendiri bila habis */
-  .cmd-typing::after { content: "▌"; margin-left: 1px; opacity: 0.5; animation: cmdBlink 0.8s steps(2, start) infinite; }
-  @keyframes cmdBlink { 50% { opacity: 0; } }
-  .cmd-card .seed-actions { margin-top: 11px; }
-  /* duduk di ATAS senarai — kalau di bawah dia bergerak turun setiap kali
-     kad membesar, jadi sasaran yang bergerak masa nak ditekan */
-  .cmd-skip { align-self: flex-start; margin-bottom: 3px; }
+  .fix-notes { margin-top: 14px; }
+  .fix-notes h4 {
+    font-family: var(--font-hand);
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--text-tertiary);
+    transform: rotate(-1deg);
+    margin-bottom: 7px;
+  }
+  .fix-notes ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .fix-notes li {
+    position: relative;
+    padding-left: 17px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+  }
+  .fix-notes li::before { content: "+"; position: absolute; left: 2px; color: var(--accent); font-weight: 600; }
 
   .seed-go-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; max-width: 720px; margin-top: 11px; }
   .seed-hint { font-family: var(--font-hand); font-size: 15.5px; color: var(--text-tertiary); transform: rotate(-1deg); }
@@ -1703,13 +1683,9 @@
 
   <div class="mode-switch" id="modeSwitch">
     <span class="mode-indicator" id="modeIndicator"></span>
-    <button class="mode-seg active" id="segRangka" title="Rangka Prompt" aria-label="Rangka Prompt">
+    <button class="mode-seg active" id="segRangka" title="Input" aria-label="Input">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      <span class="seg-label">Prompt</span>
-    </button>
-    <button class="mode-seg" id="segFaham" title="Faham Output" aria-label="Faham Output">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-      <span class="seg-label">fahami</span>
+      <span class="seg-label">Input</span>
     </button>
     <button class="mode-seg" id="segCoach" title="Ilham — swipe idea" aria-label="Ilham — swipe idea">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
@@ -1734,15 +1710,15 @@
     <div class="sudut-results" id="sudutResults"></div>
   </div>
 
-  <div class="seed-section">
+  <div class="fix-section">
     <div class="idea-head">
-      <h2>cerita je apa kau nak</h2>
-      <span class="idea-note">frasa pendek pun boleh — atau terus bagitau AI prompt macam mana kau nak</span>
+      <h2>tulis mentah-mentah je</h2>
+      <span class="idea-note">tak perlu teratur, tak perlu cantik — app tukarkan jadi prompt yang berstruktur</span>
     </div>
-    <div class="lang-row seed-lang-row">
+    <div class="lang-row">
       <span>bahasa output:</span>
-      <select id="seedLang">
-        <option value="auto" selected>Auto (ikut cerita kau)</option>
+      <select id="fixLang">
+        <option value="auto" selected>Auto (ikut tulisan kau)</option>
         <option value="ms">Bahasa Melayu</option>
         <option value="en">English</option>
       </select>
@@ -1752,109 +1728,49 @@
       <div class="starter-groups" id="starterGroups"></div>
       <div class="starter-lines" id="starterLines"></div>
     </div>
-    <textarea id="seedInput" rows="4" maxlength="700" placeholder="contoh: buat duit dengan ai&#10;&#10;atau cerita je — buatkan aku prompt pasal macam mana nak confident masa meeting"></textarea>
+    <textarea id="fixInput" rows="5" maxlength="4000" placeholder="taip bersepah pun tak apa — contoh: aku nak tanya pasal duit tapi tak tau macam mana nak start, aku ada gaji kecil, nak simpan tapi asyik habis"></textarea>
     <div class="seed-go-row">
-      <button class="seed-grow" id="seedGrow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C12 8 9 5 4 5c0 5 3 7 8 7z"/><path d="M12 14c0-3.5 3-6.5 8-6.5 0 4.5-3 6.5-8 6.5z"/></svg>
-        Grow
+      <button class="seed-grow" id="fixGo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8a2 2 0 001.3 1.3L21 12l-5.8 1.9a2 2 0 00-1.3 1.3L12 21l-1.9-5.8a2 2 0 00-1.3-1.3L3 12l5.8-1.9a2 2 0 001.3-1.3L12 3z"/></svg>
+        Kemas-kan
       </button>
       <span class="seed-hint">atau tekan Ctrl + Enter</span>
     </div>
-    <div class="seed-status" id="seedStatus"></div>
-    <div class="seed-results" id="seedResults"></div>
+    <div class="seed-status" id="fixStatus"></div>
+    <div class="fix-out" id="fixOut">
+      <div class="fix-out-head">
+        <h3>prompt kau dah siap</h3>
+      </div>
+      <div class="fix-pre" id="fixPre"></div>
+      <div class="seed-actions" id="fixActions"></div>
+      <div class="fix-notes" id="fixNotes"></div>
+    </div>
   </div>
 
-  <div class="cmd-section">
+  <div class="seed-section">
     <div class="idea-head">
-      <h2>taip arahan, terus dapat</h2>
-      <span class="idea-note">tak payah fikir topik — taip je, atau tekan salah satu bawah ni</span>
+      <h2>tak ada idea? bagi benih je</h2>
+      <span class="idea-note">taip frasa pendek — AI tumbuhkan jadi 5 prompt penuh</span>
     </div>
-    <div class="seed-input-row">
-      <input type="text" id="cmdInput" maxlength="160" placeholder="bagi aku prompt template">
-      <button class="seed-grow" id="cmdGo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="M13 6l6 6-6 6"/></svg>
-        Jalan
-      </button>
-    </div>
-    <div class="cmd-chips" id="cmdChips"></div>
-    <div class="seed-status" id="cmdStatus"></div>
-    <div class="cmd-results" id="cmdResults"></div>
-  </div>
-  </div><!-- /#workRangka -->
-
-  <div id="workFaham" hidden>
-    <div class="idea-head">
-      <h2>malas baca jawapan AI yang panjang?</h2>
-      <span class="idea-note">paste kat sini — app ringkaskan supaya senang faham</span>
-    </div>
-    <div class="lang-row">
-      <span>bahasa:</span>
-      <select id="fahamLang">
-        <option value="auto" selected>Auto (ikut jawapan)</option>
+    <div class="lang-row seed-lang-row">
+      <span>bahasa output:</span>
+      <select id="seedLang">
+        <option value="auto" selected>Auto (ikut benih)</option>
         <option value="ms">Bahasa Melayu</option>
         <option value="en">English</option>
       </select>
     </div>
-    <div class="panel faham-panel">
-      <div class="panel-head">tampal jawapan AI kau sini<span class="count" id="fahamCount"></span></div>
-      <textarea id="fahamInput" placeholder="Paste output panjang dari ChatGPT / Claude / Gemini kat sini…" maxlength="16000"></textarea>
-      <div class="panel-foot">
-        <button class="mini-btn" id="fahamPasteBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/></svg>
-          Paste
-        </button>
-        <button class="mini-btn" id="fahamClearBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-          Clear
-        </button>
-      </div>
-    </div>
-    <div class="action-row">
-      <button class="enhance-btn" id="fahamBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-        Faham-kan
+    <div class="seed-input-row">
+      <input type="text" id="seedInput" maxlength="200" placeholder="contoh: buat duit dengan ai">
+      <button class="seed-grow" id="seedGrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C12 8 9 5 4 5c0 5 3 7 8 7z"/><path d="M12 14c0-3.5 3-6.5 8-6.5 0 4.5-3 6.5-8 6.5z"/></svg>
+        Grow
       </button>
-      <span class="action-note">biar app telan-kan untuk kau</span>
     </div>
-    <div class="loading" id="fahamLoading"><div class="spinner"></div><span id="fahamLoadingText">jap, tengah baca &amp; ringkaskan…</span></div>
-    <div class="error" id="fahamError"></div>
-    <div class="digest" id="digest" hidden>
-      <div class="digest-block digest-inti">
-        <h3>intinya</h3>
-        <p id="digInti"></p>
-      </div>
-      <div class="digest-block">
-        <h3>poin penting</h3>
-        <ul id="digPoin"></ul>
-      </div>
-      <div class="digest-block">
-        <h3>apa kau kena buat</h3>
-        <ul id="digBuat"></ul>
-      </div>
-      <div class="digest-block">
-        <h3>terang simple</h3>
-        <p id="digSimple"></p>
-      </div>
-      <div class="digest-actions">
-        <button class="mini-btn" id="digFocusBtn" title="Fokus satu bahagian" aria-pressed="false">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><line x1="12" y1="1.5" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22.5"/><line x1="1.5" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22.5" y2="12"/></svg>
-          Fokus
-        </button>
-        <button class="mini-btn" id="digBionicBtn" title="Bionic reading — bold permulaan perkataan" aria-pressed="false">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h7a4 4 0 010 8H6z"/><path d="M6 12h8a4 4 0 010 8H6z"/></svg>
-          Bionik
-        </button>
-        <button class="mini-btn" id="digCopyBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          Copy
-        </button>
-        <button class="mini-btn" id="digSpeakBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 010 7"/><path d="M19 5a9 9 0 010 14"/></svg>
-          Dengar
-        </button>
-      </div>
-    </div>
+    <div class="seed-status" id="seedStatus"></div>
+    <div class="seed-results" id="seedResults"></div>
   </div>
+  </div><!-- /#workRangka -->
 
   <div id="workCoach" hidden>
     <div class="idea-head">
@@ -1916,34 +1832,7 @@ const PROXY_URL = "https://muhasabah-app.vercel.app/api/gemini";
 const HIST_KEY = "promptcraft_history";
 const HIST_MAX = 20;
 
-const input = document.getElementById("input");
-const output = document.getElementById("output");
-const enhanceBtn = document.getElementById("enhanceBtn");
-const copyBtn = document.getElementById("copyBtn");
-const regenBtn = document.getElementById("regenBtn");
-const swapBtn = document.getElementById("swapBtn");
-const clearBtn = document.getElementById("clearBtn");
-const pasteBtn = document.getElementById("pasteBtn");
-const loading = document.getElementById("loading");
-const loadingText = document.getElementById("loadingText");
-const errorBox = document.getElementById("error");
-const annot = document.getElementById("annot");
-const annotList = document.getElementById("annotList");
-const charCount = document.getElementById("charCount");
-const histList = document.getElementById("histList");
-const outLangSel = document.getElementById("outLang");
-const styleSel = document.getElementById("styleSel");
-const intenSel = document.getElementById("intenSel");
-const sembangBtn = document.getElementById("sembangBtn");
-const chatSection = document.getElementById("chatSection");
-const chatInput = document.getElementById("chatInput");
-const chatSendBtn = document.getElementById("chatSend");
 
-let currentMode = "general";
-let lastEnhanced = "";
-let retryTimer = null;
-let typeTimer = null;
-let loadingTimer = null;
 const MOTION_OK = !matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* ── Seed grower: bagi benih pendek, AI tumbuhkan 5 prompt penuh ── */
@@ -1959,32 +1848,22 @@ function buildSeedPrompt(seed) {
     seedLang.value === "ms" ? "Write every suggested prompt fully in Bahasa Melayu."
     : seedLang.value === "en" ? "Write every suggested prompt fully in English."
     : "Write the suggested prompts in the same language (or natural Malay-English mix) as the seed.";
-  return `You are a Prompt Builder. The user writes, in their own words, whatever is in their head, and you hand back 5 finished prompts they can paste straight into an AI tool (ChatGPT / Claude / Gemini).
+  return `You are a Prompt Seed Grower. The user gives you a SHORT, rough seed — a few words or a vague phrase — and you grow it into 5 different, fully-formed prompts they can paste straight into an AI tool (ChatGPT / Claude / Gemini / DeepSeek).
 
-What they write comes in two shapes. Read it and decide which one you got:
+Think of it like a seed growing into a tree: the seed is tiny and unclear, but you interpret the likely intents behind it and expand each into a complete, well-structured prompt — with implied context, a clear goal, and a suitable output format.
 
-A) A BARE SEED — just a topic or a vague phrase, with no instructions about the prompt itself. Example: "buat duit dengan ai".
-   -> Grow it. Interpret the likely intents behind it and expand each into a complete, well-structured prompt with implied context, a clear goal and a suitable output format. The 5 must take DISTINCT angles (different goals, audiences, use-cases) so they get a real range to choose from. Do NOT reword the same prompt 5 times.
-
-B) A REQUEST / BRIEF — they are telling you what they want the prompt to be about, who it is for, what tone, what it should produce. Example: "buatkan aku prompt pasal macam mana nak build confidence, untuk aku yang pemalu masa meeting — aku nak dia bagi langkah praktikal, bukan motivasi kosong".
-   -> Everything they asked for is BINDING. All 5 prompts must satisfy every single requirement they stated. Vary only the APPROACH — structure, framing, depth, output format, how the AI is asked to think. Never drop a requirement, never contradict one, never wander off their topic into a "different angle" they did not ask for.
-   -> Their meta-wording is an instruction TO YOU, not part of the prompt. Strip phrases like "buatkan aku prompt pasal…", "aku nak prompt yang…", "tolong buat…", "make me a prompt about…" and write the actual prompt itself.
-
-If it is a mix of both, treat every explicit requirement as binding and take free rein only where they said nothing.
+The 5 prompts must take DISTINCT angles / interpretations of the seed (e.g. different goals, audiences, or use-cases), so the user has a real range to choose from. Do NOT just reword the same prompt 5 times.
 
 Rules:
 - Each prompt: 30 to 70 words, self-contained and ready to use as-is.
-- Write it in the voice of a person talking to an AI — first person is fine.
-- Preserve the spirit of what they wrote; you may add reasonable implied context, but do NOT drift into an unrelated topic.
+- Preserve the spirit of the seed; you may add reasonable context, but do NOT drift into an unrelated topic.
 - ${langRule}
 - Give each one a SHORT angle label (2-4 words) describing its take.
-- Never ask them a clarifying question, never refuse, never explain yourself — always return exactly 5 prompts.
 
-WHAT THEY WROTE:
+SEED:
 """
-${seed.slice(0, 700)}
+${seed.slice(0, 200)}
 """
-
 Respond with EXACTLY 5 lines, nothing else before or after. Each line in this format (single line, no line breaks inside a prompt):
 ANGLE LABEL ::: the full prompt`;
 }
@@ -2044,19 +1923,10 @@ async function growSeed() {
   const seed = seedInput.value.trim();
   if (!seed) { seedInput.focus(); return; }
   if (seedBusy) return;
-  // "bagi aku prompt template" ditaip kat sini? itu arahan, bukan benih —
-  // hantar ke ruang arahan supaya dia dapat benda yang dia betul-betul minta
-  if (seedLooksLikeCommand(seed)) {
-    seedStatus.className = "seed-status show";
-    seedStatus.textContent = "itu arahan — aku bawak turun ke ruang arahan bawah";
-    document.querySelector(".cmd-section").scrollIntoView({ behavior: MOTION_OK ? "smooth" : "auto", block: "start" });
-    runCmd(seed);
-    return;
-  }
   seedBusy = true;
   seedGrowBtn.disabled = true;
   seedStatus.className = "seed-status show";
-  seedStatus.textContent = "AI tengah buat 5 prompt ikut apa kau cerita…";
+  seedStatus.textContent = "AI tengah tumbuhkan benih kau jadi 5 prompt…";
   try {
     const res = await fetch(PROXY_URL, {
       method: "POST",
@@ -2084,16 +1954,153 @@ async function growSeed() {
   }
 }
 seedGrowBtn.addEventListener("click", growSeed);
-// Enter makes a newline — this box is meant to be talked into, not just
-// dropped a word in. Ctrl/Cmd+Enter sends, and so does the Grow button.
 seedInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); growSeed(); }
+  if (e.key === "Enter") { e.preventDefault(); growSeed(); }
 });
-function autoGrowSeedBox() {
-  seedInput.style.height = "auto";
-  seedInput.style.height = Math.min(seedInput.scrollHeight, 320) + "px";
+
+
+/* ── Kemas-kan ──
+   Tulisan bersepah masuk, prompt berstruktur keluar. Sengaja diletak sebagai
+   kerja utama tab ni: pengguna tak sepatutnya rasa tertekan nak "prompt
+   elok-elok" dulu — dia tulis macam dia fikir, app yang susun ikut elemen
+   prompt engineering (peranan, konteks, tugas, kekangan, format). Nota
+   "apa yang ditambah" ada supaya lama-lama dia nampak coraknya sendiri. */
+const fixInput = document.getElementById("fixInput");
+const fixLang = document.getElementById("fixLang");
+const fixGoBtn = document.getElementById("fixGo");
+const fixStatus = document.getElementById("fixStatus");
+const fixOut = document.getElementById("fixOut");
+const fixPre = document.getElementById("fixPre");
+const fixActions = document.getElementById("fixActions");
+const fixNotes = document.getElementById("fixNotes");
+let fixBusy = false;
+
+function autoGrowFixBox() {
+  fixInput.style.height = "auto";
+  fixInput.style.height = Math.min(fixInput.scrollHeight, 340) + "px";
 }
-seedInput.addEventListener("input", autoGrowSeedBox);
+fixInput.addEventListener("input", autoGrowFixBox);
+
+function buildFixPrompt(raw) {
+  const langRule =
+    fixLang.value === "ms" ? "Write the ENHANCED prompt fully in Bahasa Melayu."
+    : fixLang.value === "en" ? "Write the ENHANCED prompt fully in English."
+    : "Keep the ENHANCED prompt in the same language (or natural Malay-English mix) as what the user wrote.";
+  return `You are a Prompt Enhancement Engine — like Google Translate, but instead of translating between languages, you translate a messy, rambling, unstructured note into a clear, specific, well-structured prompt that gets far better results from any AI chatbot (ChatGPT / Claude / Gemini / DeepSeek).
+
+What the user wrote may be disorganised, half-finished, contradictory, or a casual Malay-English mix (bahasa rojak). That is EXPECTED and fine — treat it as first-class input. They wrote it that way on purpose, because they should not have to prompt well before getting help.
+
+Rebuild it using the elements of effective prompt engineering, and only the ones the material actually calls for:
+- ROLE — who the AI should be, when a perspective would sharpen the answer
+- CONTEXT — the background and situation implied by what they wrote
+- TASK — one clear, specific instruction, with a concrete action verb
+- CONSTRAINTS — scope, length, tone, what to avoid
+- OUTPUT FORMAT — the shape the answer should take
+- SUCCESS CRITERIA — what makes a good answer here, when it is not obvious
+
+Rules:
+1. Find their core intent and PRESERVE it exactly. Never change what they actually want.
+2. Make implied context explicit, but do NOT invent facts, names, numbers, or requirements they never implied. If something important is genuinely missing, write it as an explicit blank in [kurungan siku] for them to fill.
+3. Never answer their question. You are rewriting the request, not fulfilling it.
+4. Do not ask them anything back and do not refuse. Always return a rewritten prompt.
+5. ${langRule}
+6. Keep the enhanced prompt focused and under 200 words.
+
+APA YANG DIA TULIS:
+"""
+${raw.slice(0, 4000)}
+"""
+
+Respond in EXACTLY this format, nothing else before or after:
+===ENHANCED===
+(the rewritten prompt only — ready to copy-paste straight into any AI)
+===CHANGES===
+- (3 to 5 short bullets in casual Bahasa Melayu, each naming one thing you added or sharpened and which element it is, e.g. "Ditambah FORMAT: minta jawapan dalam senarai bernombor")`;
+}
+
+function parseFix(text) {
+  const enhM = text.match(/===ENHANCED===\s*([\s\S]*?)\s*===CHANGES===/i);
+  const chgM = text.match(/===CHANGES===\s*([\s\S]*)$/i);
+  let enhanced = enhM ? enhM[1].trim() : "";
+  if (!enhanced && !/===ENHANCED===/i.test(text)) enhanced = text.trim();
+  const changes = chgM
+    ? chgM[1].split("\n").map((l) => l.replace(/^\s*[-•*]\s*/, "").trim()).filter(Boolean).slice(0, 6)
+    : [];
+  return { enhanced, changes };
+}
+
+function renderFix(res) {
+  fixPre.textContent = res.enhanced;
+  fixActions.innerHTML = "";
+  const copy = document.createElement("button");
+  copy.className = "mini-btn";
+  copy.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy prompt';
+  copy.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(res.enhanced);
+      copy.classList.add("copied"); copy.lastChild.textContent = "Dah copy!";
+      setTimeout(() => { copy.classList.remove("copied"); copy.lastChild.textContent = "Copy prompt"; }, 1500);
+    } catch {}
+  });
+  const again = document.createElement("button");
+  again.className = "mini-btn";
+  again.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>cuba versi lain';
+  again.addEventListener("click", () => fixIt());
+  fixActions.append(copy, again);
+
+  fixNotes.innerHTML = "";
+  if (res.changes.length) {
+    const h = document.createElement("h4");
+    h.textContent = "apa yang app tambah:";
+    const ul = document.createElement("ul");
+    res.changes.forEach((c) => { const li = document.createElement("li"); li.textContent = c; ul.appendChild(li); });
+    fixNotes.append(h, ul);
+  }
+  fixOut.classList.add("show");
+}
+
+async function fixIt() {
+  const raw = fixInput.value.trim();
+  if (!raw) { fixInput.focus(); return; }
+  if (fixBusy) return;
+  fixBusy = true;
+  fixGoBtn.disabled = true;
+  fixActions.querySelectorAll(".mini-btn").forEach((b) => (b.disabled = true));
+  fixStatus.className = "seed-status show";
+  fixStatus.textContent = "jap, app tengah susun tulisan kau jadi prompt…";
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 25000);
+  try {
+    const res = await fetch(PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: buildFixPrompt(raw) }),
+      signal: ctrl.signal,
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || data.error);
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const parsed = parseFix(text);
+    if (!parsed.enhanced || parsed.enhanced.length < 15) throw new Error("tak dapat baca hasil — cuba sekali lagi");
+    renderFix(parsed);
+    fixStatus.className = "seed-status show";
+    fixStatus.textContent = "copy & paste terus ke AI tool kau";
+  } catch (e) {
+    const msg = (e && (e.name === "AbortError" ? "lambat sangat — cuba sekali lagi" : e.message)) || String(e);
+    const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|retry in|high demand/i.test(String(msg));
+    fixStatus.className = "seed-status show err";
+    fixStatus.textContent = isQuota ? "ramai orang tengah guna — cuba sekejap lagi" : "alamak, tak jadi: " + msg;
+  } finally {
+    clearTimeout(timer);
+    fixBusy = false;
+    fixGoBtn.disabled = false;
+    fixActions.querySelectorAll(".mini-btn").forEach((b) => (b.disabled = false));
+  }
+}
+fixGoBtn.addEventListener("click", fixIt);
+fixInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); fixIt(); }
+});
 
 
 /* ── Mula ayat ──
@@ -2177,7 +2184,7 @@ const starterLinesEl = document.getElementById("starterLines");
 // Letak pembuka ayat kat kedudukan kursor, kursor duduk betul-betul kat
 // hujung supaya pengguna boleh terus taip sambungan.
 function insertStarter(text) {
-  const el = seedInput;
+  const el = fixInput;
   const start = typeof el.selectionStart === "number" ? el.selectionStart : el.value.length;
   const end = typeof el.selectionEnd === "number" ? el.selectionEnd : el.value.length;
   const before = el.value.slice(0, start);
@@ -2187,7 +2194,7 @@ function insertStarter(text) {
   const next = (before + ins + after).slice(0, 700);
   el.value = next;
   const caret = Math.min((before + ins).length, next.length);
-  autoGrowSeedBox();
+  autoGrowFixBox();
   el.focus();
   el.setSelectionRange(caret, caret);
   el.scrollTop = el.scrollHeight;
@@ -2282,15 +2289,13 @@ function parseSudut(text) {
 function pickSudut(item, el) {
   sudutResults.querySelectorAll(".sudut-item.picked").forEach((n) => n.classList.remove("picked"));
   el.classList.add("picked");
-  // sudut yang dipilih jatuh ke kotak bawah — pengguna boleh tambah cerita
-  // sendiri kat situ sebelum tekan Grow
+  // sudut yang dipilih jadi benih — pengguna tinggal tekan Grow
   seedInput.value = item.text;
-  autoGrowSeedBox();
   seedResults.classList.remove("show");
   seedResults.innerHTML = "";
   seedStatus.className = "seed-status";
   sudutStatus.className = "seed-status show";
-  sudutStatus.textContent = "dah masuk kotak bawah — tambah cerita kau kalau nak, lepas tu tekan Grow";
+  sudutStatus.textContent = "dah masuk kotak benih bawah — tekan Grow untuk jadi 5 prompt penuh";
   document.querySelector(".seed-section").scrollIntoView({ behavior: MOTION_OK ? "smooth" : "auto", block: "center" });
   seedGrowBtn.classList.remove("nudge");
   void seedGrowBtn.offsetWidth; // restart animasi kalau pilih sudut lain
@@ -2373,273 +2378,18 @@ sudutInput.addEventListener("keydown", (e) => {
 });
 
 
-/* ── Arahan ──
-   Taip satu ayat ("bagi aku prompt template") dan AI terus muntahkan hasil.
-   Tiada soalan susulan, tiada topik yang perlu difikir dulu — sebab setiap
-   soalan tambahan tu satu lagi beban atas kepala orang yang dah buntu.
-   Chip di bawah kotak supaya arahan pun tak perlu dihafal. */
-const cmdInput = document.getElementById("cmdInput");
-const cmdGoBtn = document.getElementById("cmdGo");
-const cmdChips = document.getElementById("cmdChips");
-const cmdStatus = document.getElementById("cmdStatus");
-const cmdResults = document.getElementById("cmdResults");
-let cmdBusy = false, cmdTypeToken = 0;
-
-const CMD_PRESETS = [
-  "bagi aku prompt template",
-  "bagi aku contoh prompt power",
-  "ajar aku satu teknik prompt",
-  "bagi aku prompt untuk selesaikan masalah",
-];
-
-function buildCmdPrompt(cmd) {
-  return `Pengguna app prompt-builder taip satu arahan pendek. Kau kena TERUS tunaikan arahan tu.
-
-ARAHAN DIA:
-"""
-${cmd.slice(0, 160)}
-"""
-
-Peraturan paling penting:
-- JANGAN tanya dia topik. JANGAN tanya apa-apa soalan balik. JANGAN minta penjelasan. Dia taip arahan sebab dia tak nak fikir lagi — setiap soalan kau tanya adalah satu lagi beban atas kepala dia.
-- Kalau arahan dia luas atau kabur, KAU sendiri yang buat pilihan. Jangan pulangkan balik kepada dia.
-- Bagi TEPAT 5 item.
-
-Kalau dia minta TEMPLATE atau rangka prompt:
-- Setiap template mesti UNIVERSAL — boleh terus dipakai untuk APA-APA topik dan APA-APA bidang. JANGAN sebut bidang tertentu (kerja, belajar, duit, kesihatan, bisnes, kerjaya) di dalam ayat template. Apa-apa yang khusus mesti jadi [tempat kosong], bukan ditulis terus.
-- Kelima-lima template berbeza pada BENTUK CARA FIKIR, bukan pada bidang:
-  1) bila ada masalah nak diselesaikan
-  2) bila nak faham atau belajar sesuatu
-  3) bila nak buat keputusan atau pilih antara beberapa pilihan
-  4) bila nak hasilkan atau karang sesuatu
-  5) bila nak kerja sendiri disemak dan dikritik
-- Tajuk kena bagitau BILA nak guna template tu (contoh: "bila kau buntu", "bila kau tak boleh pilih"), BUKAN bidang apa.
-- Setiap template kena lengkap dan berstruktur: ada latar, ada apa dia nak capai, ada arahan jelas pada AI, ada bentuk jawapan yang dia mahu. Bukan satu ayat pendek.
-- Namakan setiap [tempat kosong] dengan jelas supaya dia terus tau nak isi apa — contoh [apa yang kau dah cuba], bukan [isi sini].
-
-Kalau dia minta benda lain (contoh prompt siap, teknik, idea):
-- Tunaikan ikut apa dia minta, tetap 5 item, tetap berbeza-beza jauh antara satu sama lain, tetap boleh terus guna.
-
-Gaya:
-- Bahasa Melayu santai (KL-style). Jangan berbunyi macam manual korporat.
-- Setiap item ada TAJUK pendek (2-5 patah perkataan) yang bagitau bila nak guna benda tu.
-- Badan item boleh berbilang baris.
-
-Format balasan — ikut TEPAT, jangan tulis apa-apa sebelum atau selepas:
-Tajuk item pertama
-badan item pertama, boleh beberapa baris
----
-Tajuk item kedua
-badan item kedua
----
-(dan seterusnya sampai 5 item, dipisah dengan baris yang ada --- sahaja)`;
-}
-
-function parseCmdBlocks(text) {
-  return text
-    .split(/^\s*-{3,}\s*$/m)
-    .map((b) => b.trim())
-    .filter(Boolean)
-    .map((b) => {
-      const lines = b.split("\n");
-      const title = lines.shift().replace(/^[#*\s]*|[#*\s]*$/g, "").replace(/^\d+[.)]\s*/, "").trim();
-      const body = lines.join("\n").replace(/^\s+|\s+$/g, "");
-      if (!title || !body) return null;
-      return { title: title.slice(0, 80), body };
-    })
-    .filter(Boolean)
-    .slice(0, 6);
-}
-
-// Taip teks masuk elemen huruf demi huruf. Boleh dibatalkan (token) dan
-// dilangkau terus kepada teks penuh.
-function typeInto(el, text, cps) {
-  el.dataset.full = text;
-  return new Promise((resolve) => {
-    if (!MOTION_OK) { el.textContent = text; resolve(); return; }
-    const token = cmdTypeToken;
-    let i = 0, last = performance.now();
-    el.textContent = "";
-    el.classList.add("cmd-typing");
-    function step(now) {
-      if (token !== cmdTypeToken) { el.classList.remove("cmd-typing"); resolve(); return; }
-      i = Math.min(text.length, i + Math.max(1, Math.round((cps * (now - last)) / 1000)));
-      last = now;
-      el.textContent = text.slice(0, i);
-      if (i < text.length) { requestAnimationFrame(step); return; }
-      el.classList.remove("cmd-typing");
-      resolve();
-    }
-    requestAnimationFrame(step);
-  });
-}
-
-function skipCmdTyping() {
-  cmdTypeToken++;
-  cmdResults.querySelectorAll("[data-full]").forEach((el) => {
-    el.textContent = el.dataset.full;
-    el.classList.remove("cmd-typing");
-  });
-  cmdResults.querySelectorAll(".cmd-card[hidden]").forEach((c) => (c.hidden = false));
-  const s = cmdResults.querySelector(".cmd-skip");
-  if (s) s.remove();
-}
-
-function cmdCopyBtn(getText) {
-  const b = document.createElement("button");
-  b.className = "mini-btn";
-  b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy';
-  b.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(getText());
-      b.classList.add("copied"); b.lastChild.textContent = "Dah copy!";
-      setTimeout(() => { b.classList.remove("copied"); b.lastChild.textContent = "Copy"; }, 1500);
-    } catch {}
-  });
-  return b;
-}
-
-async function renderCmdBlocks(blocks) {
-  cmdTypeToken++;
-  cmdResults.innerHTML = "";
-  cmdResults.classList.add("show");
-
-  let skip = null;
-  if (MOTION_OK) {
-    skip = document.createElement("button");
-    skip.className = "mini-btn cmd-skip";
-    skip.textContent = "papar semua terus";
-    skip.addEventListener("click", skipCmdTyping);
-    cmdResults.appendChild(skip);
-  }
-
-  const made = blocks.map((bl) => {
-    const card = document.createElement("div");
-    card.className = "cmd-card";
-    card.hidden = MOTION_OK; // muncul satu per satu masa ditaip
-    const t = document.createElement("div"); t.className = "cmd-title";
-    const body = document.createElement("div"); body.className = "cmd-body";
-    const actions = document.createElement("div"); actions.className = "seed-actions";
-    actions.appendChild(cmdCopyBtn(() => body.dataset.full || body.textContent));
-    card.append(t, body, actions);
-    cmdResults.appendChild(card);
-    return { card, t, body, bl };
-  });
-
-  const token = cmdTypeToken;
-  for (const m of made) {
-    if (token !== cmdTypeToken) return;
-    m.card.hidden = false;
-    await typeInto(m.t, m.bl.title, 140);
-    if (token !== cmdTypeToken) return;
-    await typeInto(m.body, m.bl.body, 230);
-  }
-  if (token === cmdTypeToken && skip) skip.remove();
-}
-
-async function runCmd(text) {
-  const cmd = (text || cmdInput.value).trim();
-  if (!cmd) { cmdInput.focus(); return; }
-  if (cmdBusy) return;
-  cmdBusy = true;
-  cmdInput.value = cmd;
-  cmdGoBtn.disabled = true;
-  cmdChips.querySelectorAll(".cmd-chip").forEach((c) => (c.disabled = true));
-  cmdStatus.className = "seed-status show";
-  cmdStatus.textContent = "jap, AI tengah siapkan…";
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 25000);
-  try {
-    const res = await fetch(PROXY_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: buildCmdPrompt(cmd) }),
-      signal: ctrl.signal,
-    });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message || data.error);
-    const out = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    const blocks = parseCmdBlocks(out);
-    if (!blocks.length) throw new Error("tak dapat baca hasil — cuba sekali lagi");
-    cmdStatus.className = "seed-status show";
-    cmdStatus.textContent = "tap Copy pada mana-mana yang kau nak guna";
-    renderCmdBlocks(blocks);
-  } catch (e) {
-    const msg = (e && (e.name === "AbortError" ? "lambat sangat — cuba sekali lagi" : e.message)) || String(e);
-    const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|retry in|high demand/i.test(String(msg));
-    cmdStatus.className = "seed-status show err";
-    cmdStatus.textContent = isQuota ? "ramai orang tengah guna — cuba sekejap lagi" : "alamak, tak jadi: " + msg;
-  } finally {
-    clearTimeout(timer);
-    cmdBusy = false;
-    cmdGoBtn.disabled = false;
-    cmdChips.querySelectorAll(".cmd-chip").forEach((c) => (c.disabled = false));
-  }
-}
-
-CMD_PRESETS.forEach((p) => {
-  const b = document.createElement("button");
-  b.type = "button";
-  b.className = "cmd-chip";
-  b.textContent = p;
-  b.addEventListener("click", () => runCmd(p));
-  cmdChips.appendChild(b);
-});
-cmdGoBtn.addEventListener("click", () => runCmd());
-cmdInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") { e.preventDefault(); runCmd(); }
-});
-
-// Arahan ditaip dalam kotak benih pun dikenali — hantar ke ruang arahan
-// supaya dia tak dapat 5 prompt pasal "bagi aku prompt template".
-// Sengaja ketat. Salah tangkap lagi teruk dari terlepas: "nak prompt untuk
-// review resume" tu topik sebenar dia, bukan arahan — kalau dilencongkan dia
-// dapat template generik, bukan apa yang dia minta.
-function seedLooksLikeCommand(v) {
-  const s = v.trim();
-  if (s.length > 70) return false;                                  // brief panjang = cerita, bukan arahan
-  if (/\b(pasal|tentang|untuk|about|for)\b/i.test(s)) return false; // ada topik = bukan arahan kosong
-  if (!/^(bagi|bg|buat|buatkan|tunjuk|nak|ajar|gimme|give me|show me)\b/i.test(s)) return false;
-  return /\bprompt\b/i.test(s) && /\b(template|templat|teknik|contoh|sampel)\b/i.test(s);
-}
 
 
 
-
-/* iOS Safari ignores user-scalable=no in the browser, so block pinch and
-   double-tap zoom by hand; standalone (home screen) mode honours the meta. */
-document.addEventListener("gesturestart", (e) => e.preventDefault());
-let lastTouch = 0;
-document.addEventListener("touchend", (e) => {
-  const now = Date.now();
-  if (now - lastTouch < 320 && !["TEXTAREA", "INPUT", "SELECT", "BUTTON"].includes(e.target.tagName)) e.preventDefault();
-  lastTouch = now;
-}, { passive: false });
-
-/* seksyen bawah muncul lembut bila scroll sampai */
-(function scrollReveal() {
-  const targets = document.querySelectorAll(".sudut-section, .seed-section, .cmd-section, .hist-section, footer");
-  if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((en) => {
-      if (en.isIntersecting) { en.target.classList.add("in-view"); io.unobserve(en.target); }
-    });
-  }, { threshold: 0.12 });
-  targets.forEach((t) => { t.classList.add("reveal"); io.observe(t); });
-})();
-
-/* ── Mode switch: Rangka Prompt / Faham Output / Coach Socratic ── */
+/* ── Mode switch: Input / ilham ── */
 const workRangka = document.getElementById("workRangka");
-const workFaham = document.getElementById("workFaham");
 const workCoach = document.getElementById("workCoach");
 const segRangka = document.getElementById("segRangka");
-const segFaham = document.getElementById("segFaham");
 const segCoach = document.getElementById("segCoach");
 const modeSwitch = document.getElementById("modeSwitch");
 const modeIndicator = document.getElementById("modeIndicator");
 const MODES = {
   rangka: { work: workRangka, seg: segRangka },
-  faham: { work: workFaham, seg: segFaham },
   coach: { work: workCoach, seg: segCoach },
 };
 
@@ -2658,7 +2408,6 @@ function setMode(name) {
     m.seg.classList.toggle("active", k === name);
   });
   moveModeIndicator();
-  if (name !== "faham") stopSpeak();
   if (name === "coach") onEnterCoach();
   if (MOTION_OK) {
     MODES[name].work.animate(
@@ -2669,7 +2418,6 @@ function setMode(name) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 segRangka.addEventListener("click", () => setMode("rangka"));
-segFaham.addEventListener("click", () => setMode("faham"));
 segCoach.addEventListener("click", () => setMode("coach"));
 requestAnimationFrame(moveModeIndicator);
 window.addEventListener("resize", moveModeIndicator);
@@ -2680,208 +2428,6 @@ function onEnterCoach() {
   if (swipeAiBusy) return; // a fetch is already running — don't stack
   startSwipe();
 }
-
-/* ── Faham Output: ringkaskan jawapan AI luar supaya senang faham ── */
-const fahamInput = document.getElementById("fahamInput");
-const fahamLang = document.getElementById("fahamLang");
-const fahamBtn = document.getElementById("fahamBtn");
-const fahamCount = document.getElementById("fahamCount");
-const fahamLoading = document.getElementById("fahamLoading");
-const fahamError = document.getElementById("fahamError");
-const digest = document.getElementById("digest");
-const digInti = document.getElementById("digInti");
-const digPoin = document.getElementById("digPoin");
-const digBuat = document.getElementById("digBuat");
-const digSimple = document.getElementById("digSimple");
-const digSpeakBtn = document.getElementById("digSpeakBtn");
-let fahamBusy = false, speaking = false;
-let bionicOn = false, spotlightOn = false;
-
-fahamInput.addEventListener("input", () => {
-  fahamCount.textContent = fahamInput.value.length ? fahamInput.value.length + " / 16000" : "";
-});
-document.getElementById("fahamPasteBtn").addEventListener("click", async () => {
-  try { const t = await navigator.clipboard.readText(); if (t) { fahamInput.value = t.slice(0, 16000); fahamInput.dispatchEvent(new Event("input")); } } catch { fahamInput.focus(); }
-});
-document.getElementById("fahamClearBtn").addEventListener("click", () => {
-  fahamInput.value = ""; fahamCount.textContent = ""; digest.hidden = true; stopSpeak(); fahamInput.focus();
-});
-
-function buildFahamPrompt(text) {
-  const lang = fahamLang.value === "ms" ? "Balas dalam Bahasa Melayu santai yang senang faham."
-    : fahamLang.value === "en" ? "Reply in simple, easy English."
-    : "Balas dalam bahasa yang sama macam jawapan AI di bawah, tapi versi paling simple & senang faham.";
-  return `Seseorang dapat jawapan panjang dari satu AI chatbot tapi malas / susah nak baca & faham. Tugas kau: ringkaskan supaya senang telan. ${lang} Guna ayat pendek, elak jargon.
-
-Balas TEPAT dalam format ni, tiada apa-apa lain:
-===INTI===
-(1-2 ayat je: pada asasnya jawapan tu cakap apa)
-===POIN===
-- (3 sampai 6 poin penting, ringkas satu baris satu poin)
-===BUAT===
-- (langkah / benda user patut buat berdasarkan jawapan tu. Kalau takde langkah, tulis satu baris je: "Takde langkah khusus — ni info je.")
-===SIMPLE===
-(1 perenggan pendek terangkan keseluruhan macam kat kawan yang baru belajar)
-
-JAWAPAN AI:
-"""
-${text.slice(0, 14000)}
-"""`;
-}
-function parseFaham(raw) {
-  const grab = (a, b) => {
-    const m = raw.match(new RegExp("===" + a + "===\\s*([\\s\\S]*?)\\s*(?:===" + b + "===|$)", "i"));
-    return m ? m[1].trim() : "";
-  };
-  const bullets = (s) => s.split("\n").map((l) => l.replace(/^\s*[-•*]\s*/, "").trim()).filter(Boolean);
-  return {
-    inti: grab("INTI", "POIN"),
-    poin: bullets(grab("POIN", "BUAT")),
-    buat: bullets(grab("BUAT", "SIMPLE")),
-    simple: grab("SIMPLE", "ZZZ"),
-  };
-}
-async function fahamkan() {
-  const text = fahamInput.value.trim();
-  if (!text) { fahamInput.focus(); return; }
-  if (fahamBusy) return;
-  fahamBusy = true;
-  fahamBtn.disabled = true;
-  fahamError.classList.remove("show");
-  digest.hidden = true;
-  stopSpeak();
-  fahamLoading.classList.add("show");
-  try {
-    const res = await fetch(PROXY_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: buildFahamPrompt(text) }) });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message || data.error);
-    const out = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    const d = parseFaham(out);
-    if (!d.inti && !d.poin.length && !d.simple) throw new Error("tak dapat ringkaskan — cuba lagi");
-    digInti.classList.add("dig-txt"); digInti.dataset.raw = d.inti || "—";
-    digPoin.innerHTML = "";
-    (d.poin.length ? d.poin : ["—"]).forEach((p) => {
-      const li = document.createElement("li"); li.className = "dig-txt"; li.dataset.raw = p; digPoin.appendChild(li);
-    });
-    digBuat.innerHTML = "";
-    const hasSteps = d.buat.length > 0;
-    (hasSteps ? d.buat : ["Takde langkah khusus — ni info je."]).forEach((p) => {
-      const li = document.createElement("li");
-      if (hasSteps) {
-        li.className = "dig-check";
-        const box = document.createElement("button");
-        box.type = "button"; box.className = "dig-box"; box.setAttribute("aria-label", "tanda dah buat"); box.setAttribute("aria-pressed", "false");
-        box.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-        box.addEventListener("click", (e) => { e.stopPropagation(); li.classList.toggle("done"); box.setAttribute("aria-pressed", li.classList.contains("done") ? "true" : "false"); });
-        const span = document.createElement("span"); span.className = "dig-txt"; span.dataset.raw = p;
-        li.append(box, span);
-      } else {
-        li.className = "dig-info dig-txt"; li.dataset.raw = p;
-      }
-      digBuat.appendChild(li);
-    });
-    digSimple.classList.add("dig-txt"); digSimple.dataset.raw = d.simple || "—";
-    renderDigTxt();
-    if (spotlightOn) focusFirstBlock();
-    digest.hidden = false;
-    digest.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  } catch (e) {
-    const msg = e && e.message ? String(e.message) : String(e);
-    const isQuota = /quota|RESOURCE_EXHAUSTED|rate ?limit|retry in|high demand/i.test(msg);
-    fahamError.textContent = isQuota ? "ramai orang tengah guna — tunggu sekejap, cuba lagi ya" : "alamak, tak jadi: " + msg;
-    fahamError.classList.add("show");
-  } finally {
-    fahamBusy = false; fahamBtn.disabled = false; fahamLoading.classList.remove("show");
-  }
-}
-fahamBtn.addEventListener("click", fahamkan);
-
-function digestText() {
-  const poin = [...digPoin.querySelectorAll("li")].map((l) => "- " + l.textContent).join("\n");
-  const buat = [...digBuat.querySelectorAll("li")].map((l) => "- " + l.textContent).join("\n");
-  return `INTINYA:\n${digInti.textContent}\n\nPOIN PENTING:\n${poin}\n\nAPA KENA BUAT:\n${buat}\n\nTERANG SIMPLE:\n${digSimple.textContent}`;
-}
-document.getElementById("digCopyBtn").addEventListener("click", async () => {
-  const b = document.getElementById("digCopyBtn");
-  try {
-    await navigator.clipboard.writeText(digestText());
-    b.classList.add("copied"); b.lastChild.textContent = "Dah copy!";
-    setTimeout(() => { b.classList.remove("copied"); b.lastChild.textContent = "Copy"; }, 1500);
-  } catch {}
-});
-
-/* ── Reading aids: bionic reading + spotlight/dim focus ── */
-function escapeHtml(s) { return s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])); }
-// Bold the leading ~40% of each word so the eye anchors and skims faster.
-function bionicHTML(text) {
-  return text.split(/(\s+)/).map((tok) => {
-    if (!tok || /^\s+$/.test(tok)) return tok.replace(/\n/g, "<br>");
-    const n = Math.max(1, Math.round(tok.length * 0.4));
-    return "<b>" + escapeHtml(tok.slice(0, n)) + "</b>" + escapeHtml(tok.slice(n));
-  }).join("");
-}
-// (Re)render every digest text holder, applying bionic when the toggle is on.
-function renderDigTxt() {
-  digest.querySelectorAll(".dig-txt").forEach((el) => {
-    const raw = el.dataset.raw || "";
-    if (bionicOn) el.innerHTML = bionicHTML(raw);
-    else el.textContent = raw;
-  });
-}
-function focusFirstBlock() {
-  const blocks = digest.querySelectorAll(".digest-block");
-  blocks.forEach((b, i) => b.classList.toggle("focus", i === 0));
-}
-const digBionicBtn = document.getElementById("digBionicBtn");
-const digFocusBtn = document.getElementById("digFocusBtn");
-digBionicBtn.addEventListener("click", () => {
-  bionicOn = !bionicOn;
-  digBionicBtn.classList.toggle("active", bionicOn);
-  digBionicBtn.setAttribute("aria-pressed", bionicOn ? "true" : "false");
-  renderDigTxt();
-});
-digFocusBtn.addEventListener("click", () => {
-  spotlightOn = !spotlightOn;
-  digFocusBtn.classList.toggle("active", spotlightOn);
-  digFocusBtn.setAttribute("aria-pressed", spotlightOn ? "true" : "false");
-  digest.classList.toggle("spotlight", spotlightOn);
-  if (spotlightOn) focusFirstBlock();
-  else digest.querySelectorAll(".digest-block.focus").forEach((b) => b.classList.remove("focus"));
-});
-// In spotlight mode, tap a block to move focus onto it.
-digest.addEventListener("click", (e) => {
-  if (!spotlightOn) return;
-  const block = e.target.closest(".digest-block");
-  if (!block || !digest.contains(block)) return;
-  digest.querySelectorAll(".digest-block").forEach((b) => b.classList.toggle("focus", b === block));
-});
-
-/* TTS: dengar digest */
-function stopSpeak() {
-  if (window.speechSynthesis) window.speechSynthesis.cancel();
-  speaking = false;
-  digSpeakBtn.classList.remove("speaking");
-  digSpeakBtn.lastChild.textContent = "Dengar";
-}
-digSpeakBtn.addEventListener("click", () => {
-  if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === "undefined") {
-    fahamError.textContent = "Browser kau tak sokong bacaan kuat.";
-    fahamError.classList.add("show"); setTimeout(() => fahamError.classList.remove("show"), 2500);
-    return;
-  }
-  if (speaking) { stopSpeak(); return; }
-  const poin = [...digPoin.querySelectorAll("li")].map((l) => l.textContent).join(". ");
-  const buat = [...digBuat.querySelectorAll("li")].map((l) => l.textContent).join(". ");
-  const spoken = `Intinya. ${digInti.textContent}. Poin penting. ${poin}. Apa kau kena buat. ${buat}. Terang simple. ${digSimple.textContent}`;
-  const u = new SpeechSynthesisUtterance(spoken);
-  u.lang = fahamLang.value === "en" ? "en-US" : "ms-MY";
-  u.onend = stopSpeak; u.onerror = stopSpeak;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(u);
-  speaking = true;
-  digSpeakBtn.classList.add("speaking");
-  digSpeakBtn.lastChild.textContent = "Stop";
-});
 
 /* ── Coach cara cepat: kad idea helper ── */
 function ideaCardEl(it, onDelete) {
